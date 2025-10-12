@@ -16,13 +16,16 @@ export default function HomePage() {
   const [papers, setPapers] = useState<Paper[]>([]);
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
+  const [sort, setSort] = useState("year");
+  const [selectedTopic, setSelectedTopic] = useState("");
 
-  const fetchPapers = async (q = "") => {
+  // 🧩 Unified fetch function with query, sort, and topic
+  const fetchPapers = async (q = "", sortValue = "year", topic = "") => {
     setLoading(true);
     try {
-      const endpoint = q
-        ? `/papers/search?q=${encodeURIComponent(q)}`
-        : "/papers?limit=10";
+      const endpoint = `/papers?q=${encodeURIComponent(
+        q
+      )}&sort=${sortValue}&topic=${encodeURIComponent(topic)}&limit=10`;
       const res = await api.get(endpoint);
       const result = Array.isArray(res.data)
         ? res.data
@@ -41,7 +44,7 @@ export default function HomePage() {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    fetchPapers(query);
+    fetchPapers(query, sort, selectedTopic);
   };
 
   return (
@@ -76,6 +79,67 @@ export default function HomePage() {
             Search
           </button>
         </form>
+
+        {/* 🔽 Filter Bar */}
+        <div className="max-w-3xl mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mt-6">
+          {/* Sort Dropdown */}
+          <select
+            value={sort}
+            onChange={(e) => {
+              setSort(e.target.value);
+              fetchPapers(query, e.target.value, selectedTopic);
+            }}
+            className="border border-gray-300 bg-white rounded-md px-3 pr-6 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer appearance-none relative"
+            style={{
+              backgroundImage:
+                "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 20 20'%3E%3Cpath fill='gray' d='M6 8l4 4 4-4H6z'/%3E%3C/svg%3E\")",
+              backgroundRepeat: "no-repeat",
+              backgroundPosition: "right 0.8rem center",
+              backgroundSize: "0.8rem",
+            }}
+          >
+            <option value="year">Newest</option>
+            <option value="title">Title (A–Z)</option>
+          </select>
+
+          {/* Topic Buttons */}
+          <div className="flex flex-wrap justify-center sm:justify-end gap-2">
+            {[
+              "Long COVID",
+              "Neurology",
+              "Immunology",
+              "Diagnostics",
+              "Treatment",
+            ].map((topic) => (
+              <button
+                key={topic}
+                onClick={() => {
+                  const newTopic = selectedTopic === topic ? "" : topic;
+                  setSelectedTopic(newTopic);
+                  fetchPapers(query, sort, newTopic);
+                }}
+                className={`px-3 py-1.5 rounded-md text-sm font-medium border transition-all duration-150 shadow-sm cursor-pointer ${
+                  selectedTopic === topic
+                    ? "bg-blue-100 text-blue-700 border-blue-300 shadow-md scale-[1.01]"
+                    : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50 hover:border-blue-300 hover:shadow-sm"
+                }`}
+              >
+                {topic}
+              </button>
+            ))}
+            {selectedTopic && (
+              <button
+                onClick={() => {
+                  setSelectedTopic("");
+                  fetchPapers(query, sort, "");
+                }}
+                className="text-sm text-gray-500 underline ml-2 cursor-pointer hover:text-gray-700 transition-colors"
+              >
+                Clear
+              </button>
+            )}
+          </div>
+        </div>
       </section>
 
       {/* 📄 Results */}
