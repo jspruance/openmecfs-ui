@@ -11,9 +11,9 @@ interface Paper {
   title: string;
   authors: string[];
   year?: number;
-  abstract?: string;
-  technical_summary?: string;
   patient_summary?: string;
+  technical_summary?: string;
+  abstract?: string;
 }
 
 function classNames(...classes: string[]) {
@@ -56,37 +56,41 @@ export default function PaperDetailPage() {
 
   return (
     <Fragment>
-      {/* Back Button – positioned just below the navbar */}
-      <div className="absolute top-[72px] left-[40px]">
-        {/* Back Button — below navbar and guaranteed clickable */}
-        <button
-          onClick={() => {
-            if (window.history.length > 1) {
-              router.back();
-            } else {
-              router.push("/"); // fallback to home if no history
-            }
-          }}
-          className="absolute top-[72px] left-[40px] z-[2000] flex items-center gap-2 px-3 py-1.5 rounded-full bg-gray-100 text-gray-700 text-sm font-medium shadow-sm hover:bg-gray-200 cursor-pointer transition-colors"
-          style={{ pointerEvents: "auto" }}
-          aria-label="Go back"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          <span>Back</span>
-        </button>
-      </div>
+      {/* Back Button */}
+      <button
+        onClick={() => {
+          if (window.history.length > 1) {
+            router.back();
+          } else {
+            router.push("/"); // fallback to home if no history
+          }
+        }}
+        className="absolute top-[72px] left-[40px] z-[2000] flex items-center gap-2 px-3 py-1.5 rounded-full bg-gray-100 text-gray-700 text-sm font-medium shadow-sm hover:bg-gray-200 cursor-pointer transition-colors"
+        aria-label="Go back"
+      >
+        <ArrowLeft className="h-4 w-4" />
+        <span>Back</span>
+      </button>
 
       {/* Page Content */}
-      <div className="max-w-3xl mx-auto p-6 pt-14">
+      <div className="max-w-3xl mx-auto p-6 pt-20">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-2xl font-semibold mb-2">{paper.title}</h1>
+          <div className="flex items-start justify-between gap-4 flex-wrap">
+            <h1 className="text-2xl font-semibold mb-1">{paper.title}</h1>
+            {paper.year && (
+              <span className="text-xs font-semibold bg-blue-100 text-blue-700 px-2 py-1 rounded-md self-start">
+                {paper.year}
+              </span>
+            )}
+          </div>
+
           <p className="text-sm text-gray-700 mb-1">
             {paper.authors?.join(", ")}
           </p>
-          <p className="text-sm text-gray-500">
-            {paper.year ? `(${paper.year})` : ""} — PMID: {paper.pmid}
-          </p>
+
+          <p className="text-sm text-gray-500 mb-2">PMID: {paper.pmid}</p>
+
           <a
             href={`https://pubmed.ncbi.nlm.nih.gov/${paper.pmid}`}
             target="_blank"
