@@ -162,8 +162,14 @@ export default function HomePage() {
                   <h3 className="font-medium text-gray-900 text-base group-hover:text-blue-600 leading-snug transition-colors">
                     {paper.title}
                   </h3>
+                  {/* 🏷️ Year Badge */}
+                  {paper.year && (
+                    <span className="ml-2 text-xs font-semibold bg-blue-100 text-blue-700 px-2 py-0.5 rounded-md shrink-0">
+                      {paper.year}
+                    </span>
+                  )}
                   <ArrowRight
-                    className="text-gray-300 group-hover:text-blue-500 transition-all opacity-0 group-hover:opacity-100"
+                    className="text-gray-300 group-hover:text-blue-500 transition-all opacity-0 group-hover:opacity-100 ml-2"
                     size={16}
                   />
                 </div>
@@ -172,7 +178,6 @@ export default function HomePage() {
                   {Array.isArray(paper.authors)
                     ? paper.authors.join(", ")
                     : paper.authors}
-                  {paper.year ? ` — ${paper.year}` : ""}
                 </p>
 
                 {paper.patient_summary && (
