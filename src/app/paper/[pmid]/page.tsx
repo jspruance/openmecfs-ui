@@ -4,13 +4,15 @@ import { useEffect, useState, Fragment } from "react";
 import { useParams, useRouter } from "next/navigation";
 import api from "@/lib/api";
 import { Tab } from "@headlessui/react";
-import { Loader2, ArrowLeft } from "lucide-react";
+import { Loader2, ArrowLeft, Share2, Copy, ExternalLink } from "lucide-react";
 
 interface Paper {
   pmid: string;
   title: string;
   authors: string[];
   year?: number;
+  journal?: string;
+  keywords?: string[];
   patient_summary?: string;
   technical_summary?: string;
   abstract?: string;
@@ -40,6 +42,10 @@ export default function PaperDetailPage() {
     if (pmid) fetchPaper();
   }, [pmid]);
 
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText(window.location.href);
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -59,13 +65,10 @@ export default function PaperDetailPage() {
       {/* Back Button */}
       <button
         onClick={() => {
-          if (window.history.length > 1) {
-            router.back();
-          } else {
-            router.push("/"); // fallback to home if no history
-          }
+          if (window.history.length > 1) router.back();
+          else router.push("/");
         }}
-        className="absolute top-[72px] left-[40px] z-[2000] flex items-center gap-2 px-3 py-1.5 rounded-full bg-gray-100 text-gray-700 text-sm font-medium shadow-sm hover:bg-gray-200 cursor-pointer transition-colors"
+        className="absolute top-[72px] left-[40px] z-[2000] flex items-center gap-2 px-3 py-1.5 rounded-full bg-gray-100 text-gray-700 text-sm font-medium shadow-sm hover:bg-gray-200 transition-colors"
         aria-label="Go back"
       >
         <ArrowLeft className="h-4 w-4" />
@@ -73,9 +76,9 @@ export default function PaperDetailPage() {
       </button>
 
       {/* Page Content */}
-      <div className="max-w-3xl mx-auto p-6 pt-20">
+      <div className="max-w-3xl mx-auto p-6 pt-10">
         {/* Header */}
-        <div className="mb-8">
+        <div className="mb-6">
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <h1 className="text-2xl font-semibold mb-1">{paper.title}</h1>
             {paper.year && (
@@ -85,21 +88,50 @@ export default function PaperDetailPage() {
             )}
           </div>
 
-          <p className="text-sm text-gray-700 mb-1">
-            {paper.authors?.join(", ")}
-          </p>
+          {/* Metadata */}
+          <div className="text-sm text-gray-700 space-y-1 mt-1">
+            {paper.authors?.length > 0 && (
+              <p className="text-gray-700">{paper.authors.join(", ")}</p>
+            )}
+            {paper.journal && (
+              <p className="italic text-gray-600">{paper.journal}</p>
+            )}
+            <p className="text-gray-500">PMID: {paper.pmid}</p>
+            <a
+              href={`https://pubmed.ncbi.nlm.nih.gov/${paper.pmid}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1 text-blue-600 hover:underline text-sm"
+            >
+              <ExternalLink className="h-4 w-4" />
+              View on PubMed
+            </a>
+          </div>
 
-          <p className="text-sm text-gray-500 mb-2">PMID: {paper.pmid}</p>
-
-          <a
-            href={`https://pubmed.ncbi.nlm.nih.gov/${paper.pmid}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-blue-600 hover:underline text-sm"
-          >
-            View on PubMed →
-          </a>
+          {/* Keywords */}
+          {paper.keywords && paper.keywords.length > 0 && (
+            <div className="flex flex-wrap gap-2 mt-3">
+              {paper.keywords.map((kw) => (
+                <span
+                  key={kw}
+                  className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded-full"
+                >
+                  {kw}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
+
+        {/* Summary Highlight Box */}
+        {paper.patient_summary && (
+          <div className="bg-blue-50 border border-blue-100 rounded-lg p-3 mb-5">
+            <p className="text-gray-800 text-sm leading-relaxed">
+              {paper.patient_summary.split(".").slice(0, 2).join(".").trim() +
+                "."}
+            </p>
+          </div>
+        )}
 
         {/* Tabs */}
         <Tab.Group>
@@ -125,22 +157,56 @@ export default function PaperDetailPage() {
 
           <Tab.Panels className="mt-2">
             <Tab.Panel>
-              <p className="whitespace-pre-line leading-relaxed text-gray-800">
+              <p className="prose prose-blue max-w-none leading-relaxed text-gray-800">
                 {paper.patient_summary || "No patient summary available."}
               </p>
             </Tab.Panel>
             <Tab.Panel>
-              <p className="whitespace-pre-line leading-relaxed text-gray-800">
+              <p className="prose prose-blue max-w-none leading-relaxed text-gray-800">
                 {paper.technical_summary || "No technical summary available."}
               </p>
             </Tab.Panel>
             <Tab.Panel>
-              <p className="whitespace-pre-line leading-relaxed text-gray-800">
+              <p className="prose prose-blue max-w-none leading-relaxed text-gray-800">
                 {paper.abstract || "No abstract available."}
               </p>
             </Tab.Panel>
           </Tab.Panels>
         </Tab.Group>
+
+        {/* Share Buttons */}
+        <div className="flex gap-3 mt-6">
+          <button
+            onClick={handleCopyLink}
+            className="flex items-center gap-2 text-sm bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-md cursor-pointer transition"
+          >
+            <Copy className="h-4 w-4" />
+            Copy Link
+          </button>
+
+          <a
+            href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(
+              paper.title
+            )}&url=${encodeURIComponent(
+              typeof window !== "undefined" ? window.location.href : ""
+            )}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 text-sm bg-blue-100 hover:bg-blue-200 px-3 py-1.5 rounded-md transition cursor-pointer"
+          >
+            <Share2 className="h-4 w-4" />
+            Share on X
+          </a>
+        </div>
+
+        {/* Related Studies (future) */}
+        <div className="mt-10 border-t border-gray-200 pt-6">
+          <h2 className="text-lg font-semibold mb-3">Related Studies</h2>
+          <p className="text-sm text-gray-600 italic">
+            This section will recommend similar papers once semantic search is
+            enabled.
+          </p>
+        </div>
       </div>
     </Fragment>
   );
