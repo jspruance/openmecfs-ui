@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import ContactSection from "../components/ContactSection";
 
 export default function HomePage() {
   return (
@@ -128,87 +129,7 @@ export default function HomePage() {
       </section>
 
       {/* 📬 CONTACT SECTION */}
-      <section
-        id="contact"
-        className="w-full bg-white text-gray-800 py-24 border-t border-gray-100"
-      >
-        <div className="max-w-3xl mx-auto px-8 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            Contact Us
-          </h2>
-          <p className="text-lg text-gray-600 mb-10">
-            Have questions, feedback, or collaboration ideas? We’d love to hear
-            from you.
-          </p>
-
-          <form
-            action="https://formspree.io/f/your-form-id" // Replace with your Formspree endpoint
-            method="POST"
-            className="space-y-6 text-left bg-gray-50 border border-gray-200 rounded-2xl p-8 shadow-sm"
-          >
-            {/* Name */}
-            <div>
-              <label
-                htmlFor="name"
-                className="block text-sm font-semibold text-gray-700 mb-1"
-              >
-                Name
-              </label>
-              <input
-                type="text"
-                id="name"
-                name="name"
-                required
-                className="w-full border border-gray-300 rounded-md px-4 py-2 text-gray-800 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-              />
-            </div>
-
-            {/* Email */}
-            <div>
-              <label
-                htmlFor="email"
-                className="block text-sm font-semibold text-gray-700 mb-1"
-              >
-                Email
-              </label>
-              <input
-                type="email"
-                id="email"
-                name="_replyto"
-                required
-                className="w-full border border-gray-300 rounded-md px-4 py-2 text-gray-800 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-              />
-            </div>
-
-            {/* Message */}
-            <div>
-              <label
-                htmlFor="message"
-                className="block text-sm font-semibold text-gray-700 mb-1"
-              >
-                Message
-              </label>
-              <textarea
-                id="message"
-                name="message"
-                rows={5}
-                required
-                className="w-full border border-gray-300 rounded-md px-4 py-2 text-gray-800 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none"
-              ></textarea>
-            </div>
-
-            {/* Submit */}
-            <div className="text-center">
-              <button
-                type="submit"
-                className="inline-flex items-center justify-center px-8 py-3 text-lg font-semibold rounded-md bg-gradient-to-r from-yellow-300 via-amber-400 to-orange-400 text-blue-900 shadow-[0_0_20px_rgba(255,200,100,0.6)] hover:shadow-[0_0_40px_rgba(255,200,100,0.8)] hover:from-yellow-400 hover:via-amber-300 hover:to-yellow-200 hover:scale-[1.05] active:scale-[0.98] transition-all duration-300 ease-out"
-              >
-                Send Message
-              </button>
-            </div>
-          </form>
-        </div>
-      </section>
+      <ContactSection />
     </>
   );
 }

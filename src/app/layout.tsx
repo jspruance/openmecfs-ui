@@ -18,9 +18,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={inter.className}>
-      <body className="bg-gray-50 text-gray-900">
+      <body className="bg-white text-gray-900">
+        {" "}
+        {/* change from bg-gray-50 */}
         <Header />
-        <LayoutWrapper>{children}</LayoutWrapper>
+        <main className="min-h-screen">{children}</main>{" "}
+        {/* remove max-w/px/py here */}
         <Footer />
       </body>
     </html>

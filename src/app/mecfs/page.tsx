@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import {
   Activity,
   HeartPulse,
@@ -11,33 +12,89 @@ import {
 } from "lucide-react";
 
 export default function MecfsPage() {
+  // 🗣️ Patient quotes
+  const quotes = [
+    {
+      text: "Living with ME/CFS feels like having the flu that never ends — a constant struggle against exhaustion, pain, and sensory overload.",
+      author: "— Patient with ME/CFS",
+    },
+    {
+      text: "Every small task feels like climbing a mountain. Rest isn’t recovery — it’s survival between crashes.",
+      author: "— ME/CFS advocate",
+    },
+    {
+      text: "It’s like my body’s batteries never recharge, no matter how long I rest.",
+      author: "— ME/CFS patient, 12 years diagnosed",
+    },
+  ];
+
+  // 🎲 Pick one random quote (fixed per render)
+  const randomQuote = useMemo(
+    () => quotes[Math.floor(Math.random() * quotes.length)],
+    []
+  );
+
   return (
     <main className="min-h-screen bg-white text-gray-800">
       {/* 🧠 Intro */}
-      <section className="max-w-5xl mx-auto px-6 py-20">
-        <h1 className="text-4xl md:text-5xl font-bold text-center text-gray-900 mb-6">
-          What is ME/CFS?
-        </h1>
-        <p className="text-lg text-gray-700 leading-relaxed mb-4">
-          <strong>
-            Myalgic Encephalomyelitis / Chronic Fatigue Syndrome (ME/CFS)
-          </strong>{" "}
-          is a complex, multisystem illness that affects the body’s energy
-          production, nervous system, immune system, and cardiovascular
-          regulation. It is characterized by <strong>profound fatigue</strong>,
-          <strong> post-exertional malaise (PEM)</strong>—a worsening of
-          symptoms after even minor physical or mental effort—
-          <strong>unrefreshing sleep</strong>,{" "}
-          <strong>cognitive dysfunction</strong> (“brain fog”), and often{" "}
-          <strong>orthostatic intolerance (OI)</strong>, where standing or
-          sitting upright worsens symptoms due to blood-flow abnormalities.
-        </p>
-        <p className="text-lg text-gray-700 leading-relaxed">
-          <strong>Open ME/CFS</strong> aims to make ME/CFS research accessible
-          and understandable to everyone — from patients and caregivers to
-          researchers and clinicians — by organizing and summarizing the latest
-          scientific evidence.
-        </p>
+      <section className="relative py-24 bg-gradient-to-b from-blue-50 to-white border-b border-gray-100">
+        <div className="max-w-6xl mx-auto px-6 grid md:grid-cols-3 gap-12 items-center">
+          {/* Left / Center Column */}
+          <div className="md:col-span-2">
+            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-8 text-center md:text-left">
+              <span className="bg-gradient-to-r from-blue-600 to-blue-400 bg-clip-text text-transparent">
+                What is ME/CFS?
+              </span>
+            </h1>
+
+            <p className="text-lg text-gray-700 leading-relaxed mb-4">
+              <strong>
+                Myalgic Encephalomyelitis / Chronic Fatigue Syndrome (ME/CFS)
+              </strong>{" "}
+              is a complex, multisystem, debhilitating illness that disrupts the
+              body’s energy production, nervous system, immune system, and
+              cardiovascular regulation. It is characterized by{" "}
+              <strong>profound fatigue</strong>,
+              <strong> post-exertional malaise (PEM)</strong> — a worsening of
+              symptoms after even minor effort —
+              <strong> unrefreshing sleep</strong>,{" "}
+              <strong> cognitive dysfunction</strong> (“brain fog”), and often
+              <strong> orthostatic intolerance (OI)</strong>, where standing or
+              sitting upright worsens symptoms due to blood-flow abnormalities.
+            </p>
+
+            <p className="text-lg text-gray-700 leading-relaxed">
+              <strong>Open ME/CFS</strong> aims to make ME/CFS research
+              accessible and understandable to everyone — from patients and
+              caregivers to researchers and clinicians — by organizing and
+              summarizing the latest scientific research.
+            </p>
+          </div>
+
+          {/* Right Column — Dynamic Quote Card */}
+          <div className="flex justify-center">
+            <div className="bg-white shadow-lg rounded-2xl border border-gray-200 p-6 text-center max-w-sm transition-all duration-500 hover:shadow-xl">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="w-8 h-8 text-blue-500 mx-auto mb-3 opacity-80"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="1.5"
+                  d="M9 12h.01M15 12h.01M9 16h6M4 8h16M4 8c0-2.21 1.79-4 4-4h8a4 4 0 014 4M4 8v12a4 4 0 004 4h8a4 4 0 004-4V8"
+                />
+              </svg>
+              <p className="text-gray-600 italic leading-relaxed">
+                “{randomQuote.text}”
+              </p>
+              <p className="text-sm text-gray-500 mt-3">{randomQuote.author}</p>
+            </div>
+          </div>
+        </div>
       </section>
 
       {/* 🧬 Understanding ME/CFS */}
@@ -51,9 +108,9 @@ export default function MecfsPage() {
               ME/CFS is recognized by the U.S. National Academy of Medicine
               (NAM, formerly IOM) as a serious, chronic, systemic disease — not
               psychological or “just tiredness.” The illness may develop after
-              an infection, environmental exposure, or occur spontaneously, and
-              can cause severe limitations in daily functioning — sometimes
-              leaving patients bed- or home-bound.
+              an infection, extreme or chronic stress, environmental exposure,
+              or occur spontaneously, and can cause severe limitations in daily
+              functioning — sometimes leaving patients bed- or home-bound.
             </p>
             <p className="text-gray-700 text-lg mt-3 leading-relaxed">
               Biomedical research points toward abnormalities in energy
@@ -144,7 +201,7 @@ export default function MecfsPage() {
             conditions.
           </p>
           <p className="text-lg text-gray-700 leading-relaxed">
-            The <em>Institute of Medicine (IOM, 2015)</em> criteria — now widely
+            The <b>Institute of Medicine (IOM, 2015)</b> criteria — now widely
             used — require:
           </p>
           <ul className="list-disc list-inside mt-4 text-gray-700 leading-relaxed space-y-1">
