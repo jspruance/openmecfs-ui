@@ -59,7 +59,7 @@ export default function DonatePage() {
           Support Open ME/CFS
         </h1>
         <p className="mt-2 text-gray-600">
-          Your donation funds open research, patient-friendly summaries, and
+          Your donation funds open research, patient and provider education, and
           tooling for the ME/CFS community.
         </p>
 

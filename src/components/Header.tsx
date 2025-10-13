@@ -13,7 +13,7 @@ export default function Header() {
           className="flex items-center gap-2 hover:opacity-90 transition"
         >
           <Image
-            src="/logo-1.png"
+            src="/logo-1-trans-bg.png"
             alt="Open ME/CFS Logo"
             width={36}
             height={36}
@@ -33,28 +33,30 @@ export default function Header() {
           >
             Home
           </Link>
-
           <Link
             href="/mecfs"
             className="text-gray-600 hover:text-gray-900 transition-colors"
           >
             ME/CFS
           </Link>
-
+          <Link
+            href="/patients"
+            className="text-gray-600 hover:text-gray-900 transition-colors"
+          >
+            Patients
+          </Link>
           <Link
             href="/research"
             className="text-gray-600 hover:text-gray-900 transition-colors"
           >
             Research
           </Link>
-
           <Link
             href="/about"
             className="text-gray-600 hover:text-gray-900 transition-colors"
           >
             About
           </Link>
-
           {/* 🔗 Contact Anchor */}
           <Link
             href="/#contact"
@@ -63,7 +65,6 @@ export default function Header() {
           >
             Contact
           </Link>
-
           {/* 💛 Donate Button */}
           <Link
             href="/donate"
