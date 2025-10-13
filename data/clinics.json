@@ -1,0 +1,37 @@
+[
+  {
+    "id": "omi",
+    "name": "Open Medicine Institute Clinic",
+    "country": "USA",
+    "state": "CA",
+    "city": "Mountain View",
+    "website": "https://www.openmedicineinstitute.org/",
+    "phone": "",
+    "tags": ["ME/CFS", "Research-aware"],
+    "autonomicFocused": false,
+    "notes": ""
+  },
+  {
+    "id": "bateman-horne",
+    "name": "Bateman Horne Center",
+    "country": "USA",
+    "state": "UT",
+    "city": "Salt Lake City",
+    "website": "https://batemanhornecenter.org/",
+    "phone": "",
+    "tags": ["ME/CFS", "Fibromyalgia", "OI/POTS"],
+    "autonomicFocused": true,
+    "notes": "Known for ME/CFS and autonomic evaluation."
+  },
+  {
+    "id": "dysautonomia-intl",
+    "name": "Dysautonomia International (Directory)",
+    "country": "USA",
+    "city": "—",
+    "website": "https://www.dysautonomiainternational.org/page.php?ID=14",
+    "phone": "",
+    "tags": ["Directory", "OI/POTS", "Autonomic"],
+    "autonomicFocused": true,
+    "notes": "External directory to find autonomic specialists."
+  }
+]

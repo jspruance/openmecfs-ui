@@ -1,195 +1,135 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import api from "@/lib/api";
-import { Search, ArrowRight } from "lucide-react";
-
-interface Paper {
-  pmid: string;
-  title: string;
-  authors: string[];
-  year?: number;
-  patient_summary?: string;
-}
+import Image from "next/image";
+import Link from "next/link";
+import ContactSection from "../components/ContactSection";
 
 export default function HomePage() {
-  const [papers, setPapers] = useState<Paper[]>([]);
-  const [query, setQuery] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [sort, setSort] = useState("year");
-  const [selectedTopic, setSelectedTopic] = useState("");
-
-  // 🧩 Unified fetch function with query, sort, and topic
-  const fetchPapers = async (q = "", sortValue = "year", topic = "") => {
-    setLoading(true);
-    try {
-      const endpoint = `/papers?q=${encodeURIComponent(
-        q
-      )}&sort=${sortValue}&topic=${encodeURIComponent(topic)}&limit=10`;
-      const res = await api.get(endpoint);
-      const result = Array.isArray(res.data)
-        ? res.data
-        : res.data.results || [];
-      setPapers(result);
-    } catch (error) {
-      console.error("Error fetching papers:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchPapers();
-  }, []);
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    fetchPapers(query, sort, selectedTopic);
-  };
-
   return (
-    <main className="min-h-screen flex flex-col bg-gray-50 text-gray-800 font-sans">
-      {/* 🧠 Header */}
-      <section className="text-center mt-10 mb-6 px-4">
-        <h2 className="text-2xl md:text-3xl font-semibold text-gray-900">
-          Open ME/CFS <span className="text-blue-600">Research Explorer</span>
-        </h2>
-        <p className="mt-2 text-sm text-gray-600 max-w-lg mx-auto leading-relaxed">
-          Explore summarized ME/CFS research using AI-powered search and
-          semantic discovery.
-        </p>
+    <>
+      {/* 🌅 HERO SECTION */}
+      <section className="relative w-full bg-gradient-to-br from-blue-700 via-blue-600 to-blue-400 text-white overflow-hidden">
+        <div className="max-w-7xl mx-auto px-10 md:px-16 py-28 flex flex-col md:flex-row items-center justify-between gap-10 md:gap-16">
+          {/* Left: Text + CTA */}
+          <div className="flex-1 text-center md:text-left">
+            <h1 className="text-4xl md:text-5xl font-bold leading-tight drop-shadow-md">
+              Advancing Research, <br />
+              <span className="text-blue-200">Empowering Hope</span>
+            </h1>
 
-        {/* 🔍 Search Bar */}
-        <form
-          onSubmit={handleSearch}
-          className="max-w-md mx-auto mt-5 flex items-center bg-white border border-gray-200 rounded-xl shadow-sm focus-within:ring-2 focus-within:ring-blue-500 transition"
-        >
-          <Search className="ml-3 text-gray-400" size={16} />
-          <input
-            type="text"
-            placeholder="Search ME/CFS research..."
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            className="flex-1 py-2.5 px-3 text-sm bg-transparent focus:outline-none"
-          />
-          <button
-            type="submit"
-            className="m-1 px-4 py-2 text-sm font-medium text-white rounded-lg bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 transition cursor-pointer"
-          >
-            Search
-          </button>
-        </form>
+            <p className="mt-4 text-lg text-blue-100 max-w-md mx-auto md:mx-0 leading-relaxed">
+              Open ME/CFS unites research, data, and community to accelerate
+              discovery and move closer to a cure for Myalgic Encephalomyelitis
+              / Chronic Fatigue Syndrome.
+            </p>
 
-        {/* 🔽 Filter Bar */}
-        <div className="max-w-3xl mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mt-6">
-          {/* Sort Dropdown */}
-          <select
-            value={sort}
-            onChange={(e) => {
-              setSort(e.target.value);
-              fetchPapers(query, e.target.value, selectedTopic);
-            }}
-            className="border border-gray-300 bg-white rounded-md px-3 pr-6 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer appearance-none relative"
-            style={{
-              backgroundImage:
-                "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 20 20'%3E%3Cpath fill='gray' d='M6 8l4 4 4-4H6z'/%3E%3C/svg%3E\")",
-              backgroundRepeat: "no-repeat",
-              backgroundPosition: "right 0.8rem center",
-              backgroundSize: "0.8rem",
-            }}
-          >
-            <option value="year">Newest</option>
-            <option value="title">Title (A–Z)</option>
-          </select>
-
-          {/* Topic Buttons */}
-          <div className="flex flex-wrap justify-center sm:justify-end gap-2">
-            {[
-              "Long COVID",
-              "Neurology",
-              "Immunology",
-              "Diagnostics",
-              "Treatment",
-            ].map((topic) => (
-              <button
-                key={topic}
-                onClick={() => {
-                  const newTopic = selectedTopic === topic ? "" : topic;
-                  setSelectedTopic(newTopic);
-                  fetchPapers(query, sort, newTopic);
-                }}
-                className={`px-3 py-1.5 rounded-md text-sm font-medium border transition-all duration-150 shadow-sm cursor-pointer ${
-                  selectedTopic === topic
-                    ? "bg-blue-100 text-blue-700 border-blue-300 shadow-md scale-[1.01]"
-                    : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50 hover:border-blue-300 hover:shadow-sm"
-                }`}
+            <div className="mt-10 flex flex-col sm:flex-row sm:items-center gap-4 justify-center md:justify-start">
+              {/* 🔥 Primary Donate Button */}
+              <Link
+                href="/donate"
+                className="
+                  relative inline-flex items-center justify-center
+                  px-8 py-3 text-lg font-semibold rounded-md
+                  bg-gradient-to-r from-yellow-300 via-amber-400 to-orange-400
+                  text-blue-900 shadow-[0_0_20px_rgba(255,200,100,0.6)]
+                  hover:shadow-[0_0_40px_rgba(255,200,100,0.8)]
+                  hover:from-yellow-400 hover:via-amber-300 hover:to-yellow-200
+                  hover:scale-[1.07] active:scale-[0.98]
+                  transition-all duration-300 ease-out
+                "
               >
-                {topic}
-              </button>
-            ))}
-            {selectedTopic && (
-              <button
-                onClick={() => {
-                  setSelectedTopic("");
-                  fetchPapers(query, sort, "");
-                }}
-                className="text-sm text-gray-500 underline ml-2 cursor-pointer hover:text-gray-700 transition-colors"
+                <span className="relative z-10">Donate</span>
+                <span className="absolute inset-0 rounded-md bg-white/30 opacity-0 hover:opacity-50 blur-sm transition-opacity duration-300"></span>
+              </Link>
+
+              {/* Secondary Button */}
+              <Link
+                href="/about"
+                className="
+                  border border-white/70 text-white px-8 py-3 rounded-md font-semibold
+                  hover:bg-white/15 hover:border-white transition-all duration-200
+                  hover:shadow-lg hover:scale-[1.03] active:scale-[0.98]
+                "
               >
-                Clear
-              </button>
-            )}
+                Learn More
+              </Link>
+            </div>
+          </div>
+
+          {/* Right: Image */}
+          <div className="flex-1 flex justify-center md:justify-end">
+            <Image
+              src="/hp-1.jpg"
+              alt="Medical research at microscope"
+              width={700}
+              height={450}
+              className="w-full max-w-lg rounded-2xl shadow-2xl object-contain hover:scale-[1.02] transition-transform duration-500 ease-out"
+              priority
+            />
           </div>
         </div>
       </section>
 
-      {/* 📄 Results */}
-      <section className="max-w-4xl mx-auto px-4 pb-12">
-        {loading ? (
-          <p className="text-center text-gray-500 animate-pulse text-sm">
-            Loading papers...
-          </p>
-        ) : papers.length === 0 ? (
-          <p className="text-center text-gray-500 text-sm">No results found.</p>
-        ) : (
-          <ul className="flex flex-col gap-3">
-            {papers.map((paper) => (
-              <li
-                key={paper.pmid}
-                className="group bg-white border border-gray-100 rounded-lg p-4 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-150 cursor-pointer"
-                onClick={() => window.open(`/paper/${paper.pmid}`, "_blank")}
-              >
-                <div className="flex items-start justify-between">
-                  <h3 className="font-medium text-gray-900 text-base group-hover:text-blue-600 leading-snug transition-colors">
-                    {paper.title}
-                  </h3>
-                  {/* 🏷️ Year Badge */}
-                  {paper.year && (
-                    <span className="ml-2 text-xs font-semibold bg-blue-100 text-blue-700 px-2 py-0.5 rounded-md shrink-0">
-                      {paper.year}
-                    </span>
-                  )}
-                  <ArrowRight
-                    className="text-gray-300 group-hover:text-blue-500 transition-all opacity-0 group-hover:opacity-100 ml-2"
-                    size={16}
-                  />
-                </div>
+      {/* 🌿 OUR MISSION SECTION */}
+      <section className="w-full bg-white text-gray-800 py-24">
+        <div className="max-w-7xl mx-auto px-10 md:px-16 flex flex-col md:flex-row items-center gap-12 md:gap-20">
+          {/* Left: Image */}
+          <div className="flex-1 flex justify-center md:justify-start">
+            <Image
+              src="/diagnostic_lab.png"
+              alt="Researchers collaborating in a diagnostic lab"
+              width={600}
+              height={400}
+              className="w-full max-w-md rounded-2xl shadow-lg object-cover"
+            />
+          </div>
 
-                <p className="text-xs italic text-gray-500 mt-1.5 leading-snug">
-                  {Array.isArray(paper.authors)
-                    ? paper.authors.join(", ")
-                    : paper.authors}
-                </p>
+          {/* Right: Text */}
+          <div className="flex-1 text-center md:text-left">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              Our Mission
+            </h2>
+            <p className="text-lg text-gray-600 leading-relaxed mb-6">
+              At <strong>Open ME/CFS</strong>, we believe that transparency,
+              collaboration, and open access to research are the keys to
+              accelerating discovery. By connecting data, researchers, and the
+              community, we aim to unlock new insights and move the world closer
+              to effective treatments—and ultimately, a cure—for Myalgic
+              Encephalomyelitis / Chronic Fatigue Syndrome.
+            </p>
 
-                {paper.patient_summary && (
-                  <p className="text-sm text-gray-600 mt-2 line-clamp-2 leading-relaxed">
-                    {paper.patient_summary}
-                  </p>
-                )}
-              </li>
-            ))}
-          </ul>
-        )}
+            <Link
+              href="/about"
+              className="inline-block bg-blue-600 text-white px-6 py-3 rounded-md font-semibold shadow-md hover:bg-blue-700 hover:shadow-lg transition"
+            >
+              Learn More
+            </Link>
+          </div>
+        </div>
       </section>
-    </main>
+
+      {/* 🔬 EXPLORE RESEARCH SECTION */}
+      <section className="w-full bg-gradient-to-b from-blue-50 to-white text-gray-800 py-24 border-t border-gray-100">
+        <div className="max-w-5xl mx-auto text-center px-8">
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+            Explore ME/CFS Research
+          </h2>
+          <p className="text-lg text-gray-600 leading-relaxed mb-8 max-w-2xl mx-auto">
+            Browse our AI-powered library of summarized ME/CFS studies. Search,
+            discover, and learn from the latest research—all in plain language.
+          </p>
+
+          <Link
+            href="/research"
+            className="inline-block bg-blue-600 text-white px-8 py-3 rounded-md font-semibold shadow-md hover:bg-blue-700 hover:shadow-lg transition"
+          >
+            Browse Research
+          </Link>
+        </div>
+      </section>
+
+      {/* 📬 CONTACT SECTION */}
+      <ContactSection />
+    </>
   );
 }

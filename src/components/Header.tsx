@@ -13,7 +13,7 @@ export default function Header() {
           className="flex items-center gap-2 hover:opacity-90 transition"
         >
           <Image
-            src="/logo-1.png"
+            src="/logo-1-trans-bg.png"
             alt="Open ME/CFS Logo"
             width={36}
             height={36}
@@ -25,27 +25,52 @@ export default function Header() {
           </span>
         </Link>
 
-        {/* Right: Nav Links */}
+        {/* Right: Navigation Links */}
         <nav className="flex items-center gap-6 text-sm md:text-base">
+          <Link
+            href="/"
+            className="text-gray-600 hover:text-gray-900 transition-colors"
+          >
+            Home
+          </Link>
+          <Link
+            href="/mecfs"
+            className="text-gray-600 hover:text-gray-900 transition-colors"
+          >
+            ME/CFS
+          </Link>
+          <Link
+            href="/patients"
+            className="text-gray-600 hover:text-gray-900 transition-colors"
+          >
+            Patients
+          </Link>
+          <Link
+            href="/research"
+            className="text-gray-600 hover:text-gray-900 transition-colors"
+          >
+            Research
+          </Link>
           <Link
             href="/about"
             className="text-gray-600 hover:text-gray-900 transition-colors"
           >
             About
           </Link>
+          {/* 🔗 Contact Anchor */}
           <Link
-            href="/docs"
+            href="/#contact"
+            scroll={true}
             className="text-gray-600 hover:text-gray-900 transition-colors"
           >
-            Docs
+            Contact
           </Link>
+          {/* 💛 Donate Button */}
           <Link
-            href="https://github.com/openmecfs"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-gray-600 hover:text-gray-900 transition-colors"
+            href="/donate"
+            className="bg-blue-600 text-white px-4 py-2 rounded-md font-medium shadow-md hover:bg-blue-700 hover:shadow-lg transition"
           >
-            GitHub
+            Donate
           </Link>
         </nav>
       </div>

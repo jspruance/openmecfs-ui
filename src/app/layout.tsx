@@ -2,6 +2,7 @@ import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Inter } from "next/font/google";
+import LayoutWrapper from "@/components/LayoutWrapper";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -17,11 +18,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={inter.className}>
-      <body className="bg-gray-50 text-gray-900">
+      <body className="bg-white text-gray-900">
+        {" "}
+        {/* change from bg-gray-50 */}
         <Header />
-        <main className="max-w-6xl mx-auto px-6 py-16 space-y-10">
-          {children}
-        </main>
+        <main className="min-h-screen">{children}</main>{" "}
+        {/* remove max-w/px/py here */}
         <Footer />
       </body>
     </html>
