@@ -8,7 +8,6 @@ export const metadata = {
 };
 
 function groupTests(tests: string[] = []) {
-  // Lightweight grouping so the UI feels curated without hardcoding your content.
   const baselineMatch =
     /(cbc|cmp|tsh|free\s*t4|ferritin|iron|b12|folate|vitamin\s*d|crp|esr|hba1c|lipid)/i;
   const baseline = tests.filter((t) => baselineMatch.test(t));
@@ -44,17 +43,58 @@ export default function WorkupPage() {
         </div>
       </header>
 
-      {/* Three-column content */}
-      <section className="grid lg:grid-cols-3 gap-6">
+      {/* --- Full-width At the Bedside --- */}
+      <aside className="rounded-xl border border-slate-200 bg-white p-5">
+        <h2 className="text-lg font-semibold text-slate-900">At the Bedside</h2>
+        <ul className="mt-2 space-y-2 text-slate-800">
+          <li>
+            <span className="font-medium">Validate PEM/OI:</span> ask about
+            delayed worsening after modest activity; screen upright symptoms.
+          </li>
+          <li>
+            <span className="font-medium">Do orthostatics:</span> lying→standing
+            HR/BP at 0/2/5/10 min; document symptoms.
+          </li>
+          <li>
+            <span className="font-medium">Start low-risk support:</span> pacing
+            education; fluids/salt/compression if OI suspected.
+          </li>
+        </ul>
+
+        <div className="mt-5 rounded-lg border border-blue-200 bg-blue-50 p-4">
+          <div className="text-sm font-semibold text-blue-900">
+            What to order first
+          </div>
+          <p className="mt-2 text-sm text-blue-900/90">
+            Begin with a concise panel to exclude common mimics and establish
+            baselines. Expand only as history/exam directs.
+          </p>
+          {baseline.length > 0 && (
+            <div className="mt-3 flex flex-wrap gap-2">
+              {baseline.slice(0, 6).map((t, i) => (
+                <span
+                  key={`chip-${i}`}
+                  className="rounded-full border border-blue-300 bg-white px-2.5 py-1 text-xs text-blue-800"
+                >
+                  {t}
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+      </aside>
+
+      {/* --- Two-column section --- */}
+      <section className="grid md:grid-cols-2 gap-8">
         {/* Baseline / Targeted Tests */}
-        <article className="rounded-xl border border-slate-200 bg-white p-5">
+        <article className="h-full flex flex-col rounded-xl border border-slate-200 bg-white p-5">
           <h2 className="text-lg font-semibold text-slate-900">
             Baseline / Targeted Tests
           </h2>
 
           {/* Baseline (Order first visit) */}
           {baseline.length > 0 && (
-            <div className="mt-3">
+            <div className="mt-5">
               <div className="text-xs font-semibold uppercase text-slate-500">
                 First-visit order set
               </div>
@@ -68,7 +108,7 @@ export default function WorkupPage() {
 
           {/* Targeted / As indicated */}
           {targeted.length > 0 && (
-            <div className="mt-5">
+            <div className="mt-7">
               <div className="text-xs font-semibold uppercase text-slate-500">
                 As indicated by history / exam
               </div>
@@ -82,7 +122,7 @@ export default function WorkupPage() {
         </article>
 
         {/* Common Mimics */}
-        <article className="rounded-xl border border-slate-200 bg-white p-5">
+        <article className="h-full flex flex-col justify-between rounded-xl border border-slate-200 bg-white p-5">
           <h2 className="text-lg font-semibold text-slate-900">
             Common Mimics
           </h2>
@@ -109,49 +149,6 @@ export default function WorkupPage() {
             </ul>
           </div>
         </article>
-
-        {/* At the Bedside / Quick Guidance */}
-        <aside className="rounded-xl border border-slate-200 bg-white p-5">
-          <h2 className="text-lg font-semibold text-slate-900">
-            At the Bedside
-          </h2>
-          <ul className="mt-2 space-y-2 text-slate-800">
-            <li>
-              <span className="font-medium">Validate PEM/OI:</span> ask about
-              delayed worsening after modest activity; screen upright symptoms.
-            </li>
-            <li>
-              <span className="font-medium">Do orthostatics:</span>{" "}
-              lying→standing HR/BP at 0/2/5/10 min; document symptoms.
-            </li>
-            <li>
-              <span className="font-medium">Start low-risk support:</span>{" "}
-              pacing education; fluids/salt/compression if OI suspected.
-            </li>
-          </ul>
-
-          <div className="mt-5 rounded-lg border border-blue-200 bg-blue-50 p-4">
-            <div className="text-sm font-semibold text-blue-900">
-              What to order first
-            </div>
-            <p className="mt-2 text-sm text-blue-900/90">
-              Begin with a concise panel to exclude common mimics and establish
-              baselines. Expand only as history/exam directs.
-            </p>
-            {baseline.length > 0 && (
-              <div className="mt-3 flex flex-wrap gap-2">
-                {baseline.slice(0, 6).map((t, i) => (
-                  <span
-                    key={`chip-${i}`}
-                    className="rounded-full border border-blue-300 bg-white px-2.5 py-1 text-xs text-blue-800"
-                  >
-                    {t}
-                  </span>
-                ))}
-              </div>
-            )}
-          </div>
-        </aside>
       </section>
 
       <p className="text-xs text-slate-500">{provider.footer}</p>

@@ -1,4 +1,3 @@
-// app/patients/doctors/page.tsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -45,8 +44,10 @@ export default function FeaturedClinicsPage() {
         </header>
 
         {loading ? (
-          <div className="rounded-xl border border-gray-200 p-8 text-center text-gray-600">
-            Loading featured clinics…
+          <div className="rounded-xl border border-gray-200 p-8 text-center flex flex-col items-center justify-center text-gray-600">
+            {/* Spinner */}
+            <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-3"></div>
+            <p>Loading featured clinics…</p>
           </div>
         ) : err ? (
           <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-red-800">
@@ -58,9 +59,9 @@ export default function FeaturedClinicsPage() {
             admin screen.
           </div>
         ) : (
-          <ul className="grid md:grid-cols-2 gap-6">
+          <ul className="grid md:grid-cols-2 gap-6 items-stretch">
             {clinics.map((c) => (
-              <li key={c.id}>
+              <li key={c.id} className="h-full">
                 <ClinicCard c={c} />
               </li>
             ))}

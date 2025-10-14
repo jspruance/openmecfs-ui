@@ -15,12 +15,12 @@ type Item = {
 };
 
 const items: Item[] = [
-  {
-    key: "onepager",
-    title: "One-Pager (Patient/Clinician Handout)",
-    desc: "Single-page overview. Good for quick reference and patient education.",
-    href: "/one-pager", // if your app exposes /one-pager; otherwise swap to /api/one-pager
-  },
+  //   {
+  //     key: "onepager",
+  //     title: "One-Pager (Patient/Clinician Handout)",
+  //     desc: "Single-page overview. Good for quick reference and patient education.",
+  //     href: "/one-pager", // if your app exposes /one-pager; otherwise swap to /api/one-pager
+  //   },
   {
     key: "quickstart",
     title: "Quick-Start (10–15 min)",
@@ -51,12 +51,12 @@ const items: Item[] = [
     desc: "PEM prevention, sleep & pain basics, OI measures, deficiencies.",
     href: "/api/provider-pdf?doc=management",
   },
-  {
-    key: "referrals",
-    title: "Referrals (Template)",
-    desc: "Ready-to-copy referral content for specialty clinics.",
-    href: "/api/provider-pdf?doc=referrals",
-  },
+  //   {
+  //     key: "referrals",
+  //     title: "Referrals (Template)",
+  //     desc: "Ready-to-copy referral content for specialty clinics.",
+  //     href: "/api/provider-pdf?doc=referrals",
+  //   },
   // If you have a combined pack endpoint, uncomment and set the href:
   // {
   //   key: "pack",

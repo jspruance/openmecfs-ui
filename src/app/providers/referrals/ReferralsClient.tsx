@@ -6,6 +6,9 @@ import type { Referrals } from "@/lib/providerContent";
 const CLINIC_OPTIONS = [
   "Stanford Health Care — ME/CFS / Post-Infectious Clinic",
   "INIM (Institute for Neuro-Immune Medicine, NSU)",
+  "Bateman Horne Center",
+  "Center for Complex Diseases",
+  "Charité Fatigue Center",
 ];
 
 export default function ReferralsClient({
@@ -22,25 +25,48 @@ export default function ReferralsClient({
       : CLINIC_OPTIONS[0]
   );
 
+  // Optional patient and clinician info
+  const [patientName, setPatientName] = useState("");
+  const [dob, setDob] = useState("");
+  const [referrer, setReferrer] = useState("");
+
   // Textarea content
   const [text, setText] = useState<string>("");
 
-  // Build initial text once (or if template/clinic changes)
-  const initial = useMemo(() => {
+  // Build dynamic referral note whenever tokens change
+  const baseTemplate = useMemo(() => {
     const tpl = r?.template ?? "";
     const today = new Date().toLocaleDateString(undefined, {
       year: "numeric",
       month: "2-digit",
       day: "2-digit",
     });
-    return tpl.replace("[TODAY]", today).replace("[DEST_CLINIC]", clinic);
-  }, [r?.template, clinic]);
+    return tpl
+      .replace("[TODAY]", today)
+      .replace("[DEST_CLINIC]", clinic)
+      .replace("[PATIENT_NAME]", patientName || "[PATIENT_NAME]")
+      .replace("[DOB]", dob || "[DOB]")
+      .replace("[REFERRER_NAME]", referrer || "[REFERRER_NAME]");
+  }, [r?.template, clinic, patientName, dob, referrer]);
 
-  // Prefill on mount and when template/clinic changes (but keep user edits otherwise)
+  // Prefill or update text (but preserve manual edits)
+  // ✅ Always re-render template when clinic or patient info changes,
+  // but only if the user hasn’t made manual edits beyond token fields
   useEffect(() => {
-    // if user hasn't typed anything yet, set it; if they cleared it entirely, re-seed
-    setText((prev) => (prev?.trim().length ? prev : initial));
-  }, [initial]);
+    const defaultTemplate = baseTemplate.trim();
+
+    // Detect if user has edited text manually (beyond token replacements)
+    const userHasEdited =
+      text &&
+      !text.includes("[PATIENT_NAME]") &&
+      !text.includes("[DOB]") &&
+      !text.includes("[REFERRER_NAME]") &&
+      !text.includes("[DEST_CLINIC]");
+
+    if (!userHasEdited) {
+      setText(defaultTemplate);
+    }
+  }, [baseTemplate]);
 
   const copyToClipboard = async () => {
     try {
@@ -54,10 +80,14 @@ export default function ReferralsClient({
   };
 
   const fillExample = () => {
+    setPatientName("Jane Doe");
+    setDob("01/01/1985");
+    setReferrer("Dr. Smith");
+    setClinic("Bateman Horne Center");
     setText((t) =>
-      (t || initial)
-        .replace("[PATIENT_NAME]", "First Last")
-        .replace("[DOB]", "01/01/1980")
+      (t || baseTemplate)
+        .replace("[PATIENT_NAME]", "Jane Doe")
+        .replace("[DOB]", "01/01/1985")
         .replace("[COGNITIVE_OR_OI]", "orthostatic intolerance (OI)")
         .replace("[ONSET_YEARS]", "2019–2020")
         .replace("[FUNCTIONAL_STATUS]", "predominantly housebound")
@@ -68,7 +98,7 @@ export default function ReferralsClient({
         .replace("[UPRIGHT_TOL]", "< 10 min standing, < 30 min sitting")
         .replace("[PEM_DURATION]", "several days")
         .replace("[NOTES]", "frequent crashes after minimal activity")
-        .replace("[REFERRER_NAME]", "Your Name, MD")
+        .replace("[REFERRER_NAME]", "Dr. Smith")
         .replace("[CLINIC_NAME]", "Example Family Medicine")
         .replace("[CLINIC_PHONE]", "(555) 555-5555")
         .replace("[CLINIC_FAX]", "(555) 555-5556")
@@ -77,6 +107,7 @@ export default function ReferralsClient({
 
   return (
     <div className="space-y-6">
+      {/* Hero */}
       <header className="rounded-2xl bg-gradient-to-r from-blue-600 to-blue-400 text-white p-6">
         <div className="flex items-center justify-between gap-4">
           <h1 className="text-2xl font-bold">{r?.title ?? "Referrals"}</h1>
@@ -100,10 +131,53 @@ export default function ReferralsClient({
         ) : null}
       </header>
 
+      {/* Patient Info Inputs */}
+      <div className="rounded-xl border border-slate-200 bg-white p-5 space-y-4">
+        <div className="grid md:grid-cols-3 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-slate-700">
+              Patient Name (optional)
+            </label>
+            <input
+              type="text"
+              value={patientName}
+              onChange={(e) => setPatientName(e.target.value)}
+              className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+              placeholder="e.g. Jane Doe"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-700">
+              Date of Birth (optional)
+            </label>
+            <input
+              type="text"
+              value={dob}
+              onChange={(e) => setDob(e.target.value)}
+              className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+              placeholder="MM/DD/YYYY"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-700">
+              Referring Clinician (optional)
+            </label>
+            <input
+              type="text"
+              value={referrer}
+              onChange={(e) => setReferrer(e.target.value)}
+              className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+              placeholder="e.g. Dr. Smith"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Referral Template Editor */}
       <section className="rounded-xl border border-slate-200 bg-white p-0 overflow-hidden">
-        {/* toolbar */}
-        <div className="flex items-center justify-between px-4 py-3 bg-slate-50 border-b border-slate-200">
-          <div className="flex items-center gap-3">
+        {/* Toolbar */}
+        <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 bg-slate-50 border-b border-slate-200">
+          <div className="flex items-center gap-3 flex-wrap">
             <label className="text-sm text-slate-700">Destination clinic</label>
             <select
               value={clinic}
@@ -126,13 +200,13 @@ export default function ReferralsClient({
           </button>
         </div>
 
-        {/* helper note */}
+        {/* Helper note */}
         <div className="px-4 pt-3 text-xs text-slate-500">
-          This is for your notes and won’t auto-edit beyond clinic/date tokens.
-          Edit freely.
+          Auto-updates when clinic or patient info changes. You can freely edit
+          the text below before copying.
         </div>
 
-        {/* textarea */}
+        {/* Textarea */}
         <textarea
           id="referral-ta"
           value={text}

@@ -53,8 +53,7 @@ export default function ClinicCard({ c }: { c: ClinicType }) {
   );
 
   return (
-    <div className="rounded-2xl border border-gray-200 p-6 hover:shadow-md transition">
-      {/* Title + location */}
+    <div className="h-full flex flex-col justify-between rounded-2xl border border-gray-200 p-6 hover:shadow-md transition">
       <div className="min-w-0">
         <h3 className="text-lg font-semibold text-gray-900 break-normal hyphens-auto">
           {c.name}

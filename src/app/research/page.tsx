@@ -145,9 +145,11 @@ export default function ResearchPage() {
       {/* 📄 Results */}
       <section className="max-w-4xl mx-auto px-4 pb-12">
         {loading ? (
-          <p className="text-center text-gray-500 animate-pulse text-sm">
-            Loading papers...
-          </p>
+          <div className="rounded-xl border border-gray-200 p-8 text-center flex flex-col items-center justify-center text-gray-600">
+            {/* Spinner */}
+            <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-3"></div>
+            <p>Loading papers...</p>
+          </div>
         ) : papers.length === 0 ? (
           <p className="text-center text-gray-500 text-sm">No results found.</p>
         ) : (
