@@ -134,7 +134,7 @@ export default function DoctorsDirectoryPage() {
   const [onlyAutonomic, setOnlyAutonomic] = useState(false);
   const [sortBy, setSortBy] = useState<"name" | "country">("name");
 
-  // Fetch clinics from your API
+  // Fetch clinics
   useEffect(() => {
     let mounted = true;
     (async () => {
@@ -162,6 +162,10 @@ export default function DoctorsDirectoryPage() {
       STATE_LOOKUP[needleRaw] ||
       Object.keys(STATE_NAMES).includes(needleRaw.toUpperCase());
 
+    const isTwoLetterState =
+      needleRaw.length === 2 &&
+      Object.keys(STATE_NAMES).includes(needleRaw.toUpperCase());
+
     let list = clinics.filter((c) => {
       const auto = (c as any).autonomicFocused ?? c.autonomic_focused ?? false;
 
@@ -177,7 +181,7 @@ export default function DoctorsDirectoryPage() {
           ? STATE_NAMES[c.state.toUpperCase()]
           : "";
 
-      // If user explicitly searched for a state, restrict to that state
+      // --- Case 1: explicit state search ("UT", "Utah", etc.) ---
       if (isStateSearch && country === "USA") {
         return (
           c.state?.toLowerCase() === needle ||
@@ -185,7 +189,12 @@ export default function DoctorsDirectoryPage() {
         );
       }
 
-      // Otherwise, general full-text match (includes ZIP, city, notes, etc.)
+      // --- Case 2: short 2-letter code (avoid substring matches like "autonomic") ---
+      if (isTwoLetterState) {
+        return c.state?.toLowerCase() === needleRaw;
+      }
+
+      // --- Case 3: general text search (city, ZIP, notes, etc.) ---
       const hay = [
         c.name,
         c.city,
@@ -200,7 +209,9 @@ export default function DoctorsDirectoryPage() {
         .join(" • ")
         .toLowerCase();
 
-      return hay.includes(needle);
+      const escaped = needle.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const regex = new RegExp(`\\b${escaped}\\b`, "i"); // word boundary match
+      return regex.test(hay);
     });
 
     list = [...list].sort((a, b) => {
@@ -227,7 +238,6 @@ export default function DoctorsDirectoryPage() {
               waitlists are common.
             </p>
 
-            {/* Quick cross-links */}
             <div className="mt-2 flex items-center gap-4">
               <Link
                 href="/patients/doctors"
@@ -249,7 +259,6 @@ export default function DoctorsDirectoryPage() {
         {/* Filters / Search Panel */}
         <div className="rounded-2xl border border-gray-200 bg-gray-50 p-5 flex flex-col md:flex-row md:items-end md:justify-between gap-4">
           <div className="flex-1 flex flex-col sm:flex-row gap-3">
-            {/* Search input */}
             <input
               type="text"
               value={q}
@@ -258,7 +267,6 @@ export default function DoctorsDirectoryPage() {
               className="flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
 
-            {/* Country selector */}
             <select
               value={country}
               onChange={(e) =>
@@ -271,7 +279,6 @@ export default function DoctorsDirectoryPage() {
               ))}
             </select>
 
-            {/* State selector (only visible when USA selected) */}
             {country === "USA" && (
               <select
                 value={stateCode}
@@ -288,7 +295,6 @@ export default function DoctorsDirectoryPage() {
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
-            {/* Autonomic filter */}
             <label className="flex items-center space-x-2 text-sm text-gray-700">
               <input
                 type="checkbox"
@@ -299,7 +305,6 @@ export default function DoctorsDirectoryPage() {
               <span>Only autonomic-focused</span>
             </label>
 
-            {/* Sort selector */}
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as "name" | "country")}
@@ -425,7 +430,7 @@ export default function DoctorsDirectoryPage() {
                       )}
                     </div>
 
-                    {/* Right: Address panel */}
+                    {/* Address Panel */}
                     <aside className="flex flex-col justify-between">
                       {addrLines.length > 0 && (
                         <div className="rounded-xl border border-gray-200 bg-white p-4 h-full">
@@ -457,7 +462,6 @@ export default function DoctorsDirectoryPage() {
           </ul>
         )}
 
-        {/* Footer note */}
         <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-amber-900 text-sm">
           <strong>Heads up:</strong> This directory is informational only and
           not a guarantee of care or outcomes. It isn’t medical advice. Always
