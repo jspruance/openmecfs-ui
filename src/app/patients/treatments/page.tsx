@@ -8,6 +8,7 @@ import {
   Beaker,
   Battery,
   Info,
+  Sparkles,
 } from "lucide-react";
 
 export const metadata = {
@@ -109,6 +110,20 @@ const CARDS: Card[] = [
       "Evidence quality varies; watch for interactions and over-supplementation.",
   },
   {
+    title: "Complementary & Relaxation Therapies",
+    icon: <Sparkles className="text-blue-600" />,
+    tag: "Supportive",
+    summary:
+      "Gentle mind-body and complementary approaches that may aid stress reduction, sleep, or pain relief when used appropriately.",
+    bullets: [
+      "Examples: meditation, acupuncture, gentle massage, restorative yoga, breathing exercises.",
+      "Use only low-intensity, non-exertional forms; avoid pushing past energy limits.",
+      "May improve well-being, anxiety, or sleep; not disease-modifying.",
+    ],
+    caution:
+      "Evidence is limited; avoid overexertion or programs claiming cure.",
+  },
+  {
     title: "General Supplements & Symptom Aids",
     icon: <Pill className="text-blue-600" />,
     tag: "Supportive",
@@ -159,30 +174,33 @@ export default function TreatmentsPage() {
         </p>
       </header>
 
-      <section className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
+      {/* Grid layout (2 cards per row, equal heights) */}
+      <section className="grid sm:grid-cols-1 md:grid-cols-2 gap-8 auto-rows-fr">
         {CARDS.map((c) => (
           <article
             key={c.title}
-            className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm hover:shadow-md transition"
+            className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm hover:shadow-md transition flex flex-col justify-between"
           >
-            <div className="flex items-start gap-3">
-              <div className="p-2 rounded-lg bg-gray-50">{c.icon}</div>
-              <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <h2 className="text-lg font-semibold text-gray-900">
-                    {c.title}
-                  </h2>
-                  <Tag label={c.tag} />
+            <div>
+              <div className="flex items-start gap-3">
+                <div className="p-2 rounded-lg bg-gray-50">{c.icon}</div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-lg font-semibold text-gray-900">
+                      {c.title}
+                    </h2>
+                    <Tag label={c.tag} />
+                  </div>
+                  <p className="mt-1 text-gray-700 text-sm">{c.summary}</p>
                 </div>
-                <p className="mt-1 text-gray-700 text-sm">{c.summary}</p>
               </div>
-            </div>
 
-            <ul className="mt-3 list-disc pl-5 text-sm text-gray-700 space-y-1">
-              {c.bullets.map((b, i) => (
-                <li key={i}>{b}</li>
-              ))}
-            </ul>
+              <ul className="mt-3 list-disc pl-5 text-sm text-gray-700 space-y-1">
+                {c.bullets.map((b, i) => (
+                  <li key={i}>{b}</li>
+                ))}
+              </ul>
+            </div>
 
             {c.caution && (
               <p className="mt-3 text-xs text-amber-700 bg-amber-50 border border-amber-100 rounded-md p-2">
