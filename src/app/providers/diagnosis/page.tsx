@@ -6,12 +6,13 @@ import {
   CheckCircle2,
   AlertTriangle,
   Stethoscope,
+  FileText,
 } from "lucide-react";
 
 export const metadata = {
   title: "Diagnosis (IOM/NAM 2015) — Open ME/CFS",
   description:
-    "Clinician guide to diagnosing ME/CFS using IOM/NAM 2015 criteria: core features, practical assessment steps, pitfalls to avoid, and documentation tips.",
+    "Clinician guide to diagnosing ME/CFS using IOM/NAM 2015 criteria: core features, practical assessment steps, pitfalls to avoid, ICD-10-CM code, and documentation tips.",
 };
 
 export default function DiagnosisPage() {
@@ -127,6 +128,29 @@ export default function DiagnosisPage() {
             </li>
           </ul>
         </article>
+      </section>
+
+      {/* Diagnosis Code */}
+      <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+        <h2 className="flex items-center gap-2 text-xl font-semibold text-slate-900">
+          <FileText className="h-5 w-5 text-indigo-600" />
+          Diagnosis Code
+        </h2>
+        <div className="mt-3 space-y-2 text-slate-700">
+          <p>
+            <span className="font-medium text-slate-900">ICD-10-CM Code:</span>{" "}
+            <code className="bg-slate-100 rounded px-2 py-1">G93.32</code>
+          </p>
+          <p>
+            <span className="font-medium">Description:</span> Myalgic
+            encephalomyelitis/chronic fatigue syndrome
+          </p>
+          <p className="text-sm text-slate-600">
+            Use this code for patients meeting IOM/NAM 2015 diagnostic criteria.
+            Avoid older or nonspecific codes such as G93.3 (postviral fatigue
+            syndrome) unless clearly indicated.
+          </p>
+        </div>
       </section>
 
       {/* Notes & Documentation helpers */}

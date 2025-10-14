@@ -3,6 +3,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Inter } from "next/font/google";
 import LayoutWrapper from "@/components/LayoutWrapper";
+import Script from "next/script";
 
 export const metadata = {
   title: "Open ME/CFS — Collaborative ME/CFS Research & Education Platform",
@@ -49,6 +50,15 @@ export const metadata = {
     creator: "@openmecfs",
     images: ["/og-image.jpg"],
   },
+  icons: {
+    icon: [
+      { url: "/favicon.ico" },
+      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+    ],
+    apple: "/apple-touch-icon.png",
+  },
+  manifest: "/site.webmanifest",
 };
 
 const inter = Inter({ subsets: ["latin"] });
@@ -58,14 +68,24 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const isProd = process.env.NODE_ENV === "production";
+  const umamiSrc = process.env.NEXT_PUBLIC_UMAMI_SCRIPT_SRC;
+  const umamiId = process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID;
+
   return (
     <html lang="en" className={inter.className}>
       <body className="bg-white text-gray-900">
-        {" "}
-        {/* change from bg-gray-50 */}
+        {/* Umami (prod only) */}
+        {isProd && umamiSrc && umamiId && (
+          <Script
+            src={umamiSrc}
+            data-website-id={umamiId}
+            strategy="afterInteractive"
+          />
+        )}
+
         <Header />
-        <main className="min-h-screen">{children}</main>{" "}
-        {/* remove max-w/px/py here */}
+        <main className="min-h-screen">{children}</main>
         <Footer />
       </body>
     </html>

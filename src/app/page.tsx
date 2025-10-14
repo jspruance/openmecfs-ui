@@ -27,6 +27,7 @@ export default function HomePage() {
               {/* 🔥 Primary Donate Button */}
               <Link
                 href="/donate"
+                onClick={() => (window as any).umami?.track("donate_click")}
                 className="
                   relative inline-flex items-center justify-center
                   px-8 py-3 text-lg font-semibold rounded-md

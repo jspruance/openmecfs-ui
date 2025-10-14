@@ -1,4 +1,3 @@
-// app/api/contact/route.ts
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
 
@@ -13,14 +12,15 @@ export async function POST(req: Request) {
       subject = "",
       message = "",
       website = "",
+      turnstile = "",
     } = body ?? {};
 
-    // Honeypot: if filled, it's a bot
+    // 🧱 Honeypot check
     if (website?.trim().length > 0) {
       return NextResponse.json({ ok: true }, { status: 200 });
     }
 
-    // Basic validation
+    // 🧠 Basic validation
     if (!email || !message) {
       return NextResponse.json(
         { ok: false, error: "Email and message are required." },
@@ -28,10 +28,40 @@ export async function POST(req: Request) {
       );
     }
 
+    // 🧩 Verify Cloudflare Turnstile
+    if (!turnstile) {
+      return NextResponse.json(
+        { ok: false, error: "Captcha token missing." },
+        { status: 400 }
+      );
+    }
+
+    const verifyRes = await fetch(
+      "https://challenges.cloudflare.com/turnstile/v0/siteverify",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({
+          secret: process.env.TURNSTILE_SECRET_KEY!,
+          response: turnstile,
+        }),
+      }
+    );
+
+    const verification = await verifyRes.json();
+
+    if (!verification.success) {
+      console.error("Turnstile verification failed:", verification);
+      return NextResponse.json(
+        { ok: false, error: "Captcha verification failed." },
+        { status: 400 }
+      );
+    }
+
     const FROM = process.env.CONTACT_FROM!;
     const TO = process.env.CONTACT_TO!;
 
-    // 1) Send to you (notification)
+    // 📨 1) Notify admin
     const html = `
       <div style="font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;line-height:1.5;">
         <h2 style="margin:0 0 8px;">New Contact Form Submission</h2>
@@ -47,14 +77,14 @@ export async function POST(req: Request) {
     await resend.emails.send({
       from: FROM,
       to: TO,
-      reply_to: email, // lets you reply straight to the sender
+      reply_to: email,
       subject: subject?.trim()
         ? `[Open ME/CFS] ${subject}`
         : "[Open ME/CFS] New Contact",
       html,
     });
 
-    // 2) Courtesy auto-reply to sender (optional but nice)
+    // 🪶 2) Courtesy auto-reply
     const confirmHtml = `
       <div style="font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;line-height:1.6;">
         <p>Hi${name ? ` ${name}` : ""},</p>

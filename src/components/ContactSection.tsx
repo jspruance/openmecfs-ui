@@ -2,12 +2,14 @@
 
 import { useState } from "react";
 import { Mail, User, MessageSquare } from "lucide-react";
+import Turnstile from "react-turnstile"; // ✅ correct for this package
 
 export default function ContactSection() {
   const [state, setState] = useState<"idle" | "loading" | "success" | "error">(
     "idle"
   );
   const [error, setError] = useState<string | null>(null);
+  const [token, setToken] = useState("");
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -22,12 +24,13 @@ export default function ContactSection() {
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({ ...payload, turnstile: token }),
       });
       const json = await res.json();
       if (!res.ok || !json.ok) throw new Error(json.error || "Failed to send");
       setState("success");
       form.reset();
+      setToken(""); // reset captcha
     } catch (err: any) {
       setError(err?.message || "Something went wrong.");
       setState("error");
@@ -113,9 +116,18 @@ export default function ContactSection() {
             </div>
           </label>
 
+          {/* ✅ Cloudflare Turnstile (react-turnstile) */}
+          <div className="flex justify-center my-2">
+            <Turnstile
+              sitekey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY!} // lowercase "sitekey" is required here
+              onVerify={(token) => setToken(token)} // this prop name is also different
+              theme="light"
+            />
+          </div>
+
           <button
             type="submit"
-            disabled={state === "loading"}
+            disabled={state === "loading" || !token}
             className="cursor-pointer inline-flex items-center justify-center px-6 py-3 rounded-md font-semibold bg-blue-600 text-white hover:bg-blue-700 hover:shadow-lg transition disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {state === "loading" ? "Sending…" : "Send Message"}

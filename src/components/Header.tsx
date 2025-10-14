@@ -99,6 +99,7 @@ export default function Header() {
           {/* 💛 Donate Button */}
           <Link
             href="/donate"
+            onClick={(window as any).umami?.track("donate_click")}
             className="bg-blue-600 text-white px-4 py-2 rounded-md font-medium shadow-md hover:bg-blue-700 hover:shadow-lg transition"
           >
             Donate
