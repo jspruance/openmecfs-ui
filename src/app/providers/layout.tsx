@@ -14,6 +14,7 @@ export default function ProvidersLayout({
       label: "Orthostatic Intolerance",
     },
     { href: "/providers/management", label: "Management Basics" },
+    { href: "/providers/referrals", label: "Referrals" },
     { href: "/providers/downloads", label: "Downloads" },
   ];
   return (
