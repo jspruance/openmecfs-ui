@@ -55,6 +55,13 @@ export type Management = {
   supplements?: string[];
 };
 
+export type Referrals = {
+  title?: string;
+  intro?: string;
+  defaultClinic?: string;
+  template?: string; // plain-text template used to prefill the textarea
+};
+
 export type ProviderContent = {
   quickStart: {
     title?: string;
@@ -74,9 +81,20 @@ export type ProviderContent = {
       accommodations?: string;
     };
   };
-  workup: { title?: string; intro?: string; lists?: string[][] };
-  iom: { title?: string; bullets?: string[] };
+  // legacy / optional
+  workup?: { title?: string; intro?: string; lists?: string[][] };
+
+  // sections used in pages
+  diagnosis?: Diagnosis;
+  differential?: Differential;
+  orthostatic?: Orthostatic;
+  management?: Management;
+
+  referrals?: Referrals;
   footer?: string;
+
+  // used by Provider Pack PDF builder
+  packOrder?: string[];
 };
 
 /* =========================
@@ -84,11 +102,11 @@ export type ProviderContent = {
    ========================= */
 
 export const provider: ProviderContent = {
-  /* ----- Your full Quick-Start (unchanged text) ----- */
+  /* ----- Quick-Start ----- */
   quickStart: {
     title: "ME/CFS Quick-Start for Clinicians (10–15 min)",
     intro:
-      "ME/CFS is a chronic, multisystem disease marked by Post-Exertional Malaise (PEM), unrefreshing sleep, cognitive dysfunction, and often orthostatic intolerance (OI). The goal of a first visit is to validate, identify PEM/OI, rule out common mimics, begin symptom-directed care, and set a safe follow-up plan.",
+      "ME/CFS is a chronic, disabling, multisystem disease marked by Post-Exertional Malaise (PEM), unrefreshing sleep, cognitive dysfunction, and often orthostatic intolerance (OI). The goal of a first visit is to validate, identify PEM/OI, rule out common mimics, begin symptom-directed care, and set a safe follow-up plan.",
     principles: [
       "Validate and name PEM; avoid recommending graded exertion that provokes crashes.",
       "Assume energy limits: use pacing/‘energy-envelope’ framing from day one.",
@@ -112,7 +130,7 @@ export const provider: ProviderContent = {
       "Follow-up timeframe: 4–6 weeks with a written crash-prevention plan.",
     ],
     pemExplainer:
-      "Post-Exertional Malaise (PEM) is a hallmark: a delayed (often 24–48 h) worsening of symptoms after minor physical, cognitive, or orthostatic stress. Management prioritizes preventing PEM via pacing, activity modification, and symptom-guided titration.",
+      "Post-Exertional Malaise (PEM) is a hallmark: a delayed (often 24–48 h) worsening of symptoms after minor physical, cognitive, or orthostatic stress. It is characterized by flu-like symptoms, including muscle aches and soreness, general malaise, a 'poison' like feeling throughout the body, extreme fatigue, chills and other symptoms. Management prioritizes preventing PEM via pacing, activity modification, and symptom-guided titration.",
     oiSteps: [
       "Supine rest 10 min → record HR/BP.",
       "Stand unsupported; record HR/BP at 2, 5, 10 min and track symptoms.",
@@ -156,11 +174,11 @@ export const provider: ProviderContent = {
     },
   },
 
-  /* ----- Diagnosis (from your IOM section) ----- */
+  /* ----- Diagnosis ----- */
   diagnosis: {
     title: "Diagnosis (IOM/NAM 2015)",
     intro:
-      "Clinical diagnosis using characteristic features and exclusion of other conditions; no single lab confirms ME/CFS.",
+      "The IOM/NAM 2015 clinical criteria are the current standard for diagnosing ME/CFS. Diagnosis is based on clinical assessment and exclusion of alternative explanations; no single laboratory test confirms ME/CFS.",
     criteria: [
       "Substantial activity reduction/impairment >6 months due to fatigue not alleviated by rest.",
       "Post-Exertional Malaise (PEM).",
@@ -172,7 +190,7 @@ export const provider: ProviderContent = {
     ],
   },
 
-  /* ----- Differential / Workup (flattened from your workup.lists) ----- */
+  /* ----- Differential / Workup ----- */
   differential: {
     title: "Differential & Workup (Rule-Outs + Baseline)",
     intro:
@@ -200,7 +218,7 @@ export const provider: ProviderContent = {
     ],
   },
 
-  /* ----- Orthostatic (extracted from your quickStart OI content) ----- */
+  /* ----- Orthostatic ----- */
   orthostatic: {
     title: "Orthostatic Intolerance",
     intro:
@@ -210,15 +228,15 @@ export const provider: ProviderContent = {
       "Perform lying→standing vitals at 0, 2, 5, 10 minutes; document symptoms.",
     ],
     tenMinuteStand: [
-      "Supine rest 10 min → record HR/BP; stand unsupported; record HR/BP at 2/5/10 min with symptoms.",
+      "10-minute stand (NASA Lean Test): supine rest 10 min → record HR/BP; stand with back/shoulders lightly against wall (heels ~6 inches out); record HR/BP at 2/5/10 min with symptoms.",
     ],
     therapy: [
       "First-line: ~2–3 L fluids/day as tolerated; liberalize salt if safe; waist-high compression.",
-      "Consider medications when conservative measures are insufficient (e.g., fludrocortisone, midodrine, beta-blocker).",
+      "Consider medications when conservative measures are insufficient (e.g., fludrocortisone, midodrine, beta-blocker, pyridostigmine).",
     ],
   },
 
-  /* ----- Management (organized from your initialManagement content) ----- */
+  /* ----- Management ----- */
   management: {
     title: "Management Basics",
     intro:
@@ -236,6 +254,34 @@ export const provider: ProviderContent = {
       "Consider low-dose naltrexone (LDN) for pain/fatigue modulation.",
     ],
     supplements: ["Correct deficiencies (vitamin D, B12, iron/ferritin)."],
+  },
+
+  /* ----- Referrals ----- */
+  referrals: {
+    title: "Referrals",
+    intro:
+      "Use this ready-to-copy template to refer patients for specialty ME/CFS evaluation. Edit details as needed. Keep PHI to the minimum required for referral.",
+    defaultClinic: "Stanford Health Care — ME/CFS / Post-Infectious Clinic",
+    template:
+      "Referrals\n" +
+      "Date: [TODAY]\n\n" +
+      "Referral To: [DEST_CLINIC]\n" + // ⬅ token replaced by UI
+      "Reason: Evaluation and management of Myalgic Encephalomyelitis / Chronic Fatigue Syndrome (ME/CFS)\n\n" +
+      "Diagnosis: G93.32 (Myalgic encephalomyelitis/chronic fatigue syndrome)\n\n" +
+      "Patient: [PATIENT_NAME] (DOB: [DOB])\n" +
+      "Summary: ME/CFS meeting IOM/NAM 2015 criteria with post-exertional malaise (PEM), unrefreshing sleep, and [COGNITIVE_OR_OI].\n\n" +
+      "Course: Onset ~[ONSET_YEARS]; current status: [FUNCTIONAL_STATUS].\n\n" +
+      "Objective/Supporting:\n" +
+      "• Orthostatic intolerance suspected/confirmed clinically; 10-minute stand (NASA Lean) pending/positive as noted.\n" +
+      "• Labs notable for: ferritin [FERRITIN], 25-OH vitamin D [VITD], B12 [B12], ANA [ANA_TITER/PATTERN].\n" +
+      "• Additional notes: [NOTES].\n\n" +
+      "Functional status: upright tolerance ~[UPRIGHT_TOL], recumbency required; PEM after minimal exertion lasting [PEM_DURATION].\n\n" +
+      "Request: Comprehensive ME/CFS evaluation and management recommendations, including:\n" +
+      "• OI workup/management (fluids/salt/compression; consider fludrocortisone, midodrine, beta-blocker, pyridostigmine as appropriate)\n" +
+      "• Pacing/rehab guidance (avoid graded exercise that provokes PEM)\n" +
+      "• Autonomic/cognitive testing as indicated\n\n" +
+      "Referring Clinician: [REFERRER_NAME], [CLINIC_NAME], [CLINIC_PHONE], Fax: [CLINIC_FAX]\n" +
+      "Attachments: Relevant labs, vitals (lying→standing / NASA Lean), prior notes.\n",
   },
 
   footer:

@@ -28,12 +28,12 @@ export default function Header() {
 
         {/* Right: Navigation Links */}
         <nav className="flex items-center gap-6 text-sm md:text-base">
-          {/* <Link
+          <Link
             href="/"
             className="text-gray-600 hover:text-gray-900 transition-colors"
           >
             Home
-          </Link> */}
+          </Link>
           <Link
             href="/mecfs"
             className="text-gray-600 hover:text-gray-900 transition-colors"
