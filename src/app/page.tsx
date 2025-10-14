@@ -14,7 +14,7 @@ export default function HomePage() {
           <div className="flex-1 text-center md:text-left">
             <h1 className="text-4xl md:text-5xl font-bold leading-tight drop-shadow-md">
               Advancing Research, <br />
-              <span className="text-blue-200">Empowering Hope</span>
+              <span className="text-blue-200">Empowering Patients</span>
             </h1>
 
             <p className="mt-4 text-lg text-blue-100 max-w-md mx-auto md:mx-0 leading-relaxed">

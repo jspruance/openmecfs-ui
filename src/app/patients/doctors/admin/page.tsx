@@ -1,29 +1,53 @@
+// app/patients/doctors/admin/page.tsx
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
 
+/* Types */
 type Clinic = {
   id: string;
   slug: string;
   name: string;
   country: string;
-  state?: string;
-  city?: string;
-  postal_code?: string;
-  address_line1?: string;
-  address_line2?: string;
-  website?: string;
-  booking_url?: string;
-  email?: string;
-  phone?: string;
-  tags?: string[]; // stored as array in DB
-  autonomic_focused?: boolean;
-  notes?: string;
+  state?: string | null;
+  city?: string | null;
+  postal_code?: string | null;
+  address_line1?: string | null;
+  address_line2?: string | null;
+  website?: string | null;
+  booking_url?: string | null;
+  email?: string | null;
+  phone?: string | null;
+  tags?: string[];
+  autonomic_focused?: boolean | null;
+  notes?: string | null;
+  featured?: boolean | null;
+  featured_rank?: number | null;
+};
+
+type FormState = {
+  name: string;
+  country: string;
+  state: string;
+  city: string;
+  postal_code: string;
+  address_line1: string;
+  address_line2: string;
+  website: string;
+  booking_url: string;
+  email: string;
+  phone: string;
+  tags: string; // comma list in UI
+  autonomic_focused: boolean;
+  notes: string;
+  featured: boolean; // ⭐
+  featured_rank: string; // 👈 UI stores as string; convert on submit
 };
 
 export default function AdminClinicsPage() {
   const [adminPass, setAdminPass] = useState("");
-  const emptyForm = {
+
+  const emptyForm: FormState = {
     name: "",
     country: "USA",
     state: "",
@@ -35,39 +59,44 @@ export default function AdminClinicsPage() {
     booking_url: "",
     email: "",
     phone: "",
-    tags: "", // comma list in UI
+    tags: "",
     autonomic_focused: false,
     notes: "",
+    featured: false,
+    featured_rank: "", // 👈 default blank (null on save)
   };
-  const [form, setForm] = useState(emptyForm);
+  const [form, setForm] = useState<FormState>(emptyForm);
 
   const [msg, setMsg] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // NEW: list + selection state
   const [clinics, setClinics] = useState<Clinic[]>([]);
   const [filter, setFilter] = useState("");
-  const [originalSlug, setOriginalSlug] = useState<string | null>(null); // identifies “edit” mode
+  const [originalSlug, setOriginalSlug] = useState<string | null>(null);
 
-  // Load clinics for quick-pick (admin sees full set)
+  // Load full list for quick-pick
+  async function refreshList() {
+    try {
+      const res = await fetch("/api/clinics?admin=1", { cache: "no-store" });
+      const data = await res.json();
+      if (data?.ok) setClinics(data.clinics || []);
+    } catch (e) {
+      console.error("Failed to load clinics", e);
+    }
+  }
   useEffect(() => {
-    (async () => {
-      try {
-        const res = await fetch("/api/clinics?admin=1", { cache: "no-store" });
-        const data = await res.json();
-        if (data?.ok) setClinics(data.clinics || []);
-      } catch (e) {
-        console.error("Failed to load clinics", e);
-      }
-    })();
+    refreshList();
   }, []);
 
   const visible = useMemo(() => {
     const n = filter.trim().toLowerCase();
     if (!n) return clinics;
     return clinics.filter((c) =>
-      [c.name, c.city, c.state, c.country].join(" ").toLowerCase().includes(n)
+      [c.name, c.city ?? "", c.state ?? "", c.country]
+        .join(" ")
+        .toLowerCase()
+        .includes(n)
     );
   }, [clinics, filter]);
 
@@ -95,17 +124,14 @@ export default function AdminClinicsPage() {
       tags: (c.tags || []).join(", "),
       autonomic_focused: !!c.autonomic_focused,
       notes: c.notes || "",
+      featured: !!c.featured,
+      featured_rank:
+        c.featured_rank !== null && c.featured_rank !== undefined
+          ? String(c.featured_rank)
+          : "", // show blank if null
     });
     setMsg(null);
     setErr(null);
-  }
-
-  async function refreshList() {
-    try {
-      const res = await fetch("/api/clinics?admin=1", { cache: "no-store" });
-      const data = await res.json();
-      if (data?.ok) setClinics(data.clinics || []);
-    } catch {}
   }
 
   async function submit(e: React.FormEvent) {
@@ -114,16 +140,21 @@ export default function AdminClinicsPage() {
     setErr(null);
     setLoading(true);
     try {
+      const rank =
+        form.featured_rank === "" || form.featured_rank === undefined
+          ? null
+          : Number(form.featured_rank);
+
       const payload = {
         adminPass,
         ...form,
-        // Ensure array on server
+        featured_rank: rank, // 👈 converted number|null
+        // turn comma list into array (route also normalizes)
         tags: form.tags
           .split(",")
           .map((t) => t.trim())
           .filter(Boolean),
-        // For edits, you can optionally send the existing slug so your API can keep it stable
-        originalSlug, // your POST handler can ignore or use as needed
+        originalSlug,
       };
 
       const res = await fetch("/api/clinics/admin-upsert", {
@@ -144,15 +175,13 @@ export default function AdminClinicsPage() {
     }
   }
 
-  // NEW: Delete handler
   async function handleDelete() {
     if (!originalSlug) return;
     if (!adminPass) {
       setErr("Enter the admin password first.");
       return;
     }
-    const ok = window.confirm("Delete this clinic permanently?");
-    if (!ok) return;
+    if (!window.confirm("Delete this clinic permanently?")) return;
 
     setLoading(true);
     setMsg(null);
@@ -181,12 +210,17 @@ export default function AdminClinicsPage() {
       <section className="max-w-6xl mx-auto px-6 py-10">
         <h1 className="text-2xl font-bold">Clinics — Admin Upsert</h1>
         <p className="text-sm text-gray-600 mt-1">
-          Paste or type details; this will create or update a clinic (unique on{" "}
-          <code>slug</code>).
+          Create or update a clinic (unique on <code>slug</code>).
         </p>
 
+        {originalSlug && (
+          <div className="mt-3 rounded-md border border-blue-200 bg-blue-50 px-3 py-2 text-sm text-blue-800">
+            Editing: <code className="font-mono">{originalSlug}</code>
+          </div>
+        )}
+
         <div className="mt-6 grid lg:grid-cols-3 gap-6">
-          {/* Left: form (2 cols) */}
+          {/* Left: form */}
           <form onSubmit={submit} className="lg:col-span-2 space-y-4">
             <div>
               <label className="block text-sm font-medium">
@@ -284,6 +318,8 @@ export default function AdminClinicsPage() {
                 value={form.tags}
                 onChange={(e) => setForm({ ...form, tags: e.target.value })}
               />
+
+              {/* Toggles */}
               <label className="inline-flex items-center gap-2 text-sm">
                 <input
                   type="checkbox"
@@ -294,6 +330,32 @@ export default function AdminClinicsPage() {
                 />
                 OI/Autonomic focused
               </label>
+
+              <div className="flex items-center gap-3">
+                <label className="inline-flex items-center gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={form.featured}
+                    onChange={(e) =>
+                      setForm({ ...form, featured: e.target.checked })
+                    }
+                  />
+                  ⭐ Featured
+                </label>
+
+                {/* Featured rank input */}
+                <input
+                  type="number"
+                  min={1}
+                  placeholder="Featured rank (1 = top)"
+                  className="rounded-md border border-gray-200 px-3 py-2 w-48"
+                  value={form.featured_rank}
+                  onChange={(e) =>
+                    setForm({ ...form, featured_rank: e.target.value })
+                  }
+                />
+              </div>
+
               <textarea
                 placeholder="Notes"
                 className="rounded-md border border-gray-200 px-3 py-2 md:col-span-2 min-h-[90px]"
@@ -365,7 +427,19 @@ export default function AdminClinicsPage() {
                           (selected ? "bg-blue-50" : "")
                         }
                       >
-                        <div className="font-medium">{c.name}</div>
+                        <div className="font-medium flex items-center gap-2">
+                          {c.name}
+                          {c.featured ? (
+                            <span title="Featured" className="text-yellow-500">
+                              ★
+                            </span>
+                          ) : null}
+                          {c.featured && c.featured_rank != null && (
+                            <span className="text-xs text-gray-500">
+                              (#{c.featured_rank})
+                            </span>
+                          )}
+                        </div>
                         <div className="text-xs text-gray-600">
                           {[c.city, c.state, c.country]
                             .filter(Boolean)

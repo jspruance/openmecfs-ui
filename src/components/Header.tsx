@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { FileDown } from "lucide-react"; // ← add this
 
 export default function Header() {
   return (
@@ -27,12 +28,12 @@ export default function Header() {
 
         {/* Right: Navigation Links */}
         <nav className="flex items-center gap-6 text-sm md:text-base">
-          <Link
+          {/* <Link
             href="/"
             className="text-gray-600 hover:text-gray-900 transition-colors"
           >
             Home
-          </Link>
+          </Link> */}
           <Link
             href="/mecfs"
             className="text-gray-600 hover:text-gray-900 transition-colors"
@@ -43,7 +44,16 @@ export default function Header() {
             href="/patients"
             className="text-gray-600 hover:text-gray-900 transition-colors"
           >
-            Patients
+            Patient Hub
+          </Link>
+          <Link
+            href="/providers"
+            className="text-gray-600 hover:text-gray-900 transition-colors"
+          >
+            Provider Education
+            <span className="ml-1 rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold text-amber-700">
+              NEW
+            </span>
           </Link>
           <Link
             href="/research"
@@ -58,12 +68,33 @@ export default function Header() {
             About
           </Link>
           {/* 🔗 Contact Anchor */}
-          <Link
+          {/* <Link
             href="/#contact"
             scroll={true}
             className="text-gray-600 hover:text-gray-900 transition-colors"
           >
             Contact
+          </Link> */}
+          {/* NEW: One-Pager PDF */}
+          <Link
+            href="/api/one-pager"
+            prefetch={false}
+            className="group inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-800 hover:border-slate-300 hover:shadow-sm cursor-pointer"
+            title="Download the ME/CFS One-Pager (PDF)"
+            aria-label="Download the ME/CFS One-Pager (PDF)"
+          >
+            <FileDown
+              className="h-4 w-4 text-slate-700 group-hover:text-slate-900"
+              aria-hidden
+            />
+            <span>One-Pager</span>
+            <Image
+              src="/pdf.png"
+              alt="PDF"
+              width={30}
+              height={30}
+              className="ml-1 h-[28px] w-[28px] object-contain transition-transform group-hover:scale-105"
+            />
           </Link>
           {/* 💛 Donate Button */}
           <Link

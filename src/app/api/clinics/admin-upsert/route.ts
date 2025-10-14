@@ -1,5 +1,6 @@
+// app/api/clinics/admin-upsert/route.ts
 import { NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import { createClient, PostgrestError } from "@supabase/supabase-js";
 
 const SUPABASE_URL = process.env.SUPABASE_URL!;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
@@ -12,19 +13,40 @@ function slugify(s: string) {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/(^-|-$)+/g, "");
 }
+const isConfigured = () => !!(SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY);
+const sb = () => createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-function reqNotConfigured() {
-  return !SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY;
-}
+const cleanUrl = (v?: string | null) => {
+  if (!v) return null;
+  const s = String(v).trim();
+  if (!s) return null;
+  try {
+    // add protocol if missing
+    const withProto = /^https?:\/\//i.test(s) ? s : `https://${s}`;
+    new URL(withProto);
+    return withProto;
+  } catch {
+    return null; // drop invalid urls
+  }
+};
 
-function getClient() {
-  return createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+function toTagsArray(tags: unknown): string[] {
+  if (Array.isArray(tags)) {
+    return tags
+      .map(String)
+      .map((t) => t.trim())
+      .filter(Boolean);
+  }
+  return String(tags ?? "")
+    .split(",")
+    .map((t) => t.trim())
+    .filter(Boolean);
 }
 
 /* ------------------------------- POST (UPSERT) ------------------------------- */
 export async function POST(req: Request) {
   try {
-    if (reqNotConfigured()) {
+    if (!isConfigured()) {
       return NextResponse.json(
         { ok: false, error: "Server not configured." },
         { status: 500 }
@@ -32,7 +54,7 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { adminPass, originalSlug, tags, ...clinic } = body ?? {};
+    const { adminPass, originalSlug, tags, featured, ...clinic } = body ?? {};
 
     if (!ADMIN_PASS || adminPass !== ADMIN_PASS) {
       return NextResponse.json(
@@ -48,27 +70,24 @@ export async function POST(req: Request) {
       );
     }
 
-    // Normalize tags to array<string>
-    const tagsArr: string[] = Array.isArray(tags)
-      ? (tags as string[]).map((t) => String(t).trim()).filter(Boolean)
-      : String(tags || "")
-          .split(",")
-          .map((t) => t.trim())
-          .filter(Boolean);
+    const tagsArr = toTagsArray(tags);
 
-    // Build slug from current values
-    const slugParts = [
-      String(clinic.name || "").trim(),
-      String(clinic.city || "").trim(),
-      String(clinic.state || "").trim(),
-      String(clinic.country || "").trim(),
-    ].filter(Boolean);
-    const newSlug = slugify(slugParts.join("-"));
+    // Build a candidate slug for *new* records only.
+    const candidateSlug = slugify(
+      [clinic.name, clinic.city, clinic.state, clinic.country]
+        .map((x) => String(x ?? "").trim())
+        .filter(Boolean)
+        .join("-")
+    );
 
-    const supabase = getClient();
+    const supabase = sb();
 
+    // Normalize payload
     const payload = {
-      slug: newSlug,
+      // Slug rules:
+      // - If editing (originalSlug provided) -> keep the existing slug stable.
+      // - If creating -> use computed candidateSlug.
+      slug: originalSlug ? String(originalSlug) : candidateSlug,
       name: String(clinic.name).trim(),
       country: String(clinic.country).trim(),
       state: clinic.state ? String(clinic.state).trim() : null,
@@ -82,21 +101,20 @@ export async function POST(req: Request) {
       address_line2: clinic.address_line2
         ? String(clinic.address_line2).trim()
         : null,
-      website: clinic.website ? String(clinic.website).trim() : null,
-      booking_url: clinic.booking_url
-        ? String(clinic.booking_url).trim()
-        : null,
+      website: cleanUrl(clinic.website),
+      booking_url: cleanUrl(clinic.booking_url),
       email: clinic.email ? String(clinic.email).trim() : null,
       phone: clinic.phone ? String(clinic.phone).trim() : null,
       tags: tagsArr,
       autonomic_focused: !!clinic.autonomic_focused,
       notes: clinic.notes ? String(clinic.notes).trim() : null,
+      featured: !!featured,
     };
 
-    let data, error;
+    let data, error: PostgrestError | null;
 
     if (originalSlug) {
-      // Edit an existing record, matching the one the admin clicked
+      // Update existing by originalSlug (stable)
       ({ data, error } = await supabase
         .from("clinics")
         .update(payload)
@@ -104,7 +122,7 @@ export async function POST(req: Request) {
         .select()
         .single());
     } else {
-      // Create new record; require a unique slug index on clinics.slug
+      // Create new; rely on unique index on clinics.slug
       ({ data, error } = await supabase
         .from("clinics")
         .upsert(payload, { onConflict: "slug" })
@@ -113,10 +131,13 @@ export async function POST(req: Request) {
     }
 
     if (error) {
-      console.error("ADMIN_UPSERT_ERROR", error);
+      // unique violation code from PostgREST/PG
+      const isUnique =
+        error.code === "23505" ||
+        /duplicate key value violates unique constraint/i.test(error.message);
       return NextResponse.json(
-        { ok: false, error: error.message },
-        { status: 500 }
+        { ok: false, error: isUnique ? "Slug already exists." : error.message },
+        { status: isUnique ? 409 : 500 }
       );
     }
 
@@ -124,7 +145,7 @@ export async function POST(req: Request) {
   } catch (e: any) {
     console.error("ADMIN_UPSERT_ERROR", e);
     return NextResponse.json(
-      { ok: false, error: "Unexpected error." },
+      { ok: false, error: e?.message ?? "Unexpected error." },
       { status: 500 }
     );
   }
@@ -133,7 +154,7 @@ export async function POST(req: Request) {
 /* ------------------------------- DELETE (BY SLUG) ------------------------------- */
 export async function DELETE(req: Request) {
   try {
-    if (reqNotConfigured()) {
+    if (!isConfigured()) {
       return NextResponse.json(
         { ok: false, error: "Server not configured." },
         { status: 500 }
@@ -148,7 +169,6 @@ export async function DELETE(req: Request) {
         { status: 401 }
       );
     }
-
     if (!slug) {
       return NextResponse.json(
         { ok: false, error: "Missing slug to delete." },
@@ -156,14 +176,11 @@ export async function DELETE(req: Request) {
       );
     }
 
-    const supabase = getClient();
-    const { error } = await supabase
+    const { error } = await sb()
       .from("clinics")
       .delete()
       .eq("slug", String(slug));
-
     if (error) {
-      console.error("ADMIN_DELETE_ERROR", error);
       return NextResponse.json(
         { ok: false, error: error.message },
         { status: 500 }
@@ -174,7 +191,7 @@ export async function DELETE(req: Request) {
   } catch (e: any) {
     console.error("ADMIN_DELETE_ERROR", e);
     return NextResponse.json(
-      { ok: false, error: "Unexpected error." },
+      { ok: false, error: e?.message ?? "Unexpected error." },
       { status: 500 }
     );
   }

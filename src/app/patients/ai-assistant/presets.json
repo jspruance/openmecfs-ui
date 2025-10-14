@@ -5,14 +5,14 @@
     "body": "Subject: Request to consider Low-Dose Naltrexone (LDN)\n\nDear Dr. {{DOCTOR_LASTNAME}},\n\nI’m writing to ask whether a carefully monitored trial of low-dose naltrexone could be appropriate for my ME/CFS symptoms. My goals are to reduce crashes/pain and improve day-to-day function.\n\nIf reasonable, I’m open to starting at a low dose and titrating slowly while monitoring response and tolerability. I’ll continue my symptom log and follow up as you recommend. Please let me know of any contraindications or baseline labs you’d like to review first.\n\nThank you,\n{{PATIENT_NAME}}"
   },
   {
-    "id": "workup_request",
-    "title": "Comprehensive Workup / Rule-Outs",
-    "body": "Subject: Request for comprehensive evaluation for ME/CFS and rule-outs\n\nDear Dr. {{DOCTOR_LASTNAME}},\n\nCould we review my history and ensure a thorough evaluation for ME/CFS and common mimics? I’m especially interested in ruling out endocrine, autoimmune, infectious, nutritional, and sleep-related contributors per your judgment.\n\nI’ll bring a concise symptom timeline and prior results for your review.\n\nThank you,\n{{PATIENT_NAME}}"
-  },
-  {
     "id": "consider_diagnosis",
     "title": "Consider ME/CFS Diagnosis",
     "body": "Subject: Consideration of ME/CFS diagnosis\n\nDear Dr. {{DOCTOR_LASTNAME}},\n\nI’m experiencing persistent fatigue not relieved by rest, post-exertional symptom exacerbation, unrefreshing sleep, and cognitive challenges that impact daily function. Could we review whether I meet diagnostic criteria for ME/CFS and discuss next steps for management and pacing?\n\nSincerely,\n{{PATIENT_NAME}}"
+  },
+  {
+    "id": "workup_request",
+    "title": "Comprehensive Workup / Rule-Outs",
+    "body": "Subject: Request for comprehensive evaluation for ME/CFS and rule-outs\n\nDear Dr. {{DOCTOR_LASTNAME}},\n\nCould we review my history and ensure a thorough evaluation for ME/CFS and common mimics? I’m especially interested in ruling out endocrine, autoimmune, infectious, nutritional, and sleep-related contributors per your judgment.\n\nI’ll bring a concise symptom timeline and prior results for your review.\n\nThank you,\n{{PATIENT_NAME}}"
   },
   {
     "id": "mecfs_center_referral",

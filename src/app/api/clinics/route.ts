@@ -1,47 +1,42 @@
+// app/api/clinics/route.ts
 import { NextResponse } from "next/server";
-import { supabaseAdmin } from "@/lib/supabaseAdmin";
+import { createClient } from "@supabase/supabase-js";
 
-// Basic filter support: ?q=&country=&state=&onlyAutonomic=true
+const url = process.env.SUPABASE_URL!;
+const anon = process.env.SUPABASE_ANON_KEY!;
+
 export async function GET(req: Request) {
-  const { searchParams } = new URL(req.url);
-  const q = (searchParams.get("q") || "").trim().toLowerCase();
-  const country = searchParams.get("country") || "";
-  const state = searchParams.get("state") || "";
-  const onlyAutonomic = searchParams.get("onlyAutonomic") === "true";
+  try {
+    const supabase = createClient(url, anon);
+    const { searchParams } = new URL(req.url);
 
-  let query = supabaseAdmin
-    .from("clinics")
-    .select("*")
-    .order("name", { ascending: true });
+    const featured = searchParams.get("featured");
+    const country = searchParams.get("country") || undefined;
 
-  if (country) query = query.eq("country", country);
-  if (state) query = query.eq("state", state);
-  if (onlyAutonomic) query = query.eq("autonomic_focused", true);
+    let q = supabase.from("clinics").select("*");
 
-  const { data, error } = await query;
-  if (error) {
-    console.error("clinics list error", error);
+    if (featured === "1" || featured === "true") {
+      // curated page: rank first, then name
+      q = q
+        .eq("featured", true)
+        .order("featured_rank", { ascending: true, nullsFirst: false })
+        .order("name", { ascending: true });
+    } else {
+      // directory default: name A–Z
+      q = q.order("name", { ascending: true });
+    }
+
+    if (country) q = q.eq("country", country);
+
+    const { data, error } = await q;
+    if (error) throw error;
+
+    return NextResponse.json({ ok: true, clinics: data });
+  } catch (e: any) {
+    console.error("CLINICS_LIST_ERROR", e);
     return NextResponse.json(
-      { ok: false, error: "Failed to load clinics" },
+      { ok: false, error: e.message || "Failed" },
       { status: 500 }
     );
   }
-
-  const filtered = q
-    ? data.filter((c) => {
-        const hay = [
-          c.name,
-          c.city || "",
-          c.state || "",
-          c.country || "",
-          (c.tags || []).join(" "),
-          c.notes || "",
-        ]
-          .join(" • ")
-          .toLowerCase();
-        return hay.includes(q);
-      })
-    : data;
-
-  return NextResponse.json({ ok: true, clinics: filtered });
 }
