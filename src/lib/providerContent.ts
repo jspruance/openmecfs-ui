@@ -258,7 +258,7 @@ export const provider: ProviderContent = {
 
   /* ----- Referrals ----- */
   referrals: {
-    title: "Referrals",
+    title: "Referral Composer",
     intro:
       "Use this ready-to-copy template to refer patients for specialty ME/CFS evaluation. Edit details as needed. Keep PHI to the minimum required for referral.",
     defaultClinic: "Stanford Health Care — ME/CFS / Post-Infectious Clinic",
