@@ -62,6 +62,67 @@ const US_STATES = [
   "WY",
 ] as const;
 
+// Mapping from abbreviations to full names
+const STATE_NAMES: Record<string, string> = {
+  AL: "Alabama",
+  AK: "Alaska",
+  AZ: "Arizona",
+  AR: "Arkansas",
+  CA: "California",
+  CO: "Colorado",
+  CT: "Connecticut",
+  DC: "District of Columbia",
+  DE: "Delaware",
+  FL: "Florida",
+  GA: "Georgia",
+  HI: "Hawaii",
+  ID: "Idaho",
+  IL: "Illinois",
+  IN: "Indiana",
+  IA: "Iowa",
+  KS: "Kansas",
+  KY: "Kentucky",
+  LA: "Louisiana",
+  ME: "Maine",
+  MD: "Maryland",
+  MA: "Massachusetts",
+  MI: "Michigan",
+  MN: "Minnesota",
+  MS: "Mississippi",
+  MO: "Missouri",
+  MT: "Montana",
+  NE: "Nebraska",
+  NV: "Nevada",
+  NH: "New Hampshire",
+  NJ: "New Jersey",
+  NM: "New Mexico",
+  NY: "New York",
+  NC: "North Carolina",
+  ND: "North Dakota",
+  OH: "Ohio",
+  OK: "Oklahoma",
+  OR: "Oregon",
+  PA: "Pennsylvania",
+  RI: "Rhode Island",
+  SC: "South Carolina",
+  SD: "South Dakota",
+  TN: "Tennessee",
+  TX: "Texas",
+  UT: "Utah",
+  VT: "Vermont",
+  VA: "Virginia",
+  WA: "Washington",
+  WV: "West Virginia",
+  WI: "Wisconsin",
+  WY: "Wyoming",
+};
+
+// Reverse lookup for full → abbreviation
+const STATE_LOOKUP = Object.entries(STATE_NAMES).reduce((acc, [abbr, full]) => {
+  acc[full.toLowerCase()] = abbr.toLowerCase();
+  return acc;
+}, {} as Record<string, string>);
+
 /* --------------------------------- Page ---------------------------------- */
 export default function DoctorsDirectoryPage() {
   const [loading, setLoading] = useState(true);
@@ -94,7 +155,12 @@ export default function DoctorsDirectoryPage() {
 
   // Filter + sort
   const filtered = useMemo(() => {
-    const needle = q.trim().toLowerCase();
+    const needleRaw = q.trim().toLowerCase();
+    const needle = STATE_LOOKUP[needleRaw] || needleRaw; // e.g. "florida" → "fl"
+
+    const isStateSearch =
+      STATE_LOOKUP[needleRaw] ||
+      Object.keys(STATE_NAMES).includes(needleRaw.toUpperCase());
 
     let list = clinics.filter((c) => {
       const auto = (c as any).autonomicFocused ?? c.autonomic_focused ?? false;
@@ -106,14 +172,31 @@ export default function DoctorsDirectoryPage() {
 
       if (!needle) return true;
 
+      const stateFull =
+        c.state && STATE_NAMES[c.state.toUpperCase()]
+          ? STATE_NAMES[c.state.toUpperCase()]
+          : "";
+
+      // If user explicitly searched for a state, restrict to that state
+      if (isStateSearch && country === "USA") {
+        return (
+          c.state?.toLowerCase() === needle ||
+          stateFull.toLowerCase() === needleRaw
+        );
+      }
+
+      // Otherwise, general full-text match (includes ZIP, city, notes, etc.)
       const hay = [
         c.name,
-        c.city || "",
-        c.state || "",
+        c.city,
+        c.state,
+        stateFull,
         c.country,
+        c.postal_code,
         Array.isArray(c.tags) ? c.tags.join(" ") : "",
-        c.notes || "",
+        c.notes,
       ]
+        .filter(Boolean)
         .join(" • ")
         .toLowerCase();
 
@@ -163,13 +246,74 @@ export default function DoctorsDirectoryPage() {
           </div>
         </header>
 
-        {/* Filters */}
-        {/* (unchanged section omitted for brevity) */}
+        {/* Filters / Search Panel */}
+        <div className="rounded-2xl border border-gray-200 bg-gray-50 p-5 flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+          <div className="flex-1 flex flex-col sm:flex-row gap-3">
+            {/* Search input */}
+            <input
+              type="text"
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Search by name, city, state, or ZIP..."
+              className="flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+
+            {/* Country selector */}
+            <select
+              value={country}
+              onChange={(e) =>
+                setCountry(e.target.value as (typeof COUNTRIES)[number])
+              }
+              className="rounded-md border border-gray-300 px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              {COUNTRIES.map((c) => (
+                <option key={c}>{c}</option>
+              ))}
+            </select>
+
+            {/* State selector (only visible when USA selected) */}
+            {country === "USA" && (
+              <select
+                value={stateCode}
+                onChange={(e) =>
+                  setStateCode(e.target.value as (typeof US_STATES)[number])
+                }
+                className="rounded-md border border-gray-300 px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                {US_STATES.map((s) => (
+                  <option key={s}>{s}</option>
+                ))}
+              </select>
+            )}
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3">
+            {/* Autonomic filter */}
+            <label className="flex items-center space-x-2 text-sm text-gray-700">
+              <input
+                type="checkbox"
+                checked={onlyAutonomic}
+                onChange={(e) => setOnlyAutonomic(e.target.checked)}
+                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+              />
+              <span>Only autonomic-focused</span>
+            </label>
+
+            {/* Sort selector */}
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as "name" | "country")}
+              className="rounded-md border border-gray-300 px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="name">Sort: Name (A–Z)</option>
+              <option value="country">Sort: Country</option>
+            </select>
+          </div>
+        </div>
 
         {/* Results */}
         {loading ? (
           <div className="rounded-xl border border-gray-200 p-8 text-center flex flex-col items-center justify-center text-gray-600">
-            {/* Spinner */}
             <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-3"></div>
             <p>Loading clinics…</p>
           </div>
@@ -206,9 +350,7 @@ export default function DoctorsDirectoryPage() {
                   key={c.id}
                   className="rounded-2xl border border-gray-200 p-6 hover:shadow-md transition h-full"
                 >
-                  {/* Balanced 2-col layout inside card */}
                   <div className="grid grid-cols-1 md:grid-cols-[minmax(0,1fr),minmax(16rem,18rem)] gap-6 h-full">
-                    {/* Left column */}
                     <div className="min-w-0">
                       <h3 className="text-lg font-semibold text-gray-900 break-words">
                         {c.name}

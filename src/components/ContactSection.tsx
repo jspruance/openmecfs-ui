@@ -47,7 +47,7 @@ export default function ContactSection() {
           </p>
           <ul className="mt-6 space-y-2 text-gray-600">
             <li>📧 contact@openmecfs.org</li>
-            <li>💙 We read every message.</li>
+            <li>❤️ We read every message.</li>
           </ul>
         </div>
 
