@@ -16,10 +16,6 @@ export default function PatientsLayout({
   const navItems: NavItem[] = [
     { href: "/patients", label: "Patient Hub" },
     { href: "/patients/checker", label: "Do I have ME/CFS?" },
-
-    { href: "/patients/doctors", label: "Clinicians & Centers" },
-    { href: "/patients/doctors/directory", label: "Find a clinic near you" },
-
     // Gold sparkles ✨
     {
       href: "/patients/ai-assistant",
@@ -27,10 +23,14 @@ export default function PatientsLayout({
       icon: Sparkles,
       iconClass: "text-amber-500", // <— gold
     },
+    { href: "/patients/doctors", label: "Clinicians & Centers" },
+    { href: "/patients/doctors/directory", label: "Find a clinic near you" },
 
     { href: "/patients/treatments", label: "Treatments & Approaches" },
     { href: "/patients/advocacy", label: "Advocacy & Care" },
     { href: "/patients/faq", label: "FAQ" },
+    // app/patients/layout.tsx (inside navItems)
+    { href: "/patients/one-pager", label: "ME/CFS One-Pager (PDF)" },
   ];
 
   return (

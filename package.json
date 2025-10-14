@@ -7,10 +7,12 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "seed:clinics": "tsx -r dotenv/config scripts/seed_clinics.ts"
+    "seed:clinics": "tsx -r dotenv/config scripts/seed_clinics.ts",
+    "export:clinics": "tsx -r dotenv/config scripts/export_clinics.ts"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.9",
+    "@react-pdf/renderer": "^4.3.1",
     "@shadcn/ui": "^0.0.4",
     "@stripe/stripe-js": "^8.0.0",
     "axios": "^1.12.2",

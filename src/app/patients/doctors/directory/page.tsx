@@ -3,32 +3,11 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-
-/* -------------------------------- Types ---------------------------------- */
-type Clinic = {
-  id: string;
-  name: string;
-  country: string;
-  state?: string;
-  city?: string;
-  postal_code?: string;
-
-  website?: string;
-  booking_url?: string;
-  email?: string;
-  phone?: string;
-
-  address_line1?: string;
-  address_line2?: string;
-
-  tags: string[];
-  autonomicFocused?: boolean; // UI camel
-  autonomic_focused?: boolean; // API snake
-  notes?: string;
-};
+import type { ClinicType } from "../_components/ClinicCard";
 
 /* -------------------------- Constants & helpers --------------------------- */
 const COUNTRIES = ["All", "USA", "Canada", "UK", "Germany", "Other"] as const;
+
 const US_STATES = [
   "All",
   "AL",
@@ -87,7 +66,7 @@ const US_STATES = [
 /* --------------------------------- Page ---------------------------------- */
 export default function DoctorsDirectoryPage() {
   const [loading, setLoading] = useState(true);
-  const [clinics, setClinics] = useState<Clinic[]>([]);
+  const [clinics, setClinics] = useState<ClinicType[]>([]);
 
   const [q, setQ] = useState("");
   const [country, setCountry] = useState<(typeof COUNTRIES)[number]>("All");
@@ -95,6 +74,7 @@ export default function DoctorsDirectoryPage() {
   const [onlyAutonomic, setOnlyAutonomic] = useState(false);
   const [sortBy, setSortBy] = useState<"name" | "country">("name");
 
+  // Fetch clinics from your API
   useEffect(() => {
     let mounted = true;
     (async () => {
@@ -113,27 +93,32 @@ export default function DoctorsDirectoryPage() {
     };
   }, []);
 
+  // Filter + sort
   const filtered = useMemo(() => {
     const needle = q.trim().toLowerCase();
 
     let list = clinics.filter((c) => {
-      const auto = (c.autonomicFocused ?? c.autonomic_focused) || false;
+      // support either camelCase (old UI) or snake_case (DB)
+      const auto = (c as any).autonomicFocused ?? c.autonomic_focused ?? false;
+
       if (onlyAutonomic && !auto) return false;
       if (country !== "All" && c.country !== country) return false;
       if (country === "USA" && stateCode !== "All" && c.state !== stateCode)
         return false;
 
       if (!needle) return true;
+
       const hay = [
         c.name,
         c.city || "",
         c.state || "",
         c.country,
-        (c.tags || []).join(" "),
+        Array.isArray(c.tags) ? c.tags.join(" ") : "",
         c.notes || "",
       ]
         .join(" • ")
         .toLowerCase();
+
       return hay.includes(needle);
     });
 
@@ -160,6 +145,8 @@ export default function DoctorsDirectoryPage() {
               specialists. This list is community-curated—availability varies,
               waitlists are common.
             </p>
+
+            {/* Quick cross-links */}
             <div className="mt-2 flex items-center gap-4">
               <Link
                 href="/patients/doctors"
@@ -181,6 +168,7 @@ export default function DoctorsDirectoryPage() {
         {/* Filters */}
         <div className="rounded-2xl border border-gray-200 p-5 bg-gray-50">
           <div className="grid lg:grid-cols-5 gap-3">
+            {/* Search */}
             <div className="lg:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Search
@@ -192,6 +180,8 @@ export default function DoctorsDirectoryPage() {
                 className="w-full rounded-md border border-gray-200 px-3 py-2 focus:border-blue-500 focus:ring-blue-500"
               />
             </div>
+
+            {/* Country */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Country
@@ -212,6 +202,8 @@ export default function DoctorsDirectoryPage() {
                 ))}
               </select>
             </div>
+
+            {/* State (USA) */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 State (USA)
@@ -231,6 +223,8 @@ export default function DoctorsDirectoryPage() {
                 ))}
               </select>
             </div>
+
+            {/* Sort */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Sort by
@@ -248,6 +242,7 @@ export default function DoctorsDirectoryPage() {
             </div>
           </div>
 
+          {/* Toggles */}
           <div className="mt-4 flex items-center gap-4">
             <label className="inline-flex items-center gap-2 text-sm text-gray-700">
               <input
@@ -258,6 +253,7 @@ export default function DoctorsDirectoryPage() {
               />
               Show OI/Autonomic clinics only
             </label>
+
             {filtered.length > 0 && (
               <span className="ml-auto text-sm text-gray-500">
                 {filtered.length} result{filtered.length !== 1 ? "s" : ""}
@@ -276,7 +272,8 @@ export default function DoctorsDirectoryPage() {
         ) : (
           <ul className="grid md:grid-cols-2 gap-5">
             {filtered.map((c) => {
-              const auto = (c.autonomicFocused ?? c.autonomic_focused) || false;
+              const auto =
+                (c as any).autonomicFocused ?? c.autonomic_focused ?? false;
 
               const addrLines = [
                 c.address_line1,
@@ -303,11 +300,11 @@ export default function DoctorsDirectoryPage() {
                   key={c.id}
                   className="rounded-2xl border border-gray-200 p-6 hover:shadow-md transition"
                 >
-                  {/* NEW: Grid inside the card for balanced columns */}
+                  {/* Balanced 2-col layout inside card */}
                   <div className="grid grid-cols-1 md:grid-cols-[minmax(0,1fr),minmax(16rem,18rem)] gap-6">
                     {/* Left column */}
                     <div className="min-w-0">
-                      <h3 className="text-lg font-semibold text-gray-900 break-normal hyphens-auto">
+                      <h3 className="text-lg font-semibold text-gray-900 break-words">
                         {c.name}
                       </h3>
                       <p className="text-gray-600">
@@ -316,7 +313,7 @@ export default function DoctorsDirectoryPage() {
                         {c.country}
                       </p>
 
-                      {c.tags?.length || auto ? (
+                      {(c.tags?.length || auto) && (
                         <div className="mt-2 flex flex-wrap gap-2">
                           {(c.tags || []).map((t) => (
                             <span
@@ -332,7 +329,7 @@ export default function DoctorsDirectoryPage() {
                             </span>
                           )}
                         </div>
-                      ) : null}
+                      )}
 
                       {c.notes && (
                         <p className="mt-2 text-sm text-gray-700">{c.notes}</p>
@@ -412,6 +409,7 @@ export default function DoctorsDirectoryPage() {
           </ul>
         )}
 
+        {/* Footer note */}
         <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-amber-900 text-sm">
           <strong>Heads up:</strong> This directory is informational only and
           not a guarantee of care or outcomes. It isn’t medical advice. Always

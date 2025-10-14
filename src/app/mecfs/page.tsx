@@ -64,10 +64,10 @@ export default function MecfsPage() {
             </p>
 
             <p className="text-lg text-gray-700 leading-relaxed">
-              <strong>Open ME/CFS</strong> aims to make ME/CFS research
-              accessible and understandable to everyone — from patients and
-              caregivers to researchers and clinicians — by organizing and
-              summarizing the latest scientific research.
+              ME/CFS affects up to <b>3.3 million people</b> in the United
+              States, and millions worldwide (often estimated in the tens of
+              millions). More than <b>90%</b> of people with ME/CFS are believed
+              to be undiagnosed.
             </p>
           </div>
 
