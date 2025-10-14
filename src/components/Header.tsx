@@ -4,6 +4,12 @@ import Image from "next/image";
 import Link from "next/link";
 import { FileDown } from "lucide-react"; // ← add this
 
+const handleDonateClick = () => {
+  if (typeof window !== "undefined") {
+    (window as any).umami?.track("donate_click");
+  }
+};
+
 export default function Header() {
   return (
     <header className="sticky top-0 z-50 bg-white/80 backdrop-blur border-b border-gray-100">
@@ -99,7 +105,7 @@ export default function Header() {
           {/* 💛 Donate Button */}
           <Link
             href="/donate"
-            onClick={(window as any).umami?.track("donate_click")}
+            onClick={handleDonateClick}
             className="bg-blue-600 text-white px-4 py-2 rounded-md font-medium shadow-md hover:bg-blue-700 hover:shadow-lg transition"
           >
             Donate

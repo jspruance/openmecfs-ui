@@ -4,6 +4,12 @@ import Image from "next/image";
 import Link from "next/link";
 import ContactSection from "../components/ContactSection";
 
+const handleDonateClick = () => {
+  if (typeof window !== "undefined") {
+    (window as any).umami?.track("donate_click");
+  }
+};
+
 export default function HomePage() {
   return (
     <>
@@ -27,7 +33,7 @@ export default function HomePage() {
               {/* 🔥 Primary Donate Button */}
               <Link
                 href="/donate"
-                onClick={() => (window as any).umami?.track("donate_click")}
+                onClick={handleDonateClick}
                 className="
                   relative inline-flex items-center justify-center
                   px-8 py-3 text-lg font-semibold rounded-md
