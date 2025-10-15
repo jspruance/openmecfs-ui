@@ -7,23 +7,32 @@ export const metadata = {
   description: "Rule-outs and baseline tests for ME/CFS workup.",
 };
 
-export default function DifferentialPage() {
-  const d: Differential = (provider as any)?.differential ?? {
-    title: "Differential & Workup",
-    intro:
-      "Common rule-outs and baseline tests to support a clinical diagnosis of ME/CFS.",
-    tests: [],
-    mimics: [],
-  };
+// Narrow the imported provider without using `any`
+type ProviderWithDifferential = {
+  differential?: Differential;
+  footer?: string;
+};
 
-  const title = d.title ?? "Differential & Workup";
-  const intro = d.intro ?? "";
+// Fallback content so TS knows fields exist
+const FALLBACK: Differential = {
+  title: "Differential & Workup",
+  intro:
+    "Common rule-outs and baseline tests to support a clinical diagnosis of ME/CFS.",
+  tests: [],
+  mimics: [],
+};
+
+export default function DifferentialPage() {
+  const p = provider as ProviderWithDifferential | undefined;
+  const d: Differential = p?.differential ?? FALLBACK;
 
   return (
     <div className="space-y-6">
       <header className="rounded-2xl bg-gradient-to-r from-blue-600 to-blue-400 text-white p-6">
-        <h1 className="text-2xl font-bold">{title}</h1>
-        {intro ? <p className="mt-2 text-blue-50 max-w-2xl">{intro}</p> : null}
+        <h1 className="text-2xl font-bold">{d.title ?? FALLBACK.title}</h1>
+        {d.intro ? (
+          <p className="mt-2 text-blue-50 max-w-2xl">{d.intro}</p>
+        ) : null}
       </header>
 
       <section className="rounded-xl border border-gray-200 p-5">
@@ -58,9 +67,7 @@ export default function DifferentialPage() {
         )}
       </section>
 
-      {provider?.footer ? (
-        <p className="text-xs text-slate-500">{provider.footer}</p>
-      ) : null}
+      {p?.footer ? <p className="text-xs text-slate-500">{p.footer}</p> : null}
     </div>
   );
 }
