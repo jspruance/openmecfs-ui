@@ -16,6 +16,14 @@ import {
 } from "lucide-react";
 import type { QuickStart } from "@/lib/providerContent";
 
+export const metadata = {
+  title: "Provider Quick-Start — Open ME/CFS",
+  description:
+    "Concise, practical ME/CFS quick-start for clinicians: PEM/OI recognition, visit flow, baseline workup, and first-line management.",
+};
+
+/* ------------------------------- UI bits -------------------------------- */
+
 function Chip({ children }: { children: React.ReactNode }) {
   return (
     <span className="inline-flex items-center rounded-full bg-blue-50 px-2.5 py-1 text-[11px] font-semibold text-blue-700 ring-1 ring-inset ring-blue-100">
@@ -97,7 +105,9 @@ function CopyBlock({ label, text = "" }: { label: string; text?: string }) {
   const onCopy = async () => {
     try {
       await navigator.clipboard.writeText(text);
-    } catch {}
+    } catch {
+      // ignore
+    }
   };
   return (
     <div className="rounded-xl border border-slate-200 bg-white p-3">
@@ -118,9 +128,17 @@ function CopyBlock({ label, text = "" }: { label: string; text?: string }) {
   );
 }
 
-export default function QuickStart() {
-  // Safe fallback so the page renders even if content is missing
-  const q: QuickStart = (provider as any)?.quickStart ?? {
+/* ------------------------------- Page ----------------------------------- */
+
+type ProviderWithQuickStart = {
+  quickStart?: QuickStart;
+  footer?: string;
+};
+
+export default function QuickStartPage() {
+  const p = provider as ProviderWithQuickStart;
+
+  const q: QuickStart = p.quickStart ?? {
     title: "Provider Quick-Start",
     intro: "",
     principles: [],
