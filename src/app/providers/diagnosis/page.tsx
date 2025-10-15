@@ -25,7 +25,7 @@ export default function DiagnosisPage() {
   return (
     <div className="space-y-8">
       {/* Hero */}
-      <header className="rounded-2xl bg-gradient-to-r from-blue-600 to-blue-400 text-white p-8">
+      <header className="rounded-2xl bg-gradient-to-r from-[#007BFF] to-[#1E88E5] text-white p-8">
         <div className="flex items-start justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold">{d.title ?? "Diagnosis"}</h1>

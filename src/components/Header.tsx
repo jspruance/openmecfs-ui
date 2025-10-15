@@ -107,7 +107,7 @@ export default function Header() {
           <Link
             href="/donate"
             onClick={handleDonateClick}
-            className="bg-blue-600 text-white px-4 py-2 rounded-md font-medium shadow-md hover:bg-blue-700 hover:shadow-lg transition"
+            className="bg-[#007BFF] text-white px-4 py-2 rounded-md font-medium shadow-md hover:bg-[#0D47A1] hover:shadow-lg transition"
           >
             Donate
           </Link>

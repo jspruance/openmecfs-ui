@@ -135,11 +135,11 @@ export default function QuickStartPage() {
 
   return (
     <article className="rounded-2xl border border-slate-200 bg-white shadow-sm">
-      <div className="rounded-t-2xl bg-gradient-to-r from-blue-50 via-sky-50 to-indigo-50 px-6 py-6">
+      <div className="rounded-t-2xl bg-gradient-to-r from-blue-50 via-blue-100 to-blue-50 px-6 py-6">
         <div className="flex items-start justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
-              <Stethoscope className="h-5 w-5 text-blue-600" />
+              <Stethoscope className="h-5 w-5 text-brand" />
               <Chip>Provider Quick-Start</Chip>
             </div>
             <h1 className="mt-2 text-2xl font-bold tracking-tight text-slate-900">
@@ -154,7 +154,7 @@ export default function QuickStartPage() {
 
           <a
             href="/api/provider-pdf?doc=quick-start"
-            className="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-blue-600 px-3.5 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700"
+            className="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-[#007BFF] px-3.5 py-2 text-sm font-medium text-white shadow-sm hover:bg-[#0D47A1]"
           >
             <Download className="h-4 w-4" />
             Download PDF
@@ -245,9 +245,9 @@ export default function QuickStartPage() {
           <Bullets items={q.redFlags} />
         </SectionCard>
 
-        <div className="rounded-2xl border border-indigo-100 bg-indigo-50/60 p-5">
+        <div className="rounded-2xl border border-blue-100 bg-blue-50/60 p-5">
           <div className="mb-3 flex items-center gap-2">
-            <ClipboardList className="h-5 w-5 text-indigo-700" />
+            <ClipboardList className="h-5 w-5 text-brand" />
             <h3 className="text-lg font-semibold text-slate-900">
               Smart Phrases (Copy-Paste)
             </h3>

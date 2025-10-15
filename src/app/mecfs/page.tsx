@@ -49,7 +49,7 @@ export default function MecfsPage() {
           {/* Left / Center Column */}
           <div className="md:col-span-2">
             <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-8 text-center md:text-left">
-              <span className="bg-gradient-to-r from-blue-600 to-blue-400 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-[#007BFF] to-[#1E88E5] bg-clip-text text-transparent">
                 What is ME/CFS?
               </span>
             </h1>
@@ -83,7 +83,7 @@ export default function MecfsPage() {
             <div className="bg-white shadow-lg rounded-2xl border border-gray-200 p-6 text-center max-w-sm transition-all duration-500 hover:shadow-xl">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                className="w-8 h-8 text-blue-500 mx-auto mb-3 opacity-80"
+                className="w-8 h-8 text-brand mx-auto mb-3 opacity-80"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -109,7 +109,7 @@ export default function MecfsPage() {
         <div className="max-w-6xl mx-auto px-6 grid md:grid-cols-2 gap-12 items-center">
           <div>
             <h2 className="text-3xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-              <Brain className="text-blue-600" /> Understanding ME/CFS
+              <Brain className="text-brand" /> Understanding ME/CFS
             </h2>
             <p className="text-gray-700 text-lg leading-relaxed">
               ME/CFS is recognized by the U.S. National Academy of Medicine
@@ -130,7 +130,7 @@ export default function MecfsPage() {
 
           <div className="flex justify-center">
             <div className="bg-white p-6 rounded-2xl shadow-md max-w-md text-center border border-gray-100">
-              <Activity className="mx-auto mb-3 text-blue-600" size={48} />
+              <Activity className="mx-auto mb-3 text-brand" size={48} />
               <p className="text-gray-600 italic">
                 “A profound loss of energy production and recovery capacity —
                 the body no longer responds normally to stress or exertion.”
@@ -144,37 +144,37 @@ export default function MecfsPage() {
       <section className="py-20">
         <div className="max-w-6xl mx-auto px-6">
           <h2 className="text-3xl font-bold text-gray-900 mb-10 flex items-center gap-2">
-            <HeartPulse className="text-blue-600" /> Common Symptoms
+            <HeartPulse className="text-brand" /> Common Symptoms
           </h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {[
               {
-                icon: <Clock className="text-blue-600" size={32} />,
+                icon: <Clock className="text-brand" size={32} />,
                 title: "Post-Exertional Malaise (PEM)",
                 desc: "Worsening of all symptoms after minimal effort — often delayed by 24-48 hours.",
               },
               {
-                icon: <Brain className="text-blue-600" size={32} />,
+                icon: <Brain className="text-brand" size={32} />,
                 title: "Cognitive Dysfunction",
                 desc: "Difficulty concentrating, short-term memory problems, and slowed processing.",
               },
               {
-                icon: <Stethoscope className="text-blue-600" size={32} />,
+                icon: <Stethoscope className="text-brand" size={32} />,
                 title: "Orthostatic Intolerance (OI)",
                 desc: "Lightheadedness, palpitations, or fainting when upright due to blood-flow issues.",
               },
               {
-                icon: <Activity className="text-blue-600" size={32} />,
+                icon: <Activity className="text-brand" size={32} />,
                 title: "Unrefreshing Sleep",
                 desc: "Sleep that does not restore energy or relieve fatigue.",
               },
               {
-                icon: <HeartPulse className="text-blue-600" size={32} />,
+                icon: <HeartPulse className="text-brand" size={32} />,
                 title: "Widespread Pain or Sensitivity",
                 desc: "Muscle, joint, and nerve pain that often fluctuates with exertion or stress.",
               },
               {
-                icon: <Pill className="text-blue-600" size={32} />,
+                icon: <Pill className="text-brand" size={32} />,
                 title: "Other Symptoms",
                 desc: "Headaches, sore throat, lymph node tenderness, gut issues, temperature dysregulation, and sensory overload.",
               },
@@ -200,7 +200,7 @@ export default function MecfsPage() {
       <section className="bg-gray-50 py-20 border-y border-gray-100">
         <div className="max-w-5xl mx-auto px-6">
           <h2 className="text-3xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-            <Stethoscope className="text-blue-600" /> Diagnosis
+            <Stethoscope className="text-brand" /> Diagnosis
           </h2>
           <p className="text-lg text-gray-700 leading-relaxed mb-4">
             There is no single laboratory test for ME/CFS. Diagnosis is clinical
@@ -235,7 +235,7 @@ export default function MecfsPage() {
       <section className="py-20">
         <div className="max-w-6xl mx-auto px-6">
           <h2 className="text-3xl font-bold text-gray-900 mb-8 flex items-center gap-2">
-            <Syringe className="text-blue-600" /> Current Approaches &
+            <Syringe className="text-brand" /> Current Approaches &
             Treatments
           </h2>
           <p className="text-lg text-gray-700 mb-8 leading-relaxed">
@@ -289,7 +289,7 @@ export default function MecfsPage() {
       </section>
 
       {/* 🌍 Call to Action */}
-      <section className="bg-gradient-to-br from-blue-600 via-blue-500 to-blue-400 text-white py-24 text-center">
+      <section className="bg-gradient-to-br from-[#0D47A1] via-[#007BFF] to-[#1E88E5] text-white py-24 text-center">
         <h2 className="text-3xl md:text-4xl font-bold mb-4">
           Join the Movement Toward Understanding and a Cure
         </h2>

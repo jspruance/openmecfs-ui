@@ -5,7 +5,7 @@ import Link from "next/link";
 
 export default function HomePage() {
   return (
-    <section className="relative w-full bg-gradient-to-br from-blue-700 via-blue-600 to-blue-400 text-white overflow-hidden">
+    <section className="relative w-full bg-gradient-to-br from-[#0D47A1] via-[#007BFF] to-[#1E88E5] text-white overflow-hidden">
       <div className="max-w-7xl mx-auto px-10 md:px-16 py-28 flex flex-col md:flex-row items-center justify-between gap-10 md:gap-16">
         {/* Left: Text + CTA */}
         <div className="flex-1 text-center md:text-left">

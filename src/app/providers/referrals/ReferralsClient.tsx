@@ -99,7 +99,7 @@ export default function ReferralsClient({
   return (
     <div className="space-y-6">
       {/* Hero */}
-      <header className="rounded-2xl bg-gradient-to-r from-blue-600 to-blue-400 text-white p-6">
+      <header className="rounded-2xl bg-gradient-to-r from-[#007BFF] to-[#1E88E5] text-white p-6">
         <div className="flex items-center justify-between gap-4">
           <h1 className="text-2xl font-bold">{r?.title ?? "Referrals"}</h1>
           <div className="flex gap-2">
@@ -198,7 +198,7 @@ export default function ReferralsClient({
 
           <button
             onClick={copyToClipboard}
-            className="rounded-md bg-blue-600 text-white px-3 py-1.5 text-sm hover:bg-blue-700 transition"
+            className="rounded-md bg-brand text-white px-3 py-1.5 text-sm hover:bg-brand-dark transition"
           >
             Copy to clipboard
           </button>

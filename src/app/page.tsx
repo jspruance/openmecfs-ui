@@ -16,7 +16,7 @@ export default function HomePage() {
   return (
     <>
       {/* 🌅 HERO SECTION */}
-      <section className="relative w-full bg-gradient-to-br from-blue-700 via-blue-600 to-blue-400 text-white overflow-hidden">
+      <section className="relative w-full bg-gradient-to-br from-[#0D47A1] via-[#007BFF] to-[#1E88E5] text-white overflow-hidden">
         <div className="max-w-7xl mx-auto px-10 md:px-16 py-28 flex flex-col md:flex-row items-center justify-between gap-10 md:gap-16">
           {/* Left: Text + CTA */}
           <div className="flex-1 text-center md:text-left">
@@ -96,7 +96,7 @@ export default function HomePage() {
 
             <Link
               href="/about"
-              className="inline-block bg-blue-600 text-white px-6 py-3 rounded-md font-semibold shadow-md hover:bg-blue-700 hover:shadow-lg transition"
+              className="inline-block bg-brand text-white px-6 py-3 rounded-md font-semibold shadow-md hover:bg-brand-dark hover:shadow-lg transition"
             >
               Learn More
             </Link>
@@ -117,7 +117,7 @@ export default function HomePage() {
 
           <Link
             href="/research"
-            className="inline-block bg-blue-600 text-white px-8 py-3 rounded-md font-semibold shadow-md hover:bg-blue-700 hover:shadow-lg transition"
+            className="inline-block bg-brand text-white px-8 py-3 rounded-md font-semibold shadow-md hover:bg-brand-dark hover:shadow-lg transition"
           >
             Browse Research
           </Link>
@@ -127,7 +127,7 @@ export default function HomePage() {
       {/* 💌 NEWSLETTER CTA (Dark, high-contrast) */}
       <section
         id="newsletter-cta"
-        className="relative w-full bg-gradient-to-br from-blue-700 via-blue-600 to-blue-400 text-white overflow-hidden"
+        className="relative w-full bg-gradient-to-br from-[#0D47A1] via-[#007BFF] to-[#1E88E5] text-white overflow-hidden"
       >
         {/* put ALL bg layers behind content */}
         <div className="absolute inset-0 -z-10 bg-gradient-to-br from-[#0b1e3a] via-[#0d2e67] to-[#1363df]" />
