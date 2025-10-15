@@ -2,9 +2,31 @@
 
 import { useState } from "react";
 
+type Form = {
+  name: string; // submitter (optional)
+  email: string; // submitter (optional)
+  clinic: string; // required
+  city: string;
+  state: string;
+  country: string; // required
+  website: string;
+  phone: string;
+  focuses: string;
+  notes: string;
+  website_hp: string; // honeypot
+};
+
+const cleanUrl = (v: string) => {
+  const s = v.trim();
+  if (!s) return "";
+  if (/^https?:\/\//i.test(s)) return s;
+  return `https://${s}`;
+};
+
 export default function SuggestClinicForm() {
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<Form>({
     name: "",
+    email: "",
     clinic: "",
     city: "",
     state: "",
@@ -13,29 +35,59 @@ export default function SuggestClinicForm() {
     phone: "",
     focuses: "",
     notes: "",
-    website_hp: "", // honeypot
+    website_hp: "",
   });
   const [submitting, setSubmitting] = useState(false);
   const [ok, setOk] = useState<null | boolean>(null);
   const [err, setErr] = useState<string | null>(null);
 
+  function update<K extends keyof Form>(key: K) {
+    return (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+      setForm((f) => ({ ...f, [key]: e.target.value }));
+  }
+
   async function submit(e: React.FormEvent) {
     e.preventDefault();
+    if (form.website_hp) return; // bot
+
+    // minimal client validation
+    if (!form.clinic.trim() || !form.country.trim()) {
+      setErr("Clinic name and country are required.");
+      setOk(false);
+      return;
+    }
+
     setSubmitting(true);
     setErr(null);
     setOk(null);
     try {
+      const payload: Form = {
+        ...form,
+        clinic: form.clinic.trim(),
+        country: form.country.trim(),
+        city: form.city.trim(),
+        state: form.state.trim(),
+        name: form.name.trim(),
+        email: form.email.trim(),
+        phone: form.phone.trim(),
+        focuses: form.focuses.trim(),
+        notes: form.notes.trim(),
+        website: cleanUrl(form.website),
+      };
+
       const res = await fetch("/api/clinics/suggest", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify(payload),
       });
-      const data = await res.json();
-      if (!res.ok || !data?.ok)
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || data?.ok === false)
         throw new Error(data?.error || "Unable to submit");
+
       setOk(true);
       setForm({
         name: "",
+        email: "",
         clinic: "",
         city: "",
         state: "",
@@ -56,77 +108,99 @@ export default function SuggestClinicForm() {
 
   return (
     <form onSubmit={submit} className="grid md:grid-cols-2 gap-3">
+      {/* Submitter (optional) */}
       <input
         placeholder="Your name (optional)"
         className="rounded-md border border-gray-200 px-3 py-2 focus:border-blue-500 focus:ring-blue-500"
         value={form.name}
-        onChange={(e) => setForm({ ...form, name: e.target.value })}
+        onChange={update("name")}
+        autoComplete="name"
       />
+      <input
+        type="email"
+        placeholder="Your email (optional)"
+        className="rounded-md border border-gray-200 px-3 py-2 focus:border-blue-500 focus:ring-blue-500"
+        value={form.email}
+        onChange={update("email")}
+        autoComplete="email"
+      />
+
+      {/* Clinic */}
       <input
         placeholder="Clinic name *"
         required
-        className="rounded-md border border-gray-200 px-3 py-2 focus:border-blue-500 focus:ring-blue-500"
+        className="md:col-span-2 rounded-md border border-gray-200 px-3 py-2 focus:border-blue-500 focus:ring-blue-500"
         value={form.clinic}
-        onChange={(e) => setForm({ ...form, clinic: e.target.value })}
+        onChange={update("clinic")}
       />
 
+      {/* Location */}
       <input
         placeholder="City"
         className="rounded-md border border-gray-200 px-3 py-2 focus:border-blue-500 focus:ring-blue-500"
         value={form.city}
-        onChange={(e) => setForm({ ...form, city: e.target.value })}
+        onChange={update("city")}
+        autoComplete="address-level2"
       />
       <input
         placeholder="State/Region"
         className="rounded-md border border-gray-200 px-3 py-2 focus:border-blue-500 focus:ring-blue-500"
         value={form.state}
-        onChange={(e) => setForm({ ...form, state: e.target.value })}
+        onChange={update("state")}
+        autoComplete="address-level1"
       />
-
       <input
         placeholder="Country *"
         required
-        className="rounded-md border border-gray-200 px-3 py-2 focus:border-blue-500 focus:ring-blue-500"
+        className="md:col-span-2 rounded-md border border-gray-200 px-3 py-2 focus:border-blue-500 focus:ring-blue-500"
         value={form.country}
-        onChange={(e) => setForm({ ...form, country: e.target.value })}
+        onChange={update("country")}
+        autoComplete="country-name"
       />
+
+      {/* Contact */}
       <input
         placeholder="Website"
         className="rounded-md border border-gray-200 px-3 py-2 focus:border-blue-500 focus:ring-blue-500"
         value={form.website}
-        onChange={(e) => setForm({ ...form, website: e.target.value })}
+        onChange={update("website")}
+        inputMode="url"
+        autoComplete="url"
       />
-
       <input
         placeholder="Phone"
         className="rounded-md border border-gray-200 px-3 py-2 focus:border-blue-500 focus:ring-blue-500"
         value={form.phone}
-        onChange={(e) => setForm({ ...form, phone: e.target.value })}
-      />
-      <input
-        placeholder="Focus areas (e.g., ME/CFS, OI/POTS)"
-        className="rounded-md border border-gray-200 px-3 py-2 focus:border-blue-500 focus:ring-blue-500"
-        value={form.focuses}
-        onChange={(e) => setForm({ ...form, focuses: e.target.value })}
+        onChange={update("phone")}
+        inputMode="tel"
+        autoComplete="tel"
       />
 
+      {/* Details */}
+      <input
+        placeholder="Focus areas (e.g., ME/CFS, OI/POTS)"
+        className="md:col-span-2 rounded-md border border-gray-200 px-3 py-2 focus:border-blue-500 focus:ring-blue-500"
+        value={form.focuses}
+        onChange={update("focuses")}
+      />
       <textarea
         placeholder="Notes (waitlist, referrals, telemed, etc.)"
         className="md:col-span-2 rounded-md border border-gray-200 px-3 py-2 focus:border-blue-500 focus:ring-blue-500 min-h-[90px]"
         value={form.notes}
-        onChange={(e) => setForm({ ...form, notes: e.target.value })}
+        onChange={update("notes")}
       />
 
-      {/* Honeypot (hidden) */}
+      {/* Honeypot */}
       <input
         tabIndex={-1}
         autoComplete="off"
         value={form.website_hp}
-        onChange={(e) => setForm({ ...form, website_hp: e.target.value })}
+        onChange={update("website_hp")}
         className="hidden"
         aria-hidden="true"
       />
 
+      {/* Status */}
       {err && <p className="md:col-span-2 text-sm text-red-600">{err}</p>}
       {ok && (
         <p className="md:col-span-2 text-sm text-green-700">
@@ -134,12 +208,13 @@ export default function SuggestClinicForm() {
         </p>
       )}
 
+      {/* Submit */}
       <div className="md:col-span-2">
         <button
           type="submit"
           disabled={submitting}
           className="cursor-pointer inline-flex items-center justify-center rounded-md px-4 py-2 font-semibold
-                     bg-blue-600 text-white hover:bg-blue-700 transition disabled:opacity-60"
+                     bg-blue-600 text-white hover:bg-blue-700 transition disabled:opacity-60 disabled:cursor-not-allowed"
         >
           {submitting ? "Submitting…" : "Submit suggestion"}
         </button>

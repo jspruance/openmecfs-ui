@@ -3,10 +3,11 @@
 import Image from "next/image";
 import Link from "next/link";
 import ContactSection from "../components/ContactSection";
+import NewsletterForm from "@/components/NewsletterForm";
 
 const handleDonateClick = () => {
   if (typeof window !== "undefined") {
-    (window as any).umami?.track("donate_click");
+    (window as any).umami?.track?.("donate_click");
   }
 };
 
@@ -34,29 +35,16 @@ export default function HomePage() {
               <Link
                 href="/donate"
                 onClick={handleDonateClick}
-                className="
-                  relative inline-flex items-center justify-center
-                  px-8 py-3 text-lg font-semibold rounded-md
-                  bg-gradient-to-r from-yellow-300 via-amber-400 to-orange-400
-                  text-blue-900 shadow-[0_0_20px_rgba(255,200,100,0.6)]
-                  hover:shadow-[0_0_40px_rgba(255,200,100,0.8)]
-                  hover:from-yellow-400 hover:via-amber-300 hover:to-yellow-200
-                  hover:scale-[1.07] active:scale-[0.98]
-                  transition-all duration-300 ease-out
-                "
+                className="relative inline-flex items-center justify-center px-8 py-3 text-lg font-semibold rounded-md bg-gradient-to-r from-yellow-300 via-amber-400 to-orange-400 text-blue-900 shadow-[0_0_20px_rgba(255,200,100,0.6)] hover:shadow-[0_0_40px_rgba(255,200,100,0.8)] hover:from-yellow-400 hover:via-amber-300 hover:to-yellow-200 hover:scale-[1.07] active:scale-[0.98] transition-all duration-300 ease-out"
               >
                 <span className="relative z-10">Donate</span>
-                <span className="absolute inset-0 rounded-md bg-white/30 opacity-0 hover:opacity-50 blur-sm transition-opacity duration-300"></span>
+                <span className="absolute inset-0 rounded-md bg-white/30 opacity-0 hover:opacity-50 blur-sm transition-opacity duration-300" />
               </Link>
 
               {/* Secondary Button */}
               <Link
                 href="/about"
-                className="
-                  border border-white/70 text-white px-8 py-3 rounded-md font-semibold
-                  hover:bg-white/15 hover:border-white transition-all duration-200
-                  hover:shadow-lg hover:scale-[1.03] active:scale-[0.98]
-                "
+                className="border border-white/70 text-white px-8 py-3 rounded-md font-semibold hover:bg-white/15 hover:border-white transition-all duration-200 hover:shadow-lg hover:scale-[1.03] active:scale-[0.98]"
               >
                 Learn More
               </Link>
@@ -132,6 +120,39 @@ export default function HomePage() {
           >
             Browse Research
           </Link>
+        </div>
+      </section>
+
+      {/* 💌 NEWSLETTER CTA (Dark, high-contrast) */}
+      <section
+        id="newsletter-cta"
+        className="relative w-full bg-gradient-to-br from-blue-700 via-blue-600 to-blue-400 text-white overflow-hidden"
+      >
+        {/* put ALL bg layers behind content */}
+        <div className="absolute inset-0 -z-10 bg-gradient-to-br from-[#0b1e3a] via-[#0d2e67] to-[#1363df]" />
+        <div className="pointer-events-none absolute -top-28 -left-28 h-96 w-96 rounded-full bg-white/10 blur-3xl -z-10" />
+        <div className="pointer-events-none absolute -bottom-32 -right-32 h-96 w-96 rounded-full bg-cyan-300/20 blur-3xl -z-10" />
+
+        <div className="max-w-6xl mx-auto px-6 md:px-10 py-24 text-center">
+          <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.35)]">
+            Join the mission — get research updates & product news
+          </h2>
+          <p className="mt-3 text-white/90 max-w-2xl mx-auto">
+            Occasional emails with new clinic listings, provider tools, and the
+            latest ME/CFS summaries.
+          </p>
+
+          {/* floating card with dark text forced */}
+          <div className="mx-auto mt-8 max-w-2xl rounded-2xl bg-white/95 p-6 shadow-[0_24px_60px_rgba(0,0,0,0.30)] ring-1 ring-black/5 backdrop-blur text-neutral-900">
+            <NewsletterForm source="home_newsletter" variant="pill" />
+            <p className="mt-3 text-xs text-neutral-600">
+              You can unsubscribe any time. See our{" "}
+              <Link href="/privacy" className="underline">
+                Privacy Policy
+              </Link>
+              .
+            </p>
+          </div>
         </div>
       </section>
 
