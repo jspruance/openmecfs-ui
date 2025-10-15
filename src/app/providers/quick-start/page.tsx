@@ -14,6 +14,7 @@ import {
   Sparkles,
   ClipboardCopy,
 } from "lucide-react";
+import type { QuickStart } from "@/lib/providerContent";
 
 function Chip({ children }: { children: React.ReactNode }) {
   return (
@@ -80,17 +81,19 @@ function SectionCard({
   );
 }
 
-function Bullets({ items }: { items: string[] }) {
+/** Tolerant bullets: accepts optional array */
+function Bullets({ items = [] }: { items?: string[] }) {
+  if (!items.length) return null;
   return (
     <ul className="mt-2 list-disc space-y-1.5 pl-5">
-      {items.map((t) => (
-        <li key={t}>{t}</li>
+      {items.map((t, i) => (
+        <li key={`${t}-${i}`}>{t}</li>
       ))}
     </ul>
   );
 }
 
-function CopyBlock({ label, text }: { label: string; text: string }) {
+function CopyBlock({ label, text = "" }: { label: string; text?: string }) {
   const onCopy = async () => {
     try {
       await navigator.clipboard.writeText(text);
@@ -116,7 +119,31 @@ function CopyBlock({ label, text }: { label: string; text: string }) {
 }
 
 export default function QuickStart() {
-  const q = provider.quickStart;
+  // Safe fallback so the page renders even if content is missing
+  const q: QuickStart = (provider as any)?.quickStart ?? {
+    title: "Provider Quick-Start",
+    intro: "",
+    principles: [],
+    whatNotToDo: [],
+    visitFlow: [],
+    pemExplainer: "",
+    oiSteps: [],
+    baselineWorkup: [],
+    initialManagement: [],
+    followUp: [],
+    redFlags: [],
+    documentation: {
+      assessment: "",
+      plan: "",
+      accommodations: "",
+    },
+  };
+
+  const doc = q.documentation ?? {
+    assessment: "",
+    plan: "",
+    accommodations: "",
+  };
 
   return (
     <article className="rounded-2xl border border-slate-200 bg-white shadow-sm">
@@ -131,9 +158,11 @@ export default function QuickStart() {
             <h1 className="mt-2 text-2xl font-bold tracking-tight text-slate-900">
               {q.title}
             </h1>
-            <p className="mt-2 max-w-3xl text-[15px] leading-7 text-slate-700">
-              {q.intro}
-            </p>
+            {q.intro ? (
+              <p className="mt-2 max-w-3xl text-[15px] leading-7 text-slate-700">
+                {q.intro}
+              </p>
+            ) : null}
           </div>
 
           <a
@@ -149,8 +178,8 @@ export default function QuickStart() {
           icon={<Sparkles className="h-5 w-5 text-amber-700" />}
           title="Goal of the first visit"
         >
-          Validate, identify **PEM/OI**, start safe symptom relief, order
-          targeted workup, and create a follow-up + crash-prevention plan.
+          Validate, identify <strong>PEM/OI</strong>, start safe symptom relief,
+          order targeted workup, and create a follow-up + crash-prevention plan.
         </Callout>
       </div>
 
@@ -185,7 +214,7 @@ export default function QuickStart() {
           title="PEM — Key Concept"
           tint="sky"
         >
-          <p>{q.pemExplainer}</p>
+          {q.pemExplainer ? <p>{q.pemExplainer}</p> : null}
         </SectionCard>
 
         <SectionCard
@@ -239,16 +268,15 @@ export default function QuickStart() {
             </h3>
           </div>
           <div className="grid gap-4 md:grid-cols-3">
-            <CopyBlock label="Assessment" text={q.documentation.assessment} />
-            <CopyBlock label="Plan" text={q.documentation.plan} />
-            <CopyBlock
-              label="Accommodations"
-              text={q.documentation.accommodations}
-            />
+            <CopyBlock label="Assessment" text={doc.assessment} />
+            <CopyBlock label="Plan" text={doc.plan} />
+            <CopyBlock label="Accommodations" text={doc.accommodations} />
           </div>
         </div>
 
-        <p className="mt-2 text-xs text-slate-600">{provider.footer}</p>
+        {provider?.footer ? (
+          <p className="mt-2 text-xs text-slate-600">{provider.footer}</p>
+        ) : null}
       </div>
     </article>
   );
