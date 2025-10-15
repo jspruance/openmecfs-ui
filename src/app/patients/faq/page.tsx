@@ -6,7 +6,9 @@ export const metadata = {
     "Frequently asked questions for people living with or exploring ME/CFS.",
 };
 
-type QA = { q: string; a: string | JSX.Element };
+import type { ReactNode } from "react";
+
+type QA = { q: string; a: ReactNode };
 
 const FAQ: QA[] = [
   {
