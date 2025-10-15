@@ -30,44 +30,44 @@ export default function ReferralsClient({
   const [dob, setDob] = useState("");
   const [referrer, setReferrer] = useState("");
 
-  // Textarea content
+  // Textarea content and "user edited" flag
   const [text, setText] = useState<string>("");
+  const [dirty, setDirty] = useState(false); // true only when user types in the textarea
 
-  // Build dynamic referral note whenever tokens change
-  const baseTemplate = useMemo(() => {
-    const tpl = r?.template ?? "";
+  // Render function from the SOURCE template (never the rendered text)
+  const renderedTemplate = useMemo(() => {
+    const tpl = (r?.template ?? "").trim();
     const today = new Date().toLocaleDateString(undefined, {
       year: "numeric",
       month: "2-digit",
       day: "2-digit",
     });
-    return tpl
-      .replace("[TODAY]", today)
-      .replace("[DEST_CLINIC]", clinic)
-      .replace("[PATIENT_NAME]", patientName || "[PATIENT_NAME]")
-      .replace("[DOB]", dob || "[DOB]")
-      .replace("[REFERRER_NAME]", referrer || "[REFERRER_NAME]");
+
+    // Replace ALL occurrences, not just the first
+    const replaceAll = (s: string, find: string, value: string) =>
+      s.split(find).join(value);
+
+    let out = tpl;
+    out = replaceAll(out, "[TODAY]", today);
+    out = replaceAll(out, "[DEST_CLINIC]", clinic);
+    out = replaceAll(out, "[PATIENT_NAME]", patientName || "[PATIENT_NAME]");
+    out = replaceAll(out, "[DOB]", dob || "[DOB]");
+    out = replaceAll(out, "[REFERRER_NAME]", referrer || "[REFERRER_NAME]");
+
+    return out;
   }, [r?.template, clinic, patientName, dob, referrer]);
 
-  // Prefill or update text (but preserve manual edits)
-  // ✅ Always re-render template when clinic or patient info changes,
-  // but only if the user hasn't made manual edits beyond token fields
+  // Keep the textarea in sync with inputs unless the user has manually edited it
   useEffect(() => {
-    const defaultTemplate = baseTemplate.trim();
-
-    // Detect if user has edited text manually (beyond token replacements)
-    const userHasEdited =
-      text &&
-      !text.includes("[PATIENT_NAME]") &&
-      !text.includes("[DOB]") &&
-      !text.includes("[REFERRER_NAME]") &&
-      !text.includes("[DEST_CLINIC]");
-
-    if (!userHasEdited) {
-      setText(defaultTemplate);
+    if (!dirty) {
+      setText(renderedTemplate);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [baseTemplate]);
+  }, [renderedTemplate, dirty]);
+
+  const onTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setDirty(true); // user typed → freeze auto-renders
+    setText(e.target.value);
+  };
 
   const copyToClipboard = async () => {
     try {
@@ -77,33 +77,23 @@ export default function ReferralsClient({
         "referral-ta"
       ) as HTMLTextAreaElement | null;
       el?.select();
+      document.execCommand?.("copy");
     }
   };
 
   const fillExample = () => {
+    // Update tokens
     setPatientName("Jane Doe");
     setDob("01/01/1985");
     setReferrer("Dr. Smith");
     setClinic("Bateman Horne Center");
-    setText((t) =>
-      (t || baseTemplate)
-        .replace("[PATIENT_NAME]", "Jane Doe")
-        .replace("[DOB]", "01/01/1985")
-        .replace("[COGNITIVE_OR_OI]", "orthostatic intolerance (OI)")
-        .replace("[ONSET_YEARS]", "2019–2020")
-        .replace("[FUNCTIONAL_STATUS]", "predominantly housebound")
-        .replace("[FERRITIN]", "18 ng/mL")
-        .replace("[VITD]", "20 ng/mL")
-        .replace("[B12]", "372 pg/mL")
-        .replace("[ANA_TITER/PATTERN]", "1:80 speckled")
-        .replace("[UPRIGHT_TOL]", "< 10 min standing, < 30 min sitting")
-        .replace("[PEM_DURATION]", "several days")
-        .replace("[NOTES]", "frequent crashes after minimal activity")
-        .replace("[REFERRER_NAME]", "Dr. Smith")
-        .replace("[CLINIC_NAME]", "Example Family Medicine")
-        .replace("[CLINIC_PHONE]", "(555) 555-5555")
-        .replace("[CLINIC_FAX]", "(555) 555-5556")
-    );
+
+    // This is a programmatic fill → allow auto-render from template
+    setDirty(false);
+
+    // If you also want to prefill additional optional tokens that exist only in the template,
+    // you can do it by letting the effect re-render from the template, then (optionally) replace:
+    // (No need to do string replace here; the effect will rebuild from r.template)
   };
 
   return (
@@ -115,7 +105,7 @@ export default function ReferralsClient({
           <div className="flex gap-2">
             <button
               onClick={fillExample}
-              className="rounded-md border border-white/70 bg-white/10 px-3 py-1.5 text-sm hover:bg-white/20 transition"
+              className="cursor-pointer rounded-md border border-white/70 bg-white/10 px-3 py-1.5 text-sm hover:bg-white/20 transition"
             >
               Fill Example
             </button>
@@ -142,7 +132,10 @@ export default function ReferralsClient({
             <input
               type="text"
               value={patientName}
-              onChange={(e) => setPatientName(e.target.value)}
+              onChange={(e) => {
+                setPatientName(e.target.value);
+                setDirty(false); // keep auto-sync as long as user isn't editing textarea
+              }}
               className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
               placeholder="e.g. Jane Doe"
             />
@@ -154,7 +147,10 @@ export default function ReferralsClient({
             <input
               type="text"
               value={dob}
-              onChange={(e) => setDob(e.target.value)}
+              onChange={(e) => {
+                setDob(e.target.value);
+                setDirty(false);
+              }}
               className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
               placeholder="MM/DD/YYYY"
             />
@@ -166,7 +162,10 @@ export default function ReferralsClient({
             <input
               type="text"
               value={referrer}
-              onChange={(e) => setReferrer(e.target.value)}
+              onChange={(e) => {
+                setReferrer(e.target.value);
+                setDirty(false);
+              }}
               className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
               placeholder="e.g. Dr. Smith"
             />
@@ -182,7 +181,11 @@ export default function ReferralsClient({
             <label className="text-sm text-slate-700">Destination clinic</label>
             <select
               value={clinic}
-              onChange={(e) => setClinic(e.target.value)}
+              onChange={(e) => {
+                setClinic(e.target.value);
+                // keep auto-sync unless user already typed in textarea
+                // (do NOT set dirty here)
+              }}
               className="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm"
             >
               {CLINIC_OPTIONS.map((opt) => (
@@ -211,7 +214,7 @@ export default function ReferralsClient({
         <textarea
           id="referral-ta"
           value={text}
-          onChange={(e) => setText(e.target.value)}
+          onChange={onTextChange}
           className="w-full min-h-[420px] p-4 font-mono text-[13px] leading-6 outline-none"
           spellCheck={false}
         />
