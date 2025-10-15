@@ -22,7 +22,7 @@ export default function OrthostaticPage() {
   return (
     <div className="space-y-8">
       {/* Hero */}
-      <header className="rounded-2xl bg-gradient-to-r from-blue-600 to-blue-400 text-white p-6 md:p-8">
+      <header className="rounded-2xl bg-gradient-to-r from-[#007BFF] to-[#1E88E5] text-white p-6 md:p-8">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="text-2xl md:text-3xl font-bold">

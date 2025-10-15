@@ -52,7 +52,7 @@ export default function ResearchPage() {
       {/* 🧠 Header */}
       <section className="text-center mt-10 mb-6 px-4">
         <h2 className="text-2xl md:text-3xl font-semibold text-gray-900">
-          Open ME/CFS <span className="text-blue-600">Research Explorer</span>
+          Open ME/CFS <span className="text-brand">Research Explorer</span>
         </h2>
         <p className="mt-2 text-sm text-gray-600 max-w-lg mx-auto leading-relaxed">
           Explore summarized ME/CFS research using AI-powered search and
@@ -62,7 +62,7 @@ export default function ResearchPage() {
         {/* 🔍 Search Bar */}
         <form
           onSubmit={handleSearch}
-          className="max-w-md mx-auto mt-5 flex items-center bg-white border border-gray-200 rounded-xl shadow-sm focus-within:ring-2 focus-within:ring-blue-500 transition"
+          className="max-w-md mx-auto mt-5 flex items-center bg-white border border-gray-200 rounded-xl shadow-sm focus-within:ring-2 focus-within:ring-brand transition"
         >
           <Search className="ml-3 text-gray-400" size={16} />
           <input
@@ -74,7 +74,7 @@ export default function ResearchPage() {
           />
           <button
             type="submit"
-            className="m-1 px-4 py-2 text-sm font-medium text-white rounded-lg bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 transition cursor-pointer"
+            className="m-1 px-4 py-2 text-sm font-medium text-white rounded-lg bg-gradient-to-r from-[#007BFF] to-[#0D47A1] hover:from-[#1E88E5] hover:to-[#007BFF] transition cursor-pointer"
           >
             Search
           </button>
@@ -89,7 +89,7 @@ export default function ResearchPage() {
               setSort(e.target.value);
               fetchPapers(query, e.target.value, selectedTopic);
             }}
-            className="border border-gray-300 bg-white rounded-md px-3 pr-6 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer appearance-none relative"
+            className="border border-gray-300 bg-white rounded-md px-3 pr-6 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand cursor-pointer appearance-none relative"
             style={{
               backgroundImage:
                 "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 20 20'%3E%3Cpath fill='gray' d='M6 8l4 4 4-4H6z'/%3E%3C/svg%3E\")",
@@ -120,8 +120,8 @@ export default function ResearchPage() {
                 }}
                 className={`px-3 py-1.5 rounded-md text-sm font-medium border transition-all duration-150 shadow-sm cursor-pointer ${
                   selectedTopic === topic
-                    ? "bg-blue-100 text-blue-700 border-blue-300 shadow-md scale-[1.01]"
-                    : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50 hover:border-blue-300 hover:shadow-sm"
+                    ? "bg-blue-100 text-brand border-brand shadow-md scale-[1.01]"
+                    : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50 hover:border-brand hover:shadow-sm"
                 }`}
               >
                 {topic}
@@ -147,7 +147,7 @@ export default function ResearchPage() {
         {loading ? (
           <div className="rounded-xl border border-gray-200 p-8 text-center flex flex-col items-center justify-center text-gray-600">
             {/* Spinner */}
-            <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-3"></div>
+            <div className="w-8 h-8 border-4 border-brand border-t-transparent rounded-full animate-spin mb-3"></div>
             <p>Loading papers...</p>
           </div>
         ) : papers.length === 0 ? (
@@ -161,17 +161,17 @@ export default function ResearchPage() {
                 onClick={() => window.open(`/paper/${paper.pmid}`, "_blank")}
               >
                 <div className="flex items-start justify-between">
-                  <h3 className="font-medium text-gray-900 text-base group-hover:text-blue-600 leading-snug transition-colors">
+                  <h3 className="font-medium text-gray-900 text-base group-hover:text-brand leading-snug transition-colors">
                     {paper.title}
                   </h3>
                   {/* 🏷️ Year Badge */}
                   {paper.year && (
-                    <span className="ml-2 text-xs font-semibold bg-blue-100 text-blue-700 px-2 py-0.5 rounded-md shrink-0">
+                    <span className="ml-2 text-xs font-semibold bg-blue-100 text-brand px-2 py-0.5 rounded-md shrink-0">
                       {paper.year}
                     </span>
                   )}
                   <ArrowRight
-                    className="text-gray-300 group-hover:text-blue-500 transition-all opacity-0 group-hover:opacity-100 ml-2"
+                    className="text-gray-300 group-hover:text-brand transition-all opacity-0 group-hover:opacity-100 ml-2"
                     size={16}
                   />
                 </div>

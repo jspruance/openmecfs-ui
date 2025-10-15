@@ -69,7 +69,7 @@ const items: Item[] = [
 export default function DownloadsPage() {
   return (
     <div className="space-y-6">
-      <header className="rounded-2xl bg-gradient-to-r from-blue-600 to-blue-400 text-white p-6">
+      <header className="rounded-2xl bg-gradient-to-r from-[#007BFF] to-[#1E88E5] text-white p-6">
         <h1 className="text-2xl font-bold">Downloads</h1>
         <p className="mt-2 text-blue-50 max-w-3xl">
           Clinician-facing PDFs for offline use and sharing. Each download is

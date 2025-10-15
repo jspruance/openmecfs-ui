@@ -84,7 +84,7 @@ export default function DonatePage() {
                 className={
                   "px-4 py-2 rounded-md border transition cursor-pointer " +
                   (recurrence === r.key
-                    ? "border-blue-600 bg-blue-50 text-blue-700"
+                    ? "border-brand bg-blue-50 text-brand"
                     : "border-gray-200 hover:bg-gray-50 text-gray-700")
                 }
               >
@@ -107,7 +107,7 @@ export default function DonatePage() {
                   className={
                     "px-4 py-2 rounded-md border transition cursor-pointer " +
                     (!custom && amount === v
-                      ? "border-blue-600 bg-blue-50 text-blue-700"
+                      ? "border-brand bg-blue-50 text-brand"
                       : "border-gray-200 hover:bg-gray-50 text-gray-700")
                   }
                 >
@@ -125,7 +125,7 @@ export default function DonatePage() {
                   placeholder="Custom"
                   value={custom}
                   onChange={(e) => setCustom(e.target.value)}
-                  className="pl-7 pr-3 py-2 w-32 rounded-md border border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+                  className="pl-7 pr-3 py-2 w-32 rounded-md border border-gray-200 focus:border-brand focus:ring-brand"
                 />
               </div>
             </div>
@@ -142,14 +142,14 @@ export default function DonatePage() {
               placeholder="Your name (optional)"
               value={donorName}
               onChange={(e) => setDonorName(e.target.value)}
-              className="w-full rounded-md border border-gray-200 px-3 py-2 focus:border-blue-500 focus:ring-blue-500"
+              className="w-full rounded-md border border-gray-200 px-3 py-2 focus:border-brand focus:ring-brand"
             />
             <input
               type="email"
               placeholder="Email for receipt (optional)"
               value={donorEmail}
               onChange={(e) => setDonorEmail(e.target.value)}
-              className="w-full rounded-md border border-gray-200 px-3 py-2 focus:border-blue-500 focus:ring-blue-500"
+              className="w-full rounded-md border border-gray-200 px-3 py-2 focus:border-brand focus:ring-brand"
             />
           </div>
 
@@ -157,7 +157,7 @@ export default function DonatePage() {
             placeholder="Add a note (optional)"
             value={note}
             onChange={(e) => setNote(e.target.value)}
-            className="w-full rounded-md border border-gray-200 px-3 py-2 focus:border-blue-500 focus:ring-blue-500 min-h-[90px]"
+            className="w-full rounded-md border border-gray-200 px-3 py-2 focus:border-brand focus:ring-brand min-h-[90px]"
           />
 
           {err && <p className="text-red-600 text-sm">{err}</p>}

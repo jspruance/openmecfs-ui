@@ -74,7 +74,7 @@ export default function ContactSection() {
               <input
                 name="name"
                 placeholder="Your name"
-                className="w-full pl-10 pr-3 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                className="w-full pl-10 pr-3 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-brand focus:outline-none"
               />
             </div>
           </label>
@@ -88,7 +88,7 @@ export default function ContactSection() {
                 name="email"
                 required
                 placeholder="you@example.com"
-                className="w-full pl-10 pr-3 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                className="w-full pl-10 pr-3 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-brand focus:outline-none"
               />
             </div>
           </label>
@@ -98,7 +98,7 @@ export default function ContactSection() {
             <input
               name="subject"
               placeholder="How can we help?"
-              className="w-full px-3 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              className="w-full px-3 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-brand focus:outline-none"
             />
           </label>
 
@@ -111,7 +111,7 @@ export default function ContactSection() {
                 required
                 rows={6}
                 placeholder="Write your message…"
-                className="w-full pl-10 pr-3 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                className="w-full pl-10 pr-3 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-brand focus:outline-none"
               />
             </div>
           </label>
@@ -128,7 +128,7 @@ export default function ContactSection() {
           <button
             type="submit"
             disabled={state === "loading" || !token}
-            className="cursor-pointer inline-flex items-center justify-center px-6 py-3 rounded-md font-semibold bg-blue-600 text-white hover:bg-blue-700 hover:shadow-lg transition disabled:opacity-60 disabled:cursor-not-allowed"
+            className="cursor-pointer inline-flex items-center justify-center px-6 py-3 rounded-md font-semibold bg-brand text-white hover:bg-brand-dark hover:shadow-lg transition disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {state === "loading" ? "Sending…" : "Send Message"}
           </button>

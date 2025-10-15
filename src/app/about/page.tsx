@@ -71,7 +71,7 @@ export default function AboutPage() {
         <div className="max-w-6xl mx-auto px-6 grid md:grid-cols-2 gap-12 items-start">
           <div>
             <h2 className="text-3xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-              <Heart className="text-blue-600" /> Our Mission
+              <Heart className="text-brand" /> Our Mission
             </h2>
             <p className="text-lg text-gray-700 leading-relaxed mb-4">
               Open ME/CFS exists to accelerate discovery and understanding of
@@ -88,7 +88,7 @@ export default function AboutPage() {
 
           <div className="bg-blue-50 p-8 rounded-2xl shadow-sm border border-blue-100">
             <h3 className="text-xl font-semibold text-gray-900 mb-3 flex items-center gap-2">
-              <Globe className="text-blue-600" /> Our Vision
+              <Globe className="text-brand" /> Our Vision
             </h3>
             <p className="text-gray-700 leading-relaxed">
               A world where every patient, researcher, and physician can access
@@ -109,17 +109,17 @@ export default function AboutPage() {
           <div className="grid md:grid-cols-3 gap-10">
             {[
               {
-                icon: <FlaskConical className="text-blue-600" size={36} />,
+                icon: <FlaskConical className="text-brand" size={36} />,
                 title: "AI-Powered Research Summaries",
                 desc: "Our pipeline continuously fetches new PubMed studies, generates scientific and patient-friendly summaries, and organizes them for easy discovery.",
               },
               {
-                icon: <FileText className="text-blue-600" size={36} />,
+                icon: <FileText className="text-brand" size={36} />,
                 title: "Open Database & API",
                 desc: "We’re building an accessible, transparent ME/CFS research database — with metadata, citations, and semantic search for the scientific community.",
               },
               {
-                icon: <Users className="text-blue-600" size={36} />,
+                icon: <Users className="text-brand" size={36} />,
                 title: "Community Collaboration",
                 desc: "We connect patients, advocates, and researchers to share knowledge, insights, and lived experience — because progress requires all voices.",
               },
@@ -152,7 +152,7 @@ export default function AboutPage() {
 
           <div className="flex flex-col sm:flex-row justify-center gap-8 mt-10">
             <div className="bg-gray-50 p-6 rounded-xl border border-gray-100 shadow-sm flex-1">
-              <HandHeart className="text-blue-600 mb-2 mx-auto" size={36} />
+              <HandHeart className="text-brand mb-2 mx-auto" size={36} />
               <h3 className="font-semibold text-gray-900 mb-1">
                 Donation Allocation
               </h3>
@@ -161,7 +161,7 @@ export default function AboutPage() {
               </p>
             </div>
             <div className="bg-gray-50 p-6 rounded-xl border border-gray-100 shadow-sm flex-1">
-              <Globe className="text-blue-600 mb-2 mx-auto" size={36} />
+              <Globe className="text-brand mb-2 mx-auto" size={36} />
               <h3 className="font-semibold text-gray-900 mb-1">
                 Open by Design
               </h3>
@@ -175,7 +175,7 @@ export default function AboutPage() {
       </section>
 
       {/* 🌍 CTA */}
-      <section className="bg-gradient-to-br from-blue-600 via-blue-500 to-blue-400 text-white py-24 text-center">
+      <section className="bg-gradient-to-br from-[#0D47A1] via-[#007BFF] to-[#1E88E5] text-white py-24 text-center">
         <h2 className="text-3xl md:text-4xl font-bold mb-4">
           Join Us in Opening the Future of ME/CFS Research
         </h2>

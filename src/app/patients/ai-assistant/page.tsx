@@ -71,7 +71,7 @@ export default function AiAssistantPage() {
     <div className="mx-auto w-full max-w-3xl px-2 sm:px-4">
       {/* Header */}
       <header className="mb-6 mt-1">
-        <div className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-blue-50 to-indigo-50 px-3 py-1 text-xs text-slate-600 ring-1 ring-inset ring-slate-200">
+        <div className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-blue-50 to-blue-100 px-3 py-1 text-xs text-slate-600 ring-1 ring-inset ring-slate-200">
           <Sparkles className="h-3.5 w-3.5 text-blue-500" />
           AI Health Messaging
         </div>

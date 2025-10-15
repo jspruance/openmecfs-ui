@@ -28,7 +28,7 @@ export default function DifferentialPage() {
 
   return (
     <div className="space-y-6">
-      <header className="rounded-2xl bg-gradient-to-r from-blue-600 to-blue-400 text-white p-6">
+      <header className="rounded-2xl bg-gradient-to-r from-[#007BFF] to-[#1E88E5] text-white p-6">
         <h1 className="text-2xl font-bold">{d.title ?? FALLBACK.title}</h1>
         {d.intro ? (
           <p className="mt-2 text-blue-50 max-w-2xl">{d.intro}</p>

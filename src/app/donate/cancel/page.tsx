@@ -11,7 +11,7 @@ export default function Cancel() {
         <Link
           href="/donate"
           data-umami-event="donate_cancel_click"
-          className="inline-block mt-6 text-blue-600 hover:underline"
+          className="inline-block mt-6 text-brand hover:underline"
         >
           Go back to Donate
         </Link>

@@ -111,7 +111,7 @@ export default function SuggestClinicForm() {
       {/* Submitter (optional) */}
       <input
         placeholder="Your name (optional)"
-        className="rounded-md border border-gray-200 px-3 py-2 focus:border-blue-500 focus:ring-blue-500"
+        className="rounded-md border border-gray-200 px-3 py-2 focus:border-brand focus:ring-brand"
         value={form.name}
         onChange={update("name")}
         autoComplete="name"
@@ -119,7 +119,7 @@ export default function SuggestClinicForm() {
       <input
         type="email"
         placeholder="Your email (optional)"
-        className="rounded-md border border-gray-200 px-3 py-2 focus:border-blue-500 focus:ring-blue-500"
+        className="rounded-md border border-gray-200 px-3 py-2 focus:border-brand focus:ring-brand"
         value={form.email}
         onChange={update("email")}
         autoComplete="email"
@@ -129,7 +129,7 @@ export default function SuggestClinicForm() {
       <input
         placeholder="Clinic name *"
         required
-        className="md:col-span-2 rounded-md border border-gray-200 px-3 py-2 focus:border-blue-500 focus:ring-blue-500"
+        className="md:col-span-2 rounded-md border border-gray-200 px-3 py-2 focus:border-brand focus:ring-brand"
         value={form.clinic}
         onChange={update("clinic")}
       />
@@ -137,14 +137,14 @@ export default function SuggestClinicForm() {
       {/* Location */}
       <input
         placeholder="City"
-        className="rounded-md border border-gray-200 px-3 py-2 focus:border-blue-500 focus:ring-blue-500"
+        className="rounded-md border border-gray-200 px-3 py-2 focus:border-brand focus:ring-brand"
         value={form.city}
         onChange={update("city")}
         autoComplete="address-level2"
       />
       <input
         placeholder="State/Region"
-        className="rounded-md border border-gray-200 px-3 py-2 focus:border-blue-500 focus:ring-blue-500"
+        className="rounded-md border border-gray-200 px-3 py-2 focus:border-brand focus:ring-brand"
         value={form.state}
         onChange={update("state")}
         autoComplete="address-level1"
@@ -152,7 +152,7 @@ export default function SuggestClinicForm() {
       <input
         placeholder="Country *"
         required
-        className="md:col-span-2 rounded-md border border-gray-200 px-3 py-2 focus:border-blue-500 focus:ring-blue-500"
+        className="md:col-span-2 rounded-md border border-gray-200 px-3 py-2 focus:border-brand focus:ring-brand"
         value={form.country}
         onChange={update("country")}
         autoComplete="country-name"
@@ -161,7 +161,7 @@ export default function SuggestClinicForm() {
       {/* Contact */}
       <input
         placeholder="Website"
-        className="rounded-md border border-gray-200 px-3 py-2 focus:border-blue-500 focus:ring-blue-500"
+        className="rounded-md border border-gray-200 px-3 py-2 focus:border-brand focus:ring-brand"
         value={form.website}
         onChange={update("website")}
         inputMode="url"
@@ -169,7 +169,7 @@ export default function SuggestClinicForm() {
       />
       <input
         placeholder="Phone"
-        className="rounded-md border border-gray-200 px-3 py-2 focus:border-blue-500 focus:ring-blue-500"
+        className="rounded-md border border-gray-200 px-3 py-2 focus:border-brand focus:ring-brand"
         value={form.phone}
         onChange={update("phone")}
         inputMode="tel"
@@ -179,13 +179,13 @@ export default function SuggestClinicForm() {
       {/* Details */}
       <input
         placeholder="Focus areas (e.g., ME/CFS, OI/POTS)"
-        className="md:col-span-2 rounded-md border border-gray-200 px-3 py-2 focus:border-blue-500 focus:ring-blue-500"
+        className="md:col-span-2 rounded-md border border-gray-200 px-3 py-2 focus:border-brand focus:ring-brand"
         value={form.focuses}
         onChange={update("focuses")}
       />
       <textarea
         placeholder="Notes (waitlist, referrals, telemed, etc.)"
-        className="md:col-span-2 rounded-md border border-gray-200 px-3 py-2 focus:border-blue-500 focus:ring-blue-500 min-h-[90px]"
+        className="md:col-span-2 rounded-md border border-gray-200 px-3 py-2 focus:border-brand focus:ring-brand min-h-[90px]"
         value={form.notes}
         onChange={update("notes")}
       />

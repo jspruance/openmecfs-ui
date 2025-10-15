@@ -7,7 +7,15 @@ const config: Config = {
     "./src/lib/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        brand: {
+          light: '#1E88E5',
+          DEFAULT: '#007BFF',
+          dark: '#0D47A1',
+        },
+      },
+    },
   },
   plugins: [],
 };
