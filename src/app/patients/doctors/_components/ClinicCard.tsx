@@ -28,6 +28,7 @@ export type ClinicType = {
 
 export default function ClinicCard({ c }: { c: ClinicType }) {
   const auto =
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (c as any).autonomicFocused /* legacy */ ?? c.autonomic_focused ?? false;
 
   const tags = c.tags ?? [];

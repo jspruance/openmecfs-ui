@@ -142,10 +142,10 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json({ ok: true, clinic: data });
-  } catch (e: any) {
+  } catch (e: unknown) {
     console.error("ADMIN_UPSERT_ERROR", e);
     return NextResponse.json(
-      { ok: false, error: e?.message ?? "Unexpected error." },
+      { ok: false, error: e instanceof Error ? e.message : "Unexpected error." },
       { status: 500 }
     );
   }
@@ -188,10 +188,10 @@ export async function DELETE(req: Request) {
     }
 
     return NextResponse.json({ ok: true });
-  } catch (e: any) {
+  } catch (e: unknown) {
     console.error("ADMIN_DELETE_ERROR", e);
     return NextResponse.json(
-      { ok: false, error: e?.message ?? "Unexpected error." },
+      { ok: false, error: e instanceof Error ? e.message : "Unexpected error." },
       { status: 500 }
     );
   }

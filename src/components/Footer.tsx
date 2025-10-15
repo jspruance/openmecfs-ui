@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function Footer() {
   return (
     <footer className="mt-16 border-t border-gray-200 bg-gray-50">
@@ -18,15 +20,15 @@ export default function Footer() {
 
         {/* Right Side: Footer Links */}
         <div className="flex gap-4 mt-2 sm:mt-0">
-          <a href="/terms" className="hover:text-gray-700 transition-colors">
+          <Link href="/terms" className="hover:text-gray-700 transition-colors">
             Terms
-          </a>
-          <a href="/privacy" className="hover:text-gray-700 transition-colors">
+          </Link>
+          <Link href="/privacy" className="hover:text-gray-700 transition-colors">
             Privacy
-          </a>
-          <a href="/#contact" className="hover:text-gray-700 transition-colors">
+          </Link>
+          <Link href="/#contact" className="hover:text-gray-700 transition-colors">
             Contact
-          </a>
+          </Link>
         </div>
       </div>
     </footer>

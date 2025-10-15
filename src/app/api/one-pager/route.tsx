@@ -2,7 +2,6 @@
 export const runtime = "nodejs"; // @react-pdf needs Node runtime
 export const dynamic = "force-dynamic";
 
-import { NextRequest } from "next/server";
 import {
   Document,
   Page,
@@ -151,7 +150,7 @@ function OnePagerPDF() {
   );
 }
 
-export async function GET(_req: NextRequest) {
+export async function GET() {
   const buffer = await pdf(<OnePagerPDF />).toBuffer();
   return new Response(buffer, {
     headers: {

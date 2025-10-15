@@ -11,23 +11,23 @@ import {
   Clock,
 } from "lucide-react";
 
-export default function MecfsPage() {
-  // 🗣️ Patient quotes
-  const quotes = [
-    {
-      text: "Living with ME/CFS feels like having the flu that never ends — a constant struggle against exhaustion, pain, and sensory overload.",
-      author: "— Patient with ME/CFS",
-    },
-    {
-      text: "Every small task feels like climbing a mountain. Rest isn’t recovery — it’s survival between crashes.",
-      author: "— ME/CFS advocate",
-    },
-    {
-      text: "It’s like my body’s batteries never recharge, no matter how long I rest.",
-      author: "— ME/CFS patient, 12 years diagnosed",
-    },
-  ];
+// 🗣️ Patient quotes
+const quotes = [
+  {
+    text: "Living with ME/CFS feels like having the flu that never ends — a constant struggle against exhaustion, pain, and sensory overload.",
+    author: "— Patient with ME/CFS",
+  },
+  {
+    text: "Every small task feels like climbing a mountain. Rest isn't recovery — it's survival between crashes.",
+    author: "— ME/CFS advocate",
+  },
+  {
+    text: "It's like my body's batteries never recharge, no matter how long I rest.",
+    author: "— ME/CFS patient, 12 years diagnosed",
+  },
+];
 
+export default function MecfsPage() {
   // 🎲 Pick one random quote (fixed per render)
   const randomQuote = useMemo(
     () => quotes[Math.floor(Math.random() * quotes.length)],

@@ -6,6 +6,7 @@ import { FileDown } from "lucide-react"; // ← add this
 
 const handleDonateClick = () => {
   if (typeof window !== "undefined") {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (window as any).umami?.track("donate_click");
   }
 };

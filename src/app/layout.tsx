@@ -2,7 +2,6 @@ import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Inter } from "next/font/google";
-import LayoutWrapper from "@/components/LayoutWrapper";
 import Script from "next/script";
 
 export const metadata = {

@@ -76,8 +76,8 @@ export async function POST(req: Request) {
 
     const session = await stripe.checkout.sessions.create(params);
     return NextResponse.json({ url: session.url }, { status: 200 });
-  } catch (err: any) {
-    console.error("STRIPE_CHECKOUT_ERROR", err?.message || err);
+  } catch (err: unknown) {
+    console.error("STRIPE_CHECKOUT_ERROR", err instanceof Error ? err.message : err);
     return NextResponse.json(
       { error: "Failed to create checkout." },
       { status: 500 }

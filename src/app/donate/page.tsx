@@ -45,8 +45,8 @@ export default function DonatePage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error || "Unable to start checkout.");
       window.location.href = data.url;
-    } catch (e: any) {
-      setErr(e?.message || "Something went wrong.");
+    } catch (e: unknown) {
+      setErr(e instanceof Error ? e.message : "Something went wrong.");
     } finally {
       setLoading(false);
     }
@@ -73,7 +73,7 @@ export default function DonatePage() {
               <button
                 type="button"
                 key={r.key}
-                onClick={() => setRecurrence(r.key as any)}
+                onClick={() => setRecurrence(r.key as "one_time" | "monthly")}
                 className={
                   "px-4 py-2 rounded-md border transition cursor-pointer " +
                   (recurrence === r.key

@@ -31,8 +31,8 @@ export default function ContactSection() {
       setState("success");
       form.reset();
       setToken(""); // reset captcha
-    } catch (err: any) {
-      setError(err?.message || "Something went wrong.");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Something went wrong.");
       setState("error");
     }
   }

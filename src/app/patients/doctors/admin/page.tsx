@@ -168,8 +168,8 @@ export default function AdminClinicsPage() {
       setMsg(`Saved: ${data.clinic?.name || "clinic"}`);
       setOriginalSlug(data.clinic?.slug ?? originalSlug ?? null);
       await refreshList();
-    } catch (e: any) {
-      setErr(e?.message || "Unexpected error.");
+    } catch (e: unknown) {
+      setErr(e instanceof Error ? e.message : "Unexpected error.");
     } finally {
       setLoading(false);
     }
@@ -198,8 +198,8 @@ export default function AdminClinicsPage() {
       await refreshList();
       startNew();
       setMsg("Clinic deleted.");
-    } catch (e: any) {
-      setErr(e?.message || "Unexpected error.");
+    } catch (e: unknown) {
+      setErr(e instanceof Error ? e.message : "Unexpected error.");
     } finally {
       setLoading(false);
     }

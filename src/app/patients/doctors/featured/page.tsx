@@ -19,8 +19,8 @@ export default function FeaturedClinicsPage() {
         if (!res.ok || !data?.ok)
           throw new Error(data?.error || "Failed to load featured clinics");
         if (mounted) setClinics(data.clinics || []);
-      } catch (e: any) {
-        if (mounted) setErr(e?.message || "Unexpected error.");
+      } catch (e: unknown) {
+        if (mounted) setErr(e instanceof Error ? e.message : "Unexpected error.");
       } finally {
         if (mounted) setLoading(false);
       }

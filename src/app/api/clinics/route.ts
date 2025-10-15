@@ -32,10 +32,10 @@ export async function GET(req: Request) {
     if (error) throw error;
 
     return NextResponse.json({ ok: true, clinics: data });
-  } catch (e: any) {
+  } catch (e: unknown) {
     console.error("CLINICS_LIST_ERROR", e);
     return NextResponse.json(
-      { ok: false, error: e.message || "Failed" },
+      { ok: false, error: e instanceof Error ? e.message : "Failed" },
       { status: 500 }
     );
   }

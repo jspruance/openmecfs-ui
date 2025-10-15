@@ -51,7 +51,7 @@ export default function ReferralsClient({
 
   // Prefill or update text (but preserve manual edits)
   // ✅ Always re-render template when clinic or patient info changes,
-  // but only if the user hasn’t made manual edits beyond token fields
+  // but only if the user hasn't made manual edits beyond token fields
   useEffect(() => {
     const defaultTemplate = baseTemplate.trim();
 
@@ -66,6 +66,7 @@ export default function ReferralsClient({
     if (!userHasEdited) {
       setText(defaultTemplate);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [baseTemplate]);
 
   const copyToClipboard = async () => {

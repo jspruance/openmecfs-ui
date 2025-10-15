@@ -167,6 +167,7 @@ export default function DoctorsDirectoryPage() {
       Object.keys(STATE_NAMES).includes(needleRaw.toUpperCase());
 
     let list = clinics.filter((c) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const auto = (c as any).autonomicFocused ?? c.autonomic_focused ?? false;
 
       if (onlyAutonomic && !auto) return false;
@@ -328,6 +329,7 @@ export default function DoctorsDirectoryPage() {
           <ul className="grid md:grid-cols-2 gap-5 items-stretch">
             {filtered.map((c) => {
               const auto =
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 (c as any).autonomicFocused ?? c.autonomic_focused ?? false;
 
               const addrLines = [

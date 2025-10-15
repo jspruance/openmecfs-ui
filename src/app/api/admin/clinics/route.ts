@@ -37,7 +37,8 @@ export async function POST(req: Request) {
     );
   }
 
-  const { password, ...toInsert } = data;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { password: _password, ...toInsert } = data;
 
   const { data: created, error } = await supabaseAdmin
     .from("clinics")
