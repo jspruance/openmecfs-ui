@@ -23,6 +23,19 @@ function safeJSONParse<T>(text: string): T {
   return JSON.parse(clean) as T;
 }
 
+function toLower(s: string | undefined | null): string {
+  return String(s ?? "").toLowerCase();
+}
+
+function parseYearRange(value: string) {
+  // Accept "2023" or "2020-2024"
+  const m = value.match(/^(\d{4})(?:-(\d{4}))?$/);
+  if (!m) return null;
+  const y1 = Number(m[1]);
+  const y2 = m[2] ? Number(m[2]) : y1;
+  return y1 <= y2 ? { y1, y2 } : { y1: y2, y2: y1 };
+}
+
 export async function GET(req: Request) {
   try {
     const file = path.join(process.cwd(), "public", "data", "papers.json");
@@ -30,16 +43,20 @@ export async function GET(req: Request) {
     let all = safeJSONParse<Paper[]>(raw);
 
     const { searchParams } = new URL(req.url);
-    const q = (searchParams.get("q") || "").toLowerCase();
-    const topic = (searchParams.get("topic") || "").toLowerCase();
-    const sort = (searchParams.get("sort") || "year").toLowerCase(); // year|newest|title
-    const order = (searchParams.get("order") || "desc").toLowerCase(); // asc|desc
+    const q = toLower(searchParams.get("q"));
+    const topic = toLower(searchParams.get("topic"));
+    const author = toLower(searchParams.get("author"));
+    const journal = toLower(searchParams.get("journal"));
+    const yearParam = searchParams.get("year") || "";
+    const sort = toLower(searchParams.get("sort") || "year"); // year|newest|title
+    const order = toLower(searchParams.get("order") || "desc"); // asc|desc
     const page = Math.max(1, Number(searchParams.get("page") || "1"));
     const limit = Math.max(
       1,
       Math.min(100, Number(searchParams.get("limit") || "10"))
     );
 
+    // Full-text-ish search
     if (q) {
       all = all.filter((p) => {
         const hay = [
@@ -56,13 +73,37 @@ export async function GET(req: Request) {
       });
     }
 
+    // Topic via keywords (substring match)
     if (topic) {
       all = all.filter((p) =>
-        (p.keywords ?? []).some((k) => k.toLowerCase().includes(topic))
+        (p.keywords ?? []).some((k) => toLower(k).includes(topic))
       );
     }
 
-    // sorting
+    // Author substring (join authors array)
+    if (author) {
+      all = all.filter((p) =>
+        (p.authors ?? []).join(" ").toLowerCase().includes(author)
+      );
+    }
+
+    // Journal substring
+    if (journal) {
+      all = all.filter((p) => toLower(p.journal).includes(journal));
+    }
+
+    // Year exact or range
+    if (yearParam) {
+      const yr = parseYearRange(yearParam);
+      if (yr) {
+        const { y1, y2 } = yr;
+        all = all.filter(
+          (p) => typeof p.year === "number" && p.year! >= y1 && p.year! <= y2
+        );
+      }
+    }
+
+    // Sorting
     const by = (v: string | number | undefined | null) => v ?? "";
     if (sort === "newest") {
       all.sort(
@@ -76,11 +117,12 @@ export async function GET(req: Request) {
       );
       if (order === "desc") all.reverse();
     } else {
-      // year default
+      // default: year
       all.sort((a, b) => Number(by(b.year)) - Number(by(a.year)));
       if (order === "asc") all.reverse();
     }
 
+    // Pagination
     const start = (page - 1) * limit;
     const results = all.slice(start, start + limit);
 
@@ -89,19 +131,22 @@ export async function GET(req: Request) {
       { headers: { "Cache-Control": "no-store" } }
     );
   } catch (err: unknown) {
+    // Build a helpful message without using `any`
     let message = "Unknown server error";
+    const maybeError = err as { code?: unknown; message?: unknown };
+
     if (
-      typeof err === "object" &&
-      err &&
-      "code" in err &&
-      (err as { code?: string }).code === "ENOENT"
+      maybeError &&
+      typeof maybeError.code === "string" &&
+      maybeError.code === "ENOENT"
     ) {
       message = "Missing file public/data/papers.json";
     } else if (err instanceof SyntaxError) {
       message = "Invalid JSON in public/data/papers.json";
-    } else if (err instanceof Error) {
-      message = err.message;
+    } else if (maybeError && typeof maybeError.message === "string") {
+      message = maybeError.message;
     }
+
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
