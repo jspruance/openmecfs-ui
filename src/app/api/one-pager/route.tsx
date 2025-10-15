@@ -2,10 +2,17 @@
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-import { Document, Page, Text, View, pdf, Font } from "@react-pdf/renderer";
-import { Readable } from "node:stream";
+import {
+  Document,
+  Page,
+  Text,
+  View,
+  StyleSheet,
+  pdf,
+  Font,
+} from "@react-pdf/renderer";
 
-/* --------- Content (unchanged; tweak as you like) --------- */
+/* ---------- Content ---------- */
 const onePager = {
   title: "Myalgic Encephalomyelitis / Chronic Fatigue Syndrome (ME/CFS)",
   sub: "Concise overview for clinicians, patients, and families.",
@@ -51,31 +58,21 @@ const onePager = {
     "This sheet summarizes widely used guidance (IOM/NAM 2015 criteria) and common clinical approaches. Informational only—does not replace medical advice. More at Open ME/CFS.",
 };
 
-// keep long tokens intact
+/* ---------- PDF setup ---------- */
+// Keep long tokens intact so URLs/terms don't hyphen-break
 Font.registerHyphenationCallback((word) => [word]);
 
-/* --------- Minimal styles without StyleSheet to avoid lint noise --------- */
-const S = {
+const styles = StyleSheet.create({
   page: {
     padding: 32,
     fontSize: 10,
     color: "#111827",
     fontFamily: "Helvetica",
-  } as const,
-  h1: {
-    fontSize: 16,
-    fontWeight: 700 as const,
-    textAlign: "center" as const,
-    marginBottom: 6,
   },
-  sub: {
-    fontSize: 9,
-    color: "#475569",
-    textAlign: "center" as const,
-    marginBottom: 12,
-  },
+  h1: { fontSize: 16, fontWeight: 700, textAlign: "center", marginBottom: 6 },
+  sub: { fontSize: 9, color: "#475569", textAlign: "center", marginBottom: 12 },
   section: { marginTop: 10 },
-  h2: { fontSize: 12, fontWeight: 700 as const, marginBottom: 4 },
+  h2: { fontSize: 12, fontWeight: 700, marginBottom: 4 },
   p: { lineHeight: 1.35, marginBottom: 4 },
   ul: { marginLeft: 10, marginTop: 2 },
   li: { marginBottom: 2 },
@@ -86,13 +83,13 @@ const S = {
     marginBottom: 6,
   },
   foot: { fontSize: 8, color: "#475569", lineHeight: 1.35 },
-};
+});
 
 function BulletList({ items }: { items: string[] }) {
   return (
-    <View style={S.ul}>
+    <View style={styles.ul}>
       {items.map((t, i) => (
-        <Text key={i} style={S.li}>
+        <Text key={i} style={styles.li}>
           • {t}
         </Text>
       ))}
@@ -103,63 +100,63 @@ function BulletList({ items }: { items: string[] }) {
 function OnePagerPDF() {
   return (
     <Document>
-      <Page size="A4" style={S.page}>
-        <Text style={S.h1}>{onePager.title}</Text>
-        <Text style={S.sub}>{onePager.sub}</Text>
+      <Page size="A4" style={styles.page}>
+        <Text style={styles.h1}>{onePager.title}</Text>
+        <Text style={styles.sub}>{onePager.sub}</Text>
 
-        <View style={S.section}>
-          <Text style={S.h2}>What is ME/CFS?</Text>
-          <Text style={S.p}>{onePager.whatIs}</Text>
+        <View style={styles.section}>
+          <Text style={styles.h2}>What is ME/CFS?</Text>
+          <Text style={styles.p}>{onePager.whatIs}</Text>
         </View>
 
-        <View style={S.section}>
-          <Text style={S.h2}>IOM/NAM 2015 Diagnostic Criteria</Text>
+        <View style={styles.section}>
+          <Text style={styles.h2}>IOM/NAM 2015 Diagnostic Criteria</Text>
         </View>
         <BulletList items={onePager.criteria} />
 
-        <View style={S.section}>
-          <Text style={S.h2}>Common Symptoms</Text>
+        <View style={styles.section}>
+          <Text style={styles.h2}>Common Symptoms</Text>
         </View>
         <BulletList items={onePager.symptoms} />
 
-        <View style={S.section}>
-          <Text style={S.h2}>Diagnosis (Clinical)</Text>
-          <Text style={S.p}>
+        <View style={styles.section}>
+          <Text style={styles.h2}>Diagnosis (Clinical)</Text>
+          <Text style={styles.p}>
             No single lab test. Diagnose clinically using IOM criteria and by
             excluding alternative explanations. Key steps:
           </Text>
         </View>
         <BulletList items={onePager.diagnosisSteps} />
 
-        <View style={S.section}>
-          <Text style={S.h2}>Testing (Rule-Outs & Baseline)</Text>
-          <Text style={S.p}>
+        <View style={styles.section}>
+          <Text style={styles.h2}>Testing (Rule-Outs & Baseline)</Text>
+          <Text style={styles.p}>
             Targeted testing helps exclude common mimics/contributors and
             establish baselines (adapt to context):
           </Text>
         </View>
         <BulletList items={onePager.tests} />
 
-        <View style={S.section}>
-          <Text style={S.h2}>Management (Symptom-Directed)</Text>
+        <View style={styles.section}>
+          <Text style={styles.h2}>Management (Symptom-Directed)</Text>
         </View>
         <BulletList items={onePager.management} />
 
-        <View style={S.section}>
-          <View style={S.hr} />
-          <Text style={S.foot}>{onePager.footer}</Text>
+        <View style={styles.section}>
+          <View style={styles.hr} />
+          <Text style={styles.foot}>{onePager.footer}</Text>
         </View>
       </Page>
     </Document>
   );
 }
 
+/* ---------- Handler ---------- */
 export async function GET() {
-  // Generate Node stream and convert to Web stream to satisfy BodyInit
-  const nodeStream = await pdf(<OnePagerPDF />).toStream();
-  const webStream = Readable.toWeb(nodeStream); // ReadableStream<Uint8Array>
+  // Build to a Blob and return directly to dodge Buffer/ReadableStream typing unions
+  const blob = await pdf(<OnePagerPDF />).toBlob(); // Blob is a valid BodyInit
 
-  return new Response(webStream, {
+  return new Response(blob, {
     headers: {
       "Content-Type": "application/pdf",
       "Content-Disposition": 'attachment; filename="ME-CFS-One-Pager.pdf"',
