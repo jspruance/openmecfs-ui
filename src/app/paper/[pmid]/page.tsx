@@ -18,9 +18,7 @@ export const metadata: Metadata = {
 };
 
 async function fetchPaper(pmid: string) {
-  const res = await fetch(`/api/papers/${pmid}`, {
-    cache: "no-store", // disable caching for the temp JSON-backed API
-  });
+  const res = await fetch(`/api/papers/${pmid}`, { cache: "no-store" });
   if (!res.ok) return null;
   const data: Paper = await res.json();
   return data;
@@ -29,9 +27,11 @@ async function fetchPaper(pmid: string) {
 export default async function PaperPage({
   params,
 }: {
-  params: { pmid: string };
+  // 👇 Next.js 15: params is a Promise
+  params: Promise<{ pmid: string }>;
 }) {
-  const paper = await fetchPaper(params.pmid);
+  const { pmid } = await params; // <- must await
+  const paper = await fetchPaper(pmid);
 
   if (!paper) {
     return (
@@ -49,9 +49,9 @@ export default async function PaperPage({
         {paper.year ?? ""}
         {paper.pmid ? ` • PMID: ${paper.pmid}` : ""}
       </p>
-      {paper.authors && (
+      {paper.authors?.length ? (
         <p className="text-slate-700">{paper.authors.join(", ")}</p>
-      )}
+      ) : null}
 
       {paper.abstract && (
         <>
