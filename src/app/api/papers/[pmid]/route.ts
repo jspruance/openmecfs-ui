@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import path from "path";
 import { promises as fs } from "fs";
 
-export const runtime = "nodejs";
+export const runtime = "nodejs"; // allow fs in prod
 
 type Paper = {
   pmid?: string;
@@ -19,7 +19,7 @@ type Paper = {
 };
 
 function safeJSONParse<T>(text: string): T {
-  const clean = text.replace(/^\uFEFF/, "");
+  const clean = text.replace(/^\uFEFF/, ""); // strip BOM if present
   return JSON.parse(clean) as T;
 }
 
@@ -29,13 +29,13 @@ async function loadAll(): Promise<Paper[]> {
   return safeJSONParse<Paper[]>(raw);
 }
 
-export async function GET(
-  _req: NextRequest,
-  ctx: { params: { [key: string]: string | string[] } }
-) {
+export async function GET(req: NextRequest, ctx: unknown) {
   try {
-    const rawParam = ctx.params.pmid;
-    const pmid = Array.isArray(rawParam) ? rawParam[0] : rawParam;
+    // Safely narrow Next's dynamic route context
+    const params =
+      (ctx as { params?: Record<string, string | string[]> })?.params ?? {};
+    const raw = params["pmid"];
+    const pmid = Array.isArray(raw) ? raw[0] : raw;
 
     if (!pmid) {
       return NextResponse.json({ error: "Missing pmid" }, { status: 400 });
@@ -54,11 +54,9 @@ export async function GET(
     return NextResponse.json(paper, {
       headers: { "Cache-Control": "no-store" },
     });
-  } catch (err) {
-    const msg =
-      err instanceof Error
-        ? err.message
-        : "Unknown server error reading papers.json";
-    return NextResponse.json({ error: msg }, { status: 500 });
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Unknown server error";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
