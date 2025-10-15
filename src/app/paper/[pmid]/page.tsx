@@ -1,5 +1,6 @@
 // src/app/paper/[pmid]/page.tsx
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 
 type Paper = {
   pmid?: string;
@@ -17,20 +18,34 @@ export const metadata: Metadata = {
   title: "Research Paper — Open ME/CFS",
 };
 
-async function fetchPaper(pmid: string) {
-  const res = await fetch(`/api/papers/${pmid}`, { cache: "no-store" });
-  if (!res.ok) return null;
-  const data: Paper = await res.json();
-  return data;
+async function fetchPaper(pmid: string): Promise<Paper | null> {
+  // Build absolute URL that works in prod and dev
+  const h = await headers();
+  const host =
+    h.get("x-forwarded-host") ?? h.get("host") ?? process.env.VERCEL_URL ?? "";
+  const proto =
+    h.get("x-forwarded-proto") ??
+    (host.includes("localhost") ? "http" : "https");
+  const base = process.env.NEXT_PUBLIC_BASE_URL ?? `${proto}://${host}`;
+
+  try {
+    const res = await fetch(`${base}/api/papers/${pmid}`, {
+      cache: "no-store",
+    });
+    if (!res.ok) return null;
+    return (await res.json()) as Paper;
+  } catch {
+    return null;
+  }
 }
 
 export default async function PaperPage({
   params,
 }: {
-  // 👇 Next.js 15: params is a Promise
+  // Next.js 15: params is a Promise
   params: Promise<{ pmid: string }>;
 }) {
-  const { pmid } = await params; // <- must await
+  const { pmid } = await params;
   const paper = await fetchPaper(pmid);
 
   if (!paper) {
@@ -49,6 +64,7 @@ export default async function PaperPage({
         {paper.year ?? ""}
         {paper.pmid ? ` • PMID: ${paper.pmid}` : ""}
       </p>
+
       {paper.authors?.length ? (
         <p className="text-slate-700">{paper.authors.join(", ")}</p>
       ) : null}
