@@ -23,7 +23,7 @@ export default function ResearchPage() {
   const fetchPapers = async (q = "", sortValue = "year", topic = "") => {
     setLoading(true);
     try {
-      const endpoint = `/papers?q=${encodeURIComponent(
+      const endpoint = `/api/papers?q=${encodeURIComponent(
         q
       )}&sort=${sortValue}&topic=${encodeURIComponent(topic)}&limit=10`;
       const res = await api.get(endpoint);
