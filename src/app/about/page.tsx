@@ -9,6 +9,13 @@ import {
   HandHeart,
 } from "lucide-react";
 
+const handleDonateClick = () => {
+  if (typeof window !== "undefined") {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (window as any).umami?.track?.("donate_about_page_click");
+  }
+};
+
 export default function AboutPage() {
   return (
     <main className="min-h-screen bg-white text-gray-800">
@@ -177,6 +184,7 @@ export default function AboutPage() {
         </p>
         <a
           href="/donate"
+          onClick={handleDonateClick}
           className="inline-block bg-gradient-to-r from-yellow-300 via-amber-400 to-orange-400 text-blue-900 px-8 py-3 rounded-md font-semibold shadow-[0_0_20px_rgba(255,200,100,0.6)] hover:shadow-[0_0_40px_rgba(255,200,100,0.8)] hover:scale-[1.05] transition-all duration-300 ease-out"
         >
           Donate to Support Research

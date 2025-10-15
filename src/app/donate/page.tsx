@@ -4,6 +4,13 @@ import { useState } from "react";
 
 const PRESETS = [10, 25, 50, 100];
 
+const handleDonateClick = () => {
+  if (typeof window !== "undefined") {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (window as any).umami?.track?.("donate_donate_page_click");
+  }
+};
+
 export default function DonatePage() {
   const [recurrence, setRecurrence] = useState<"one_time" | "monthly">(
     "one_time"
@@ -157,6 +164,7 @@ export default function DonatePage() {
 
           <button
             type="submit"
+            onClick={handleDonateClick}
             disabled={loading}
             className="w-full md:w-auto inline-flex items-center justify-center px-6 py-3 rounded-md font-semibold
                        bg-gradient-to-r from-yellow-300 via-amber-400 to-orange-400 text-blue-900

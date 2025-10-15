@@ -8,7 +8,7 @@ import NewsletterForm from "@/components/NewsletterForm";
 const handleDonateClick = () => {
   if (typeof window !== "undefined") {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (window as any).umami?.track?.("donate_click");
+    (window as any).umami?.track?.("donate_homepage_click");
   }
 };
 
