@@ -1,12 +1,5 @@
 import Link from "next/link";
 
-const handleDonateClick = () => {
-  if (typeof window !== "undefined") {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (window as any).umami?.track?.("donate_cancel_click");
-  }
-};
-
 export default function Cancel() {
   return (
     <main className="min-h-[60vh] flex items-center justify-center">
@@ -17,7 +10,7 @@ export default function Cancel() {
         </p>
         <Link
           href="/donate"
-          onClick={handleDonateClick}
+          data-umami-event="donate_cancel_click"
           className="inline-block mt-6 text-blue-600 hover:underline"
         >
           Go back to Donate
