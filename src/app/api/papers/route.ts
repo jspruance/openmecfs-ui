@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import path from "path";
 import { promises as fs } from "fs";
 
-export const runtime = "nodejs"; // ensure fs is allowed
+export const runtime = "nodejs"; // allow fs in prod
 
 type Paper = {
   pmid?: string;
@@ -15,17 +15,12 @@ type Paper = {
   abstract?: string;
   technical_summary?: string;
   patient_summary?: string;
-  date?: string; // ISO string
+  date?: string; // ISO
 };
 
 function safeJSONParse<T>(text: string): T {
-  // strips BOM if present; throws with clearer message if invalid
-  const clean = text.replace(/^\uFEFF/, "");
-  try {
-    return JSON.parse(clean) as T;
-  } catch (e) {
-    throw new Error("Invalid JSON in public/data/papers.json");
-  }
+  const clean = text.replace(/^\uFEFF/, ""); // strip BOM if present
+  return JSON.parse(clean) as T;
 }
 
 export async function GET(req: Request) {
@@ -67,13 +62,13 @@ export async function GET(req: Request) {
       );
     }
 
-    // sort
+    // sorting
     const by = (v: string | number | undefined | null) => v ?? "";
     if (sort === "newest") {
       all.sort(
         (a, b) =>
-          new Date(by(b.date) as string).getTime() -
-          new Date(by(a.date) as string).getTime()
+          new Date(String(by(b.date))).getTime() -
+          new Date(String(by(a.date))).getTime()
       );
     } else if (sort === "title") {
       all.sort((a, b) =>
@@ -81,11 +76,8 @@ export async function GET(req: Request) {
       );
       if (order === "desc") all.reverse();
     } else {
-      // year
-      all.sort(
-        (a, b) =>
-          (Number(by(b.year)) as number) - (Number(by(a.year)) as number)
-      );
+      // year default
+      all.sort((a, b) => Number(by(b.year)) - Number(by(a.year)));
       if (order === "asc") all.reverse();
     }
 
@@ -96,12 +88,20 @@ export async function GET(req: Request) {
       { results },
       { headers: { "Cache-Control": "no-store" } }
     );
-  } catch (err: any) {
-    // Helpful diagnostics during dev
-    const message =
-      err?.code === "ENOENT"
-        ? "Missing file public/data/papers.json"
-        : err?.message || "Unknown server error";
+  } catch (err: unknown) {
+    let message = "Unknown server error";
+    if (
+      typeof err === "object" &&
+      err &&
+      "code" in err &&
+      (err as { code?: string }).code === "ENOENT"
+    ) {
+      message = "Missing file public/data/papers.json";
+    } else if (err instanceof SyntaxError) {
+      message = "Invalid JSON in public/data/papers.json";
+    } else if (err instanceof Error) {
+      message = err.message;
+    }
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
