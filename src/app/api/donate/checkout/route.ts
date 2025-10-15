@@ -1,15 +1,16 @@
+// app/api/donate/checkout/route.ts
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2024-06-20",
-});
+// Let Stripe use your Dashboard's default API version.
+// If you really want to pin it in code, use the newest version string:
+// const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: "2025-09-30.clover" as any });
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
 export async function POST(req: Request) {
   try {
     const body = await req.json();
 
-    // incoming from client
     const {
       amount, // number in dollars (e.g., 25)
       recurrence, // "one_time" | "monthly"
@@ -34,11 +35,11 @@ export async function POST(req: Request) {
     }
 
     const amountInCents = Math.round(amt * 100);
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL!;
+    const successUrl = `${baseUrl}/donate/success?session_id={CHECKOUT_SESSION_ID}`;
+    const cancelUrl = `${baseUrl}/donate/cancel`;
 
-    const successUrl = `${process.env.NEXT_PUBLIC_APP_URL}/donate/success?session_id={CHECKOUT_SESSION_ID}`;
-    const cancelUrl = `${process.env.NEXT_PUBLIC_APP_URL}/donate/cancel`;
-
-    const commonLineItem: Stripe.Checkout.SessionCreateParams.LineItem = {
+    const lineItem: Stripe.Checkout.SessionCreateParams.LineItem = {
       quantity: 1,
       price_data: {
         currency: "usd",
@@ -57,12 +58,10 @@ export async function POST(req: Request) {
 
     const params: Stripe.Checkout.SessionCreateParams = {
       mode: recurrence === "monthly" ? "subscription" : "payment",
-      line_items: [commonLineItem],
+      line_items: [lineItem],
       success_url: successUrl,
       cancel_url: cancelUrl,
-      // nicer button copy for one-time mode:
       ...(recurrence === "one_time" ? { submit_type: "donate" } : {}),
-      // collect an email if donor didn't enter one:
       customer_email: donorEmail || undefined,
       metadata: {
         donorName,
@@ -77,7 +76,10 @@ export async function POST(req: Request) {
     const session = await stripe.checkout.sessions.create(params);
     return NextResponse.json({ url: session.url }, { status: 200 });
   } catch (err: unknown) {
-    console.error("STRIPE_CHECKOUT_ERROR", err instanceof Error ? err.message : err);
+    console.error(
+      "STRIPE_CHECKOUT_ERROR",
+      err instanceof Error ? err.message : err
+    );
     return NextResponse.json(
       { error: "Failed to create checkout." },
       { status: 500 }
