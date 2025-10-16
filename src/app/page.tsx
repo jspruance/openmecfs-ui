@@ -96,7 +96,7 @@ export default function HomePage() {
 
             <Link
               href="/about"
-              className="inline-block bg-brand text-white px-6 py-3 rounded-md font-semibold shadow-md hover:bg-brand-dark hover:shadow-lg transition"
+              className="inline-block bg-[#007BFF] text-white px-6 py-3 rounded-md font-semibold shadow-md hover:bg-[#0D47A1] hover:shadow-lg transition"
             >
               Learn More
             </Link>
@@ -117,7 +117,7 @@ export default function HomePage() {
 
           <Link
             href="/research"
-            className="inline-block bg-brand text-white px-8 py-3 rounded-md font-semibold shadow-md hover:bg-brand-dark hover:shadow-lg transition"
+            className="inline-block bg-[#007BFF] text-white px-8 py-3 rounded-md font-semibold shadow-md hover:bg-[#0D47A1] hover:shadow-lg transition"
           >
             Browse Research
           </Link>
