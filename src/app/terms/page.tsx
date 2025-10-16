@@ -17,7 +17,7 @@ export default function TermsPage() {
             ⚠️ IMPORTANT: BY USING THIS WEBSITE, YOU AGREE TO THESE TERMS
           </p>
           <p className="mt-2 text-red-700 text-sm">
-            Welcome to <strong>Open ME/CFS</strong> ("we," "us," "our"). By using our website and services (the "Service"), 
+            Welcome to <strong>Open ME/CFS</strong> (&quot;we,&quot; &quot;us,&quot; &quot;our&quot;). By using our website and services (the &quot;Service&quot;), 
             you acknowledge that you have read, understood, and agree to be bound by these Terms. 
             <strong>If you do not agree to these Terms, you must not use this Service.</strong>
           </p>
@@ -111,7 +111,7 @@ export default function TermsPage() {
             <strong>Use Information Responsibly:</strong> Use information from this site responsibly and in conjunction with professional medical advice.
           </li>
           <li>
-            <strong>Not Misuse the Service:</strong> Do not misuse the Service, attempt to compromise security, scrape at scale, or infringe on others' rights.
+            <strong>Not Misuse the Service:</strong> Do not misuse the Service, attempt to compromise security, scrape at scale, or infringe on others&apos; rights.
           </li>
           <li>
             <strong>Report Issues:</strong> Report any errors, inaccuracies, or concerns about content to us promptly.
@@ -158,7 +158,7 @@ export default function TermsPage() {
           </li>
         </ul>
         <p className="mt-3 text-gray-700">
-          The Service is provided "AS IS" without warranties of any kind. To the fullest extent permitted by law, we disclaim all warranties and are not liable for any indirect, incidental, consequential, or punitive damages.
+          The Service is provided &quot;AS IS&quot; without warranties of any kind. To the fullest extent permitted by law, we disclaim all warranties and are not liable for any indirect, incidental, consequential, or punitive damages.
         </p>
 
         <h2 className="mt-8 text-xl font-semibold text-gray-900">7) Changes</h2>

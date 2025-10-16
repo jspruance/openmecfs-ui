@@ -8,7 +8,6 @@ import {
   Beaker,
   Battery,
   Sparkles,
-  AlertTriangle,
 } from "lucide-react";
 
 export const metadata = {
