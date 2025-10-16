@@ -25,6 +25,7 @@ export default function TermsPage() {
           Open ME/CFS is a community project that curates and summarizes
           publicly available ME/CFS research and provides tools to explore it.
           We are not a healthcare provider and do not offer medical advice.
+          {/* TODO: Update to reference "XJS Industries, LLC d/b/a Open ME/CFS" after LLC filing */}
         </p>
 
         <h2 className="mt-8 text-xl font-semibold text-gray-900">

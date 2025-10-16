@@ -466,9 +466,16 @@ export default function DoctorsDirectoryPage() {
 
         <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-amber-900 text-sm">
           <strong>Heads up:</strong> This directory is informational only and
-          not a guarantee of care or outcomes. It isn’t medical advice. Always
+          not a guarantee of care or outcomes. It isn't medical advice. Always
           verify current availability, referral requirements, and insurance with
           the clinic.
+        </div>
+        
+        <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-4 text-red-900 text-sm">
+          <strong>⚠️ Important:</strong> Open ME/CFS does not endorse, recommend, or guarantee 
+          any specific healthcare providers. This directory is for informational purposes only. 
+          Always consult with your primary care provider before making healthcare decisions. 
+          Individual results and experiences may vary.
         </div>
       </section>
     </main>

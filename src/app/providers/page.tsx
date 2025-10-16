@@ -36,6 +36,15 @@ export default function ProvidersPage() {
         </div>
       </header>
 
+      {/* Disclaimer below header */}
+      <div className="bg-yellow-50 border border-yellow-200 p-4 rounded-lg">
+        <p className="text-sm text-yellow-800">
+          <strong>For Healthcare Providers:</strong> This content is for educational purposes only. 
+          Always follow your clinical judgment and institutional protocols. 
+          Individual patient care decisions remain the responsibility of the treating clinician.
+        </p>
+      </div>
+
       {/* Quick cards (same card look/feel as Patient Hub) */}
       <section className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
         {[
