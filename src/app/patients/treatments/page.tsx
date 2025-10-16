@@ -169,10 +169,8 @@ export default function TreatmentsPage() {
           vary—go low and slow, and work with a clinician.
         </p>
         <div className="mt-4 bg-red-50 border border-red-200 p-4 rounded-lg">
-          <div className="flex items-start gap-3">
-            <AlertTriangle className="text-red-600 mt-0.5" size={20} />
-            <div>
-              <p className="font-semibold text-red-800">IMPORTANT MEDICAL DISCLAIMER</p>
+          <div>
+            <p className="font-semibold text-red-800">⚠️ IMPORTANT MEDICAL DISCLAIMER</p>
               <p className="text-sm text-red-700 mt-1">
                 This content is for educational purposes only and is NOT medical advice. 
                 All treatments should be discussed with a qualified healthcare provider. 
