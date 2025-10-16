@@ -177,7 +177,6 @@ export default function TreatmentsPage() {
                 Individual responses vary - what works for one person may not work for another. 
                 Always consult your doctor before making any medical decisions.
               </p>
-            </div>
           </div>
         </div>
       </header>
