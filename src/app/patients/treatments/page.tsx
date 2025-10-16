@@ -7,7 +7,6 @@ import {
   Syringe,
   Beaker,
   Battery,
-  Info,
   Sparkles,
   AlertTriangle,
 } from "lucide-react";

@@ -466,7 +466,7 @@ export default function DoctorsDirectoryPage() {
 
         <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-amber-900 text-sm">
           <strong>Heads up:</strong> This directory is informational only and
-          not a guarantee of care or outcomes. It isn't medical advice. Always
+          not a guarantee of care or outcomes. It isn&apos;t medical advice. Always
           verify current availability, referral requirements, and insurance with
           the clinic.
         </div>
