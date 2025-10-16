@@ -16,6 +16,7 @@ export default function Footer() {
         {/* Left Side: Copyright */}
         <div>
           © {new Date().getFullYear()} <strong>Open ME/CFS</strong>.
+          {/* TODO: Update to "XJS Industries, LLC d/b/a Open ME/CFS" after LLC filing */}
         </div>
 
         {/* Right Side: Footer Links */}

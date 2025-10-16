@@ -102,9 +102,12 @@ export default function CheckerPage() {
         )}
       </div>
 
-      <p className="mt-4 text-xs text-gray-500">
-        Educational tool — not medical advice or diagnosis.
-      </p>
+      <div className="mt-4 bg-red-50 border border-red-200 p-4 rounded-lg">
+        <p className="text-sm text-red-800">
+          <strong>⚠️ IMPORTANT:</strong> This is an educational tool only and is NOT medical advice or diagnosis. 
+          Always consult with a qualified healthcare provider for proper medical evaluation and diagnosis.
+        </p>
+      </div>
     </div>
   );
 }
