@@ -1,6 +1,6 @@
 "use client";
 
-import { Mechanism } from "../../data";
+import { Mechanism } from "../data";
 
 export default function MechanismCard({ mech }: { mech: Mechanism }) {
   const evidenceColor =
