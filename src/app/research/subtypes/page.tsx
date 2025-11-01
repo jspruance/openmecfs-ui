@@ -5,7 +5,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import ClusterGrid from "./components/ClusterGrid";
 import PapersPanel from "./components/PapersPanel";
 import ScatterPlot from "./components/ScatterPlot";
-import ThemeToggle from "./components/ThemeToggle";
 import "./subtypes.css";
 
 import { Cluster } from "./types";
@@ -65,13 +64,12 @@ function SubtypesPageContent() {
 
   return (
     <main className="subtypes-theme">
-      <section className="subtypes-hero fade-in">
-        <div className="flex justify-center mb-4">
-          <ThemeToggle />
-        </div>
-
-        <h1 className="mb-2">ME/CFS Subtypes Explorer</h1>
-        <p className="max-w-2xl mx-auto text-sm opacity-80">
+      {/* ✅ Research-app style header, matching Papers page */}
+      <section className="max-w-7xl mx-auto px-4 py-10">
+        <h1 className="text-2xl font-semibold mb-2">
+          ME/CFS Subtypes Explorer
+        </h1>
+        <p className="text-sm text-muted-foreground max-w-2xl">
           Understand biological subtypes identified by the{" "}
           <strong>AI Cure engine</strong>. Explore patterns in molecular,
           immune, and neurological research.
@@ -79,7 +77,7 @@ function SubtypesPageContent() {
       </section>
 
       <section className="max-w-7xl mx-auto px-4 pb-16 space-y-8 fade-in">
-        {/* ✅ Subtype pills moved to top */}
+        {/* ✅ Subtype pills */}
         <div className="subtypes-card pb-4">
           <ClusterGrid
             onSelectCluster={selectCluster}
@@ -104,22 +102,22 @@ function SubtypesPageContent() {
             )}
         </div>
 
-        {/* ✅ Papers panel right under intelligence */}
+        {/* ✅ Papers */}
         <div className="subtypes-card min-h-[400px]">
           <PapersPanel clusterId={selectedCluster} />
         </div>
 
-        {/* ✅ Toggle for embedding map */}
+        {/* ✅ UMAP toggle */}
         <div className="text-center">
           <button
             onClick={() => setShowPlot((prev) => !prev)}
-            className="px-4 py-2 text-sm rounded-md border hover:bg-muted transition"
+            className="px-4 py-2 text-sm rounded-md border hover:bg-muted transition cursor-pointer"
           >
             {showPlot ? "Hide embedding map" : "View embedding map (UMAP)"}
           </button>
         </div>
 
-        {/* ✅ Scatter plot collapsible */}
+        {/* ✅ Collapsible scatter plot */}
         {showPlot && (
           <div className="subtypes-card fade-in">
             <ScatterPlot
