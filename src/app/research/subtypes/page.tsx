@@ -2,82 +2,62 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-
-// ✅ New correct relative imports for new folder location
 import ClusterGrid from "./components/ClusterGrid";
 import PapersPanel from "./components/PapersPanel";
 import ScatterPlot from "./components/ScatterPlot";
 import ThemeToggle from "./components/ThemeToggle";
 import "./subtypes.css";
 
+import { Cluster } from "./types";
+import { fetchClusters } from "@/lib/api";
+
 export default function SubtypesPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
   const [selectedCluster, setSelectedCluster] = useState<number | null>(null);
-  const [selectedClusterData, setSelectedClusterData] = useState<any | null>(
-    null
-  );
-  const [clusters, setClusters] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [selectedClusterData, setSelectedClusterData] =
+    useState<Cluster | null>(null);
+  const [clusters, setClusters] = useState<Cluster[]>([]);
 
-  // ✅ Load clusters & pre-select correct one (URL > default)
   useEffect(() => {
-    const fetchClusters = async () => {
-      try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/clusters`);
-        const data = await res.json();
+    const loadClusters = async () => {
+      const data = await fetchClusters();
+      setClusters(data);
 
-        setClusters(data);
+      const urlCluster = searchParams.get("cluster");
+      const clusterFromUrl = urlCluster ? Number(urlCluster) : null;
 
-        const urlCluster = searchParams.get("cluster");
-        const clusterFromUrl = urlCluster ? Number(urlCluster) : null;
-
-        const match = data.find((c: any) => c.cluster_num === clusterFromUrl);
-
+      if (clusterFromUrl !== null && !isNaN(clusterFromUrl)) {
+        const match = data.find((c) => c.cluster_num === clusterFromUrl);
         if (match) {
-          setSelectedCluster(match.cluster_num);
+          setSelectedCluster(clusterFromUrl);
           setSelectedClusterData(match);
-        } else if (data.length > 0) {
-          setSelectedCluster(data[0].cluster_num);
-          setSelectedClusterData(data[0]);
+          return;
         }
-      } catch (err) {
-        console.error("Failed to load clusters:", err);
-      } finally {
-        setLoading(false);
+      }
+
+      if (data.length > 0 && selectedCluster === null) {
+        setSelectedCluster(data[0].cluster_num);
+        setSelectedClusterData(data[0]);
       }
     };
 
-    fetchClusters();
-  }, []);
+    loadClusters();
+  }, [searchParams, selectedCluster]); // ✅ Fix ESLint warning
 
-  // ✅ Helper: select cluster + sync URL
   const selectCluster = (id: number) => {
-    const cluster = clusters.find((c: any) => c.cluster_num === id);
-
+    const cluster = clusters.find((c) => c.cluster_num === id) || null;
     setSelectedCluster(id);
-    setSelectedClusterData(cluster || null);
+    setSelectedClusterData(cluster);
 
     const params = new URLSearchParams(window.location.search);
     params.set("cluster", String(id));
     router.replace(`?${params.toString()}`, { scroll: false });
   };
 
-  if (loading) {
-    return (
-      <div className="w-full flex items-center justify-center py-20">
-        <div className="text-center text-gray-600">
-          <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
-          <p className="text-sm">Loading subtypes…</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <main className="subtypes-theme">
-      {/* Hero */}
       <section className="subtypes-hero fade-in">
         <div className="flex justify-center mb-6">
           <ThemeToggle />
@@ -90,25 +70,21 @@ export default function SubtypesPage() {
         </p>
       </section>
 
-      {/* Content */}
       <section className="max-w-7xl mx-auto px-4 pb-16 space-y-8">
-        {/* Scatter Plot */}
         <div className="subtypes-card fade-in">
           <ScatterPlot
-            onSelectCluster={(id) => selectCluster(id)}
+            onSelectCluster={selectCluster}
             selectedCluster={selectedCluster}
           />
         </div>
 
-        {/* Cluster selection + papers */}
         <div className="flex flex-col gap-8 fade-in">
           <div className="subtypes-card min-h-[200px] pb-4">
             <ClusterGrid
-              onSelectCluster={(id) => selectCluster(id)}
+              onSelectCluster={selectCluster}
               selectedCluster={selectedCluster}
             />
 
-            {/* Selected cluster summary */}
             {selectedClusterData && (
               <div className="mt-4 p-4 rounded-lg border bg-blue-50 dark:bg-slate-800 dark:border-slate-700">
                 <h3 className="font-semibold text-lg text-blue-700 dark:text-blue-300 mb-1">
@@ -121,7 +97,6 @@ export default function SubtypesPage() {
             )}
           </div>
 
-          {/* Papers */}
           <div className="subtypes-card min-h-[400px]">
             <PapersPanel clusterId={selectedCluster} />
           </div>
