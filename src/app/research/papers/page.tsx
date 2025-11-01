@@ -1,8 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, useCallback } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Search, ArrowRight } from "lucide-react";
+
+export const dynamic = 'force-dynamic';
 
 interface Paper {
   pmid: string;
@@ -30,7 +32,7 @@ function highlight(text: string, query: string) {
   return text.replace(regex, `<mark class="bg-yellow-200">$1</mark>`);
 }
 
-export default function ResearchPapersPage() {
+function ResearchPapersPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -322,5 +324,22 @@ export default function ResearchPapersPage() {
         )}
       </section>
     </main>
+  );
+}
+
+export default function ResearchPapersPage() {
+  return (
+    <Suspense fallback={
+      <main className="min-h-screen flex flex-col text-gray-800 font-sans bg-white">
+        <div className="max-w-5xl mx-auto px-6 py-12">
+          <div className="rounded-xl border border-gray-200 p-8 text-center text-gray-600 flex flex-col items-center justify-center">
+            <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-3"></div>
+            <p>Loading papers…</p>
+          </div>
+        </div>
+      </main>
+    }>
+      <ResearchPapersPageContent />
+    </Suspense>
   );
 }
