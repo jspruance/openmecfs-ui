@@ -12,7 +12,7 @@ type Cluster = {
 };
 
 interface Props {
-  onSelectCluster: (id: number, cluster: Cluster) => void;
+  onSelectCluster: (id: number) => void; // ← one argument
   selectedCluster: number | null;
 }
 
@@ -33,7 +33,7 @@ export default function ClusterGrid({
   // ✅ Auto-select first subtype once loaded
   useEffect(() => {
     if (clusters.length > 0 && selectedCluster === null) {
-      onSelectCluster(clusters[0].cluster_num, clusters[0]);
+      onSelectCluster(clusters[0].cluster_num);
     }
   }, [clusters, selectedCluster, onSelectCluster]);
 
@@ -47,7 +47,7 @@ export default function ClusterGrid({
         {clusters.map((c) => (
           <button
             key={c.id}
-            onClick={() => onSelectCluster(c.cluster_num, c)}
+            onClick={() => onSelectCluster(c.cluster_num)}
             className={clsx(
               "px-4 py-2 rounded-full border text-sm whitespace-nowrap transition shadow-sm cursor-pointer",
               selectedCluster === c.cluster_num

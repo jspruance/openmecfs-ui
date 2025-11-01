@@ -48,7 +48,6 @@ export default function PapersPanel({ clusterId }: Props) {
     if (containerRef.current && containerRef.current.scrollTop > 0) {
       containerRef.current.scrollTo({ top: 0, behavior: "smooth" });
     }
-
     setSearchTerm("");
   }, [clusterId]);
 
@@ -59,8 +58,21 @@ export default function PapersPanel({ clusterId }: Props) {
     setExpandedIds([]);
 
     api
-      .get(`/papers-sb?cluster_label=${clusterId}`)
-      .then((res) => setPapers(res.data))
+      .get(`/papers-sb?cluster=${clusterId}`)
+      .then((res) => {
+        // Supabase route returns: { data: Paper[], page, has_more, ... }
+        const payload = res.data;
+        const list = Array.isArray(payload)
+          ? payload
+          : Array.isArray(payload?.data)
+          ? payload.data
+          : [];
+        setPapers(list as Paper[]);
+      })
+      .catch((err) => {
+        console.error("Failed to load cluster papers:", err);
+        setPapers([]);
+      })
       .finally(() => setLoading(false));
   }, [clusterId]);
 
@@ -122,7 +134,7 @@ export default function PapersPanel({ clusterId }: Props) {
 
       {/* ✅ Papers list */}
       {filteredPapers.map((p, idx) => {
-        const uniqueKey = p.id || String(p.pmid || `paper-${idx}`);
+        const uniqueKey = (p.id as string) || String(p.pmid || `paper-${idx}`);
         const isOpen = expandedIds.includes(uniqueKey);
         const pubmedUrl = p.pmid
           ? `https://pubmed.ncbi.nlm.nih.gov/${p.pmid}/`
