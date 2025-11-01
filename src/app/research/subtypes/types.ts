@@ -7,8 +7,9 @@ export interface Cluster {
   keywords?: string[];
 }
 
-export interface ScatterPoint {
+export type ScatterPoint = {
+  pmid: string; // ✅ this matches backend (paper ID)
+  cluster_label: number;
   x: number;
   y: number;
-  cluster_num: number;
-}
+};
