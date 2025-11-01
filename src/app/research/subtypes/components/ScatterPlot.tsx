@@ -12,10 +12,14 @@ interface ScatterPlotProps {
   selectedCluster: number | null;
 }
 
-type PlotlyPoint = { pointIndex?: number };
+// ✅ Define proper Plotly event shape – no `any`
 type PlotlyClickEvent = {
-  points?: PlotlyPoint[];
-  event?: { preventDefault?: () => void };
+  points?: Array<{
+    pointIndex: number;
+  }>;
+  event?: MouseEvent & {
+    preventDefault?: () => void;
+  };
 };
 
 export default function ScatterPlot({
@@ -32,18 +36,11 @@ export default function ScatterPlot({
       })
       .then((payload) => {
         const list = Array.isArray(payload)
-          ? payload
+          ? (payload as ScatterPoint[])
           : Array.isArray(payload?.data)
-          ? payload.data
+          ? (payload.data as ScatterPoint[])
           : [];
-
-        // ✅ Normalize cluster label values to NUMBER
-        const normalized = list.map((p: any) => ({
-          ...p,
-          cluster_label: Number(p.cluster_label),
-        })) as ScatterPoint[];
-
-        setPoints(normalized);
+        setPoints(list);
       })
       .catch((err) => {
         console.error("Error fetching embeddings:", err);
@@ -69,12 +66,11 @@ export default function ScatterPlot({
               type: "scatter",
               marker: {
                 size: 10,
-                color: points.map(
-                  (p) =>
-                    selectedCluster !== null &&
-                    p.cluster_label === selectedCluster
-                      ? "#e11d48" // red for selected
-                      : "#2563eb" // blue for others
+                color: points.map((p) =>
+                  selectedCluster != null &&
+                  Number(p.cluster_label) === Number(selectedCluster)
+                    ? "#e11d48"
+                    : "#2563eb"
                 ),
                 opacity: 0.85,
               },
@@ -92,7 +88,9 @@ export default function ScatterPlot({
             const idx = e.points?.[0]?.pointIndex;
             if (idx != null) {
               const point = points[idx];
-              if (point) onSelectCluster(point.cluster_label);
+              if (point) {
+                onSelectCluster(Number(point.cluster_label));
+              }
               e.event?.preventDefault?.();
             }
           }}
