@@ -7,8 +7,8 @@ export default function MechanismsPage() {
   return (
     <main className="bg-white dark:bg-slate-900">
       {/* Header */}
-      <section className="max-w-7xl mx-auto px-4 py-10">
-        <h1 className="text-2xl font-semibold mb-2">ME/CFS Mechanisms</h1>
+      <section className="max-w-7xl mx-auto px-4 pt-0 pb-10">
+        <h1 className="text-3xl font-semibold mb-2">ME/CFS Mechanisms</h1>
         <p className="text-sm text-muted-foreground max-w-2xl">
           A structured map of the leading biological pathways implicated in
           ME/CFS. Explore immune, metabolic, vascular, autonomic, and
