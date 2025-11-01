@@ -22,6 +22,7 @@ function SubtypesPageContent() {
   const [selectedClusterData, setSelectedClusterData] =
     useState<Cluster | null>(null);
   const [clusters, setClusters] = useState<Cluster[]>([]);
+  const [showPlot, setShowPlot] = useState(false);
 
   useEffect(() => {
     const loadClusters = async () => {
@@ -49,7 +50,6 @@ function SubtypesPageContent() {
     };
 
     loadClusters();
-
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams.toString()]);
 
@@ -66,54 +66,68 @@ function SubtypesPageContent() {
   return (
     <main className="subtypes-theme">
       <section className="subtypes-hero fade-in">
-        <div className="flex justify-center mb-6">
+        <div className="flex justify-center mb-4">
           <ThemeToggle />
         </div>
-        <h1>ME/CFS Subtypes Explorer</h1>
-        <p>
-          Discover biological subtypes identified by the{" "}
-          <strong>AI Cure engine</strong> — visualizing hidden molecular and
-          immunological patterns within ME/CFS research.
+
+        <h1 className="mb-2">ME/CFS Subtypes Explorer</h1>
+        <p className="max-w-2xl mx-auto text-sm opacity-80">
+          Understand biological subtypes identified by the{" "}
+          <strong>AI Cure engine</strong>. Explore patterns in molecular,
+          immune, and neurological research.
         </p>
       </section>
 
-      <section className="max-w-7xl mx-auto px-4 pb-16 space-y-8">
-        <div className="subtypes-card fade-in">
-          <ScatterPlot
+      <section className="max-w-7xl mx-auto px-4 pb-16 space-y-8 fade-in">
+        {/* ✅ Subtype pills moved to top */}
+        <div className="subtypes-card pb-4">
+          <ClusterGrid
             onSelectCluster={selectCluster}
             selectedCluster={selectedCluster}
           />
+
+          {selectedCluster !== null &&
+            selectedClusterData &&
+            selectedClusterData.cluster_num === selectedCluster && (
+              <>
+                <div className="mt-4 p-4 rounded-lg border bg-blue-50 dark:bg-slate-800 dark:border-slate-700">
+                  <h3 className="font-semibold text-lg text-blue-700 dark:text-blue-300 mb-1">
+                    {selectedClusterData.cluster_label.replace(/\"/g, "")}
+                  </h3>
+                  <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
+                    {selectedClusterData.cluster_summary}
+                  </p>
+                </div>
+
+                <ClusterIntelligence cluster={selectedClusterData} />
+              </>
+            )}
         </div>
 
-        <div className="flex flex-col gap-8 fade-in">
-          <div className="subtypes-card min-h-[200px] pb-4">
-            <ClusterGrid
+        {/* ✅ Papers panel right under intelligence */}
+        <div className="subtypes-card min-h-[400px]">
+          <PapersPanel clusterId={selectedCluster} />
+        </div>
+
+        {/* ✅ Toggle for embedding map */}
+        <div className="text-center">
+          <button
+            onClick={() => setShowPlot((prev) => !prev)}
+            className="px-4 py-2 text-sm rounded-md border hover:bg-muted transition"
+          >
+            {showPlot ? "Hide embedding map" : "View embedding map (UMAP)"}
+          </button>
+        </div>
+
+        {/* ✅ Scatter plot collapsible */}
+        {showPlot && (
+          <div className="subtypes-card fade-in">
+            <ScatterPlot
               onSelectCluster={selectCluster}
               selectedCluster={selectedCluster}
             />
-
-            {selectedCluster !== null &&
-              selectedClusterData &&
-              selectedClusterData.cluster_num === selectedCluster && (
-                <>
-                  <div className="mt-4 p-4 rounded-lg border bg-blue-50 dark:bg-slate-800 dark:border-slate-700">
-                    <h3 className="font-semibold text-lg text-blue-700 dark:text-blue-300 mb-1">
-                      {selectedClusterData.cluster_label.replace(/\"/g, "")}
-                    </h3>
-                    <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
-                      {selectedClusterData.cluster_summary}
-                    </p>
-                  </div>
-
-                  <ClusterIntelligence cluster={selectedClusterData} />
-                </>
-              )}
           </div>
-
-          <div className="subtypes-card min-h-[400px]">
-            <PapersPanel clusterId={selectedCluster} />
-          </div>
-        </div>
+        )}
       </section>
     </main>
   );
