@@ -65,7 +65,7 @@ function SubtypesPageContent() {
   return (
     <main className="bg-white dark:bg-slate-900">
       {/* ✅ Research-app style header, matching Papers page */}
-      <section className="max-w-7xl mx-auto px-4 py-10">
+      <section className="max-w-7xl mx-auto px-4 pt-0 pb-10">
         <h1 className="text-3xl font-semibold mb-2">
           ME/CFS Subtypes Explorer
         </h1>
