@@ -21,16 +21,18 @@ export default function ScatterPlot({
   useEffect(() => {
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/embeddings`)
       .then((res) => res.json())
-      .then((payload) => {
+      .then((payload: unknown) => {
         const list = Array.isArray(payload)
           ? payload
-          : Array.isArray(payload?.data)
-          ? payload.data
+          : typeof payload === "object" &&
+            payload &&
+            Array.isArray((payload as any).data)
+          ? (payload as any).data
           : [];
 
-        setPoints(list);
+        setPoints(list as ScatterPoint[]);
       })
-      .catch((err) => {
+      .catch((err: unknown) => {
         console.error("Error fetching embeddings:", err);
         setPoints([]);
       });
@@ -48,17 +50,15 @@ export default function ScatterPlot({
               x: points.map((p) => p.x),
               y: points.map((p) => p.y),
               text: points.map(
-                (p) => `Subtype ${p.cluster_label}<br>PMID: ${p.pmid ?? p.id}`
+                (p) => `Subtype ${p.cluster_label}<br>PMID: ${p.pmid}`
               ),
               mode: "markers",
               type: "scatter",
               marker: {
                 size: 10,
-                color: points.map((p) => {
-                  const cluster =
-                    (p as any).cluster_label ?? (p as any).cluster ?? null;
-                  return cluster === selectedCluster ? "#e11d48" : "#2563eb";
-                }),
+                color: points.map((p) =>
+                  p.cluster_label === selectedCluster ? "#e11d48" : "#2563eb"
+                ),
                 opacity: 0.85,
               },
             },
@@ -71,14 +71,11 @@ export default function ScatterPlot({
           }}
           style={{ width: "100%", height: "400px" }}
           config={{ displayModeBar: false }}
-          onClick={(e: any) => {
-            const idx = e.points?.[0]?.pointIndex;
-            if (idx != null) {
+          onClick={(e: Readonly<any>) => {
+            const idx: number | undefined = e?.points?.[0]?.pointIndex;
+            if (typeof idx === "number") {
               const point = points[idx];
-              const cluster =
-                (point as any).cluster_label ?? (point as any).cluster ?? null;
-              if (cluster !== null) onSelectCluster(cluster);
-              e.event?.preventDefault?.();
+              if (point) onSelectCluster(point.cluster_label);
             }
           }}
         />
