@@ -12,7 +12,7 @@ type Cluster = {
 };
 
 interface Props {
-  onSelectCluster: (id: number) => void; // ← one argument
+  onSelectCluster: (id: number, cluster: Cluster) => void;
   selectedCluster: number | null;
 }
 
@@ -22,18 +22,24 @@ export default function ClusterGrid({
 }: Props) {
   const [clusters, setClusters] = useState<Cluster[]>([]);
 
-  // Fetch clusters on mount
   useEffect(() => {
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/clusters`)
       .then((res) => res.json())
-      .then(setClusters)
+      .then((payload) => {
+        const list = Array.isArray(payload)
+          ? payload
+          : Array.isArray(payload?.data)
+          ? payload.data
+          : [];
+
+        setClusters(list);
+      })
       .catch(console.error);
   }, []);
 
-  // ✅ Auto-select first subtype once loaded
   useEffect(() => {
     if (clusters.length > 0 && selectedCluster === null) {
-      onSelectCluster(clusters[0].cluster_num);
+      onSelectCluster(clusters[0].cluster_num, clusters[0]);
     }
   }, [clusters, selectedCluster, onSelectCluster]);
 
@@ -47,7 +53,7 @@ export default function ClusterGrid({
         {clusters.map((c) => (
           <button
             key={c.id}
-            onClick={() => onSelectCluster(c.cluster_num)}
+            onClick={() => onSelectCluster(c.cluster_num, c)}
             className={clsx(
               "px-4 py-2 rounded-full border text-sm whitespace-nowrap transition shadow-sm cursor-pointer",
               selectedCluster === c.cluster_num

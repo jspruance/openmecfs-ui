@@ -3,7 +3,7 @@
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { ScatterPoint } from "../types"; // ✅ shared type
+import { ScatterPoint } from "../types";
 
 const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
@@ -21,13 +21,14 @@ export default function ScatterPlot({
   useEffect(() => {
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/embeddings`)
       .then((res) => res.json())
-      .then((data) => {
-        if (Array.isArray(data)) setPoints(data);
-        else if (Array.isArray(data?.data)) setPoints(data.data);
-        else {
-          console.error("Unexpected embeddings response:", data);
-          setPoints([]);
-        }
+      .then((payload) => {
+        const list = Array.isArray(payload)
+          ? payload
+          : Array.isArray(payload?.data)
+          ? payload.data
+          : [];
+
+        setPoints(list);
       })
       .catch((err) => {
         console.error("Error fetching embeddings:", err);
@@ -53,11 +54,8 @@ export default function ScatterPlot({
               type: "scatter",
               marker: {
                 size: 10,
-                color: points.map(
-                  (p) =>
-                    p.cluster_label === selectedCluster
-                      ? "#e11d48" // highlighted red
-                      : "#2563eb" // default blue
+                color: points.map((p) =>
+                  p.cluster_label === selectedCluster ? "#e11d48" : "#2563eb"
                 ),
                 opacity: 0.85,
               },
@@ -71,7 +69,7 @@ export default function ScatterPlot({
           }}
           style={{ width: "100%", height: "400px" }}
           config={{ displayModeBar: false }}
-          onClick={(e: { points?: Array<{ pointIndex?: number }>; event?: { preventDefault?: () => void } }) => {
+          onClick={(e) => {
             const idx = e.points?.[0]?.pointIndex;
             if (idx != null) {
               const point = points[idx];
