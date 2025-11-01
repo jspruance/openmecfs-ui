@@ -128,7 +128,13 @@ export default function ContactSection() {
           <button
             type="submit"
             disabled={state === "loading" || !token}
-            className="cursor-pointer inline-flex items-center justify-center px-6 py-3 rounded-md font-semibold bg-brand text-white hover:bg-brand-dark hover:shadow-lg transition disabled:opacity-60 disabled:cursor-not-allowed"
+            className="
+    cursor-pointer inline-flex items-center justify-center 
+    px-6 py-3 rounded-md font-semibold 
+    bg-blue-600 text-white 
+    hover:bg-blue-700 hover:shadow-md 
+    transition disabled:opacity-60 disabled:cursor-not-allowed
+  "
           >
             {state === "loading" ? "Sending…" : "Send Message"}
           </button>
