@@ -12,7 +12,12 @@ interface ScatterPlotProps {
   selectedCluster: number | null;
 }
 
-type EmbeddingPayload = ScatterPoint[] | { data: ScatterPoint[] };
+// Shape for Plotly click event points we actually use
+type PlotlyPoint = { pointIndex?: number };
+type PlotlyClickEvent = {
+  points?: PlotlyPoint[];
+  event?: { preventDefault?: () => void };
+};
 
 export default function ScatterPlot({
   onSelectCluster,
@@ -22,38 +27,23 @@ export default function ScatterPlot({
 
   useEffect(() => {
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/embeddings`)
-      .then((res) => res.json())
-      .then((payload: EmbeddingPayload) => {
+      .then((res) => {
+        if (!res.ok) throw new Error(`GET /embeddings ${res.status}`);
+        return res.json();
+      })
+      .then((payload) => {
         const list = Array.isArray(payload)
-          ? payload
+          ? (payload as ScatterPoint[])
           : Array.isArray(payload?.data)
-          ? payload.data
+          ? (payload.data as ScatterPoint[])
           : [];
-
         setPoints(list);
       })
-      .catch((err: unknown) => {
+      .catch((err) => {
         console.error("Error fetching embeddings:", err);
         setPoints([]);
       });
   }, []);
-
-  // Plotly click event type (minimal shape we care about)
-  interface PlotClickEvent {
-    points?: Array<{
-      pointIndex: number;
-    }>;
-    event?: { preventDefault?: () => void };
-  }
-
-  const handleClick = (e: PlotClickEvent) => {
-    const idx = e.points?.[0]?.pointIndex;
-    if (typeof idx === "number") {
-      const point = points[idx];
-      if (point) onSelectCluster(point.cluster_label);
-      e.event?.preventDefault?.();
-    }
-  };
 
   return (
     <Card className="w-full">
@@ -73,8 +63,11 @@ export default function ScatterPlot({
               type: "scatter",
               marker: {
                 size: 10,
+                // ✅ Highlight currently selected subtype (cluster_label is numeric in /embeddings)
                 color: points.map((p) =>
-                  p.cluster_label === selectedCluster ? "#e11d48" : "#2563eb"
+                  selectedCluster != null && p.cluster_label === selectedCluster
+                    ? "#e11d48"
+                    : "#2563eb"
                 ),
                 opacity: 0.85,
               },
@@ -88,7 +81,14 @@ export default function ScatterPlot({
           }}
           style={{ width: "100%", height: "400px" }}
           config={{ displayModeBar: false }}
-          onClick={handleClick}
+          onClick={(e: PlotlyClickEvent) => {
+            const idx = e.points?.[0]?.pointIndex;
+            if (idx != null) {
+              const point = points[idx];
+              if (point) onSelectCluster(Number(point.cluster_label));
+              e.event?.preventDefault?.();
+            }
+          }}
         />
       </CardContent>
     </Card>

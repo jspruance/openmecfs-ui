@@ -22,37 +22,28 @@ export default function ClusterGrid({
 }: Props) {
   const [clusters, setClusters] = useState<Cluster[]>([]);
 
+  // ✅ NOTE: trailing slash to hit /clusters/ (router.get("/"))
   useEffect(() => {
-    async function load() {
-      try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/clusters`, {
-          method: "GET",
-          headers: { Accept: "application/json" },
-        });
-
-        const payload = await res.json();
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/clusters/`)
+      .then((res) => {
+        if (!res.ok) throw new Error(`GET /clusters/ ${res.status}`);
+        return res.json();
+      })
+      .then((payload) => {
         const list = Array.isArray(payload)
-          ? payload
+          ? (payload as Cluster[])
           : Array.isArray(payload?.data)
-          ? payload.data
+          ? (payload.data as Cluster[])
           : [];
-
-        if (!Array.isArray(list)) {
-          console.error("Unexpected /clusters response:", payload);
-          setClusters([]);
-          return;
-        }
-
         setClusters(list);
-      } catch (err) {
-        console.error("Failed to load clusters:", err);
+      })
+      .catch((err) => {
+        console.error("Error fetching clusters:", err);
         setClusters([]);
-      }
-    }
-
-    load();
+      });
   }, []);
 
+  // Auto-select first cluster when loaded
   useEffect(() => {
     if (clusters.length > 0 && selectedCluster === null) {
       onSelectCluster(clusters[0].cluster_num, clusters[0]);
