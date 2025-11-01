@@ -1,10 +1,17 @@
 "use client";
 
-import { Suspense, useEffect, useMemo, useRef, useState, useCallback } from "react";
+import {
+  Suspense,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useCallback,
+} from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Search, ArrowRight } from "lucide-react";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 interface Paper {
   pmid: string;
@@ -14,11 +21,10 @@ interface Paper {
   patient_summary?: string;
 }
 
-// Human label → keyword fragment
 const topicMap: Record<string, string> = {
   "Long COVID": "long covid",
-  Neurology: "neuro",
-  Immunology: "immun",
+  Neurology: "neurology",
+  Immunology: "immunology",
   Diagnostics: "diagnos",
   Treatment: "treat",
 };
@@ -91,10 +97,13 @@ function ResearchPapersPageContent() {
     setLoading(true);
     try {
       const res = await fetch(endpoint, { cache: "no-store" });
-      const data: Paper[] | { results: Paper[] } = await res.json();
-      const batch = Array.isArray(data) ? data : data.results || [];
+      const json = await res.json();
+
+      const batch = json.data || [];
+      const more = json.has_more ?? batch.length === LIMIT;
+
       setPapers((prev) => (page === 1 ? batch : [...prev, ...batch]));
-      setHasMore(batch.length === LIMIT);
+      setHasMore(more);
     } catch (error) {
       console.error("Error fetching papers:", error);
     } finally {
@@ -193,7 +202,7 @@ function ResearchPapersPageContent() {
             </select>
           </div>
 
-          {/* Topic Filters */}
+          {/* Topic filters */}
           <div className="mt-4 flex gap-2 flex-wrap">
             {Object.keys(topicMap).map((label) => {
               const mapped = topicMap[label];
@@ -259,7 +268,6 @@ function ResearchPapersPageContent() {
                     window.open(`/research/papers/${paper.pmid}`, "_blank")
                   }
                 >
-                  {/* Title */}
                   <div className="flex items-start justify-between">
                     <h3
                       className="font-medium text-gray-900 text-base group-hover:text-brand leading-snug transition-colors"
@@ -278,14 +286,12 @@ function ResearchPapersPageContent() {
                     />
                   </div>
 
-                  {/* Authors */}
                   <p className="text-xs italic text-gray-500 mt-1.5">
                     {Array.isArray(paper.authors)
                       ? paper.authors.join(", ")
                       : paper.authors}
                   </p>
 
-                  {/* Summary */}
                   {paper.patient_summary && (
                     <p
                       className="text-sm text-gray-600 mt-2 line-clamp-2"
@@ -298,7 +304,7 @@ function ResearchPapersPageContent() {
               ))}
             </ul>
 
-            {/* Infinite Scroll */}
+            {/* Infinite scroll sentinel */}
             <div className="mt-6 flex flex-col items-center gap-3">
               {loading && (
                 <div className="rounded-xl border border-gray-200 p-4 text-center text-gray-600">
@@ -329,16 +335,18 @@ function ResearchPapersPageContent() {
 
 export default function ResearchPapersPage() {
   return (
-    <Suspense fallback={
-      <main className="min-h-screen flex flex-col text-gray-800 font-sans bg-white">
-        <div className="max-w-5xl mx-auto px-6 py-12">
-          <div className="rounded-xl border border-gray-200 p-8 text-center text-gray-600 flex flex-col items-center justify-center">
-            <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-3"></div>
-            <p>Loading papers…</p>
+    <Suspense
+      fallback={
+        <main className="min-h-screen flex flex-col text-gray-800 font-sans bg-white">
+          <div className="max-w-5xl mx-auto px-6 py-12">
+            <div className="rounded-xl border border-gray-200 p-8 text-center text-gray-600 flex flex-col items-center justify-center">
+              <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-3"></div>
+              <p>Loading papers...</p>
+            </div>
           </div>
-        </div>
-      </main>
-    }>
+        </main>
+      }
+    >
       <ResearchPapersPageContent />
     </Suspense>
   );
