@@ -41,9 +41,26 @@ const DialogContent = React.forwardRef<
     >
       {children}
 
-      {/* ✅ Fixed Close Button */}
-      <DialogPrimitive.Close className="absolute right-4 top-4 cursor-pointer rounded-sm opacity-70 transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
-        <X className="h-5 w-5 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white" />
+      {/* ✅ Clean close button — no ugly outline */}
+      <DialogPrimitive.Close
+        className="
+          absolute right-4 top-4
+          cursor-pointer
+          bg-transparent border-none outline-none
+          opacity-70 hover:opacity-100
+          focus:outline-none focus:ring-0 focus:ring-offset-0
+          active:outline-none
+        "
+        style={{ boxShadow: "none" }}
+      >
+        <X
+          className="
+            h-5 w-5
+            text-gray-600 dark:text-gray-300
+            hover:text-gray-900 dark:hover:text-white
+            cursor-pointer
+          "
+        />
         <span className="sr-only">Close</span>
       </DialogPrimitive.Close>
     </DialogPrimitive.Content>
