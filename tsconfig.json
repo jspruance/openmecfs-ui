@@ -14,8 +14,10 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"],
-      "@app/*": ["src/app/*"] // ← add this
+      "@app/*": ["src/app/*"]
     },
+
+    "typeRoots": ["./node_modules/@types", "./src/types"], // ✅ ADD THIS
 
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
