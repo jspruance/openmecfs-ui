@@ -29,7 +29,7 @@ export default function SubtypesPage() {
       const clusterFromUrl = urlCluster ? Number(urlCluster) : null;
 
       if (clusterFromUrl !== null && !isNaN(clusterFromUrl)) {
-        const match = data.find((c) => c.cluster_num === clusterFromUrl);
+        const match = data.find((c: Cluster) => c.cluster_num === clusterFromUrl);
         if (match) {
           setSelectedCluster(clusterFromUrl);
           setSelectedClusterData(match);

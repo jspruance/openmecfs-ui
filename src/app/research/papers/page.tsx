@@ -66,11 +66,18 @@ export default function ResearchPapersPage() {
   const pushUrl = useCallback(
     (next: { q?: string; sort?: string; topic?: string; page?: number }) => {
       const usp = new URLSearchParams(window.location.search);
-      if (next.q !== undefined) next.q ? usp.set("q", next.q) : usp.delete("q");
-      if (next.sort !== undefined)
-        next.sort ? usp.set("sort", next.sort) : usp.delete("sort");
-      if (next.topic !== undefined)
-        next.topic ? usp.set("topic", next.topic) : usp.delete("topic");
+      if (next.q !== undefined) {
+        if (next.q) usp.set("q", next.q);
+        else usp.delete("q");
+      }
+      if (next.sort !== undefined) {
+        if (next.sort) usp.set("sort", next.sort);
+        else usp.delete("sort");
+      }
+      if (next.topic !== undefined) {
+        if (next.topic) usp.set("topic", next.topic);
+        else usp.delete("topic");
+      }
       if (next.page !== undefined) usp.set("page", String(next.page));
       router.replace(`?${usp.toString()}`, { scroll: false });
     },

@@ -71,7 +71,7 @@ export default function ScatterPlot({
           }}
           style={{ width: "100%", height: "400px" }}
           config={{ displayModeBar: false }}
-          onClick={(e: any) => {
+          onClick={(e: { points?: Array<{ pointIndex?: number }>; event?: { preventDefault?: () => void } }) => {
             const idx = e.points?.[0]?.pointIndex;
             if (idx != null) {
               const point = points[idx];
