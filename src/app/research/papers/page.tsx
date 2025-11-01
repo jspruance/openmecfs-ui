@@ -132,7 +132,7 @@ function ResearchPapersPageContent() {
           });
           setHasMore(more);
         }
-      } catch (error: any) {
+      } catch (error: unknown) {
         if (!cancelled) {
           console.error("Error fetching papers:", error);
           setHasMore(false);
