@@ -111,16 +111,19 @@ function ResearchPapersPageContent() {
     }
   }, [endpoint, page, loading, hasMore]);
 
+  // ✅ Initialize from URL ONCE
   useEffect(() => {
-    if (!initializedFromUrl) {
-      setInitializedFromUrl(true);
-      setPapers([]);
-      setHasMore(true);
-    }
+    if (initializedFromUrl) return;
+    setInitializedFromUrl(true);
+    setPapers([]);
+    setHasMore(true);
+    setPage(1);
   }, [initializedFromUrl]);
 
+  // ✅ Fetch AFTER initialized
   useEffect(() => {
-    if (initializedFromUrl) fetchPage();
+    if (!initializedFromUrl) return;
+    fetchPage();
   }, [endpoint, initializedFromUrl, fetchPage]);
 
   useEffect(() => {
