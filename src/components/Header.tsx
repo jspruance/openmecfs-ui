@@ -66,7 +66,7 @@ export default function Header() {
             href="/research"
             className="text-gray-600 hover:text-gray-900 transition-colors"
           >
-            Research
+            Research Lab
           </Link>
           <Link
             href="/about"

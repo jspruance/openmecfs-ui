@@ -1,22 +1,29 @@
 import type { Config } from "tailwindcss";
 
 const config: Config = {
+  // 👇 this line is the only real change
+  darkMode: ["class", ".dark"],
+
   content: [
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/lib/**/*.{js,ts,jsx,tsx,mdx}",
   ],
+
   theme: {
     extend: {
       colors: {
-        brand: {
-          light: '#1E88E5',
-          DEFAULT: '#007BFF',
-          dark: '#0D47A1',
-        },
+        border: "hsl(var(--border))",
+        input: "hsl(var(--input))",
+        ring: "hsl(var(--ring))",
+        background: "hsl(var(--background))",
+        foreground: "hsl(var(--foreground))",
+        card: "hsl(var(--card))",
+        "card-foreground": "hsl(var(--card-foreground))",
       },
     },
   },
+
   plugins: [],
 };
 

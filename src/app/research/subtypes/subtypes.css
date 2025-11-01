@@ -1,0 +1,86 @@
+/* ---------------------------------------------
+   LOCAL PAGE THEME: Open ME/CFS Research aesthetic
+---------------------------------------------- */
+
+/* Light / dark backgrounds */
+.subtypes-theme {
+  background: linear-gradient(to bottom right, #f8fafc, #eef2ff);
+  color: #1e293b;
+  min-height: 100vh;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.dark .subtypes-theme {
+  background: linear-gradient(to bottom right, #0f172a, #1e293b);
+  color: #f8fafc;
+}
+
+/* Hero section */
+.subtypes-hero {
+  text-align: center;
+  padding: 4rem 1rem;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.subtypes-hero h1 {
+  font-size: 2.5rem;
+  font-weight: 800;
+  margin-bottom: 1rem;
+  color: inherit;
+}
+
+.subtypes-hero p {
+  font-size: 1.1rem;
+  color: #475569;
+}
+
+.dark .subtypes-hero p {
+  color: #cbd5e1;
+}
+
+/* Card containers */
+.subtypes-card {
+  border-radius: 0.75rem;
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  background: #ffffff;
+  padding: 1.5rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.dark .subtypes-card {
+  background: #0f172a !important;
+  border-color: #1e293b !important;
+  color: #f1f5f9 !important;
+}
+
+/* Force dark mode for all cards in subtypes page */
+.dark .subtypes-theme .subtypes-card,
+.dark .subtypes-theme [class*="Card"] {
+  background: #0f172a !important;
+  border-color: #1e293b !important;
+  color: #f1f5f9 !important;
+}
+
+/* Force heading contrast */
+.dark .subtypes-theme h2 {
+  color: #ffffff !important;
+}
+
+/* Simple fade animation */
+.fade-in {
+  opacity: 0;
+  transform: translateY(10px);
+  animation: fadeInUp 0.4s ease forwards;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

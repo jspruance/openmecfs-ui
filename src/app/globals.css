@@ -1,13 +1,48 @@
 @import "tailwindcss";
 
-/* Optional global styles */
+/* ------------------------------
+   🌍 Global Theme Tokens
+------------------------------ */
+@theme {
+  --color-bg-light: theme(colors.gray.50);
+  --color-text-light: theme(colors.gray.800);
+  --color-bg-dark: theme(colors.slate.900);
+  --color-text-dark: theme(colors.slate.100);
+  --color-card-dark: theme(colors.slate.800);
+  --color-border-dark: theme(colors.slate.700);
+}
+
+/* ------------------------------
+   🌍 Base Global Styles
+------------------------------ */
 html,
 body {
-  background-color: theme("colors.gray.50");
-  color: theme("colors.gray.800");
+  background-color: var(--color-bg-light);
+  color: var(--color-text-light);
   font-family: system-ui, sans-serif;
 }
-/* --- Open ME/CFS hero animations --- */
+
+/* ------------------------------
+   🌓 Dark Mode
+------------------------------ */
+html.dark {
+  color-scheme: dark;
+  background-color: var(--color-bg-dark);
+  color: var(--color-text-dark);
+}
+
+/* ------------------------------
+   🧩 Card Overrides
+------------------------------ */
+html.dark .card {
+  background-color: var(--color-card-dark);
+  color: var(--color-text-dark);
+  border-color: var(--color-border-dark);
+}
+
+/* ------------------------------
+   ✨ Hero Animations
+------------------------------ */
 @keyframes omc-fade-in-up {
   from {
     opacity: 0;
@@ -18,6 +53,7 @@ body {
     transform: translateY(0);
   }
 }
+
 @keyframes omc-fade-in {
   from {
     opacity: 0;
@@ -26,9 +62,28 @@ body {
     opacity: 1;
   }
 }
+
 .fade-in-up {
   animation: omc-fade-in-up 800ms ease-out both;
 }
+
 .fade-in {
   animation: omc-fade-in 1200ms ease-out both;
+}
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 47.4% 11.2%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 47.4% 11.2%;
+    --border: 214.3 31.8% 91.4%;
+  }
+
+  .dark {
+    --background: 222.2 47.4% 11.2%;
+    --foreground: 210 40% 98%;
+    --card: 217.2 32.6% 17.5%;
+    --card-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 27.5%;
+  }
 }
