@@ -12,7 +12,6 @@ interface ScatterPlotProps {
   selectedCluster: number | null;
 }
 
-// Shape for Plotly click event points we actually use
 type PlotlyPoint = { pointIndex?: number };
 type PlotlyClickEvent = {
   points?: PlotlyPoint[];
@@ -33,11 +32,18 @@ export default function ScatterPlot({
       })
       .then((payload) => {
         const list = Array.isArray(payload)
-          ? (payload as ScatterPoint[])
+          ? payload
           : Array.isArray(payload?.data)
-          ? (payload.data as ScatterPoint[])
+          ? payload.data
           : [];
-        setPoints(list);
+
+        // ✅ Normalize cluster label values to NUMBER
+        const normalized = list.map((p: any) => ({
+          ...p,
+          cluster_label: Number(p.cluster_label),
+        })) as ScatterPoint[];
+
+        setPoints(normalized);
       })
       .catch((err) => {
         console.error("Error fetching embeddings:", err);
@@ -63,11 +69,12 @@ export default function ScatterPlot({
               type: "scatter",
               marker: {
                 size: 10,
-                // ✅ Highlight currently selected subtype (cluster_label is numeric in /embeddings)
-                color: points.map((p) =>
-                  selectedCluster != null && p.cluster_label === selectedCluster
-                    ? "#e11d48"
-                    : "#2563eb"
+                color: points.map(
+                  (p) =>
+                    selectedCluster !== null &&
+                    p.cluster_label === selectedCluster
+                      ? "#e11d48" // red for selected
+                      : "#2563eb" // blue for others
                 ),
                 opacity: 0.85,
               },
@@ -85,7 +92,7 @@ export default function ScatterPlot({
             const idx = e.points?.[0]?.pointIndex;
             if (idx != null) {
               const point = points[idx];
-              if (point) onSelectCluster(Number(point.cluster_label));
+              if (point) onSelectCluster(point.cluster_label);
               e.event?.preventDefault?.();
             }
           }}

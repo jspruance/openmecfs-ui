@@ -59,10 +59,10 @@ export default function PapersPanel({ clusterId }: Props) {
 
     async function loadPapers() {
       try {
-        // try ?cluster= first, fallback to ?cluster_label=
+        // ✅ hit `/papers` not `/papers-sb`
         const res = await api
-          .get(`/papers-sb?cluster=${clusterId}`)
-          .catch(() => api.get(`/papers-sb?cluster_label=${clusterId}`));
+          .get(`/papers?cluster=${clusterId}`)
+          .catch(() => api.get(`/papers?cluster_label=${clusterId}`));
 
         const raw = res.data;
         const list = Array.isArray(raw)
