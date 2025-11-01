@@ -91,39 +91,70 @@ function ResearchPapersPageContent() {
     [router]
   );
 
-  const fetchPage = useCallback(async () => {
-    if (loading || !hasMore) return;
-    setLoading(true);
-
-    try {
-      const res = await fetch(endpoint, { cache: "no-store" });
-      const json = await res.json();
-      const batch = json.data || [];
-      const more = json.has_more ?? batch.length === LIMIT;
-
-      setPapers((prev) => (page === 1 ? batch : [...prev, ...batch]));
-      setHasMore(more);
-    } catch (error) {
-      console.error("Error fetching papers:", error);
-    } finally {
-      setLoading(false);
-    }
-  }, [endpoint, page, loading, hasMore]);
-
-  // ✅ One-time init from URL, THEN fetch
+  // ✅ One-time init from URL
   useEffect(() => {
     if (!initialized) {
       setInitialized(true);
       setPapers([]);
       setHasMore(true);
-      return;
     }
-    fetchPage();
-  }, [endpoint, initialized, fetchPage]);
+  }, [initialized]);
 
+  // ✅ Fetch when endpoint changes (includes page number)
+  useEffect(() => {
+    if (!initialized) return;
+    if (!hasMore) return;
+    
+    let cancelled = false;
+    
+    const doFetch = async () => {
+      setLoading(true);
+      try {
+        const res = await fetch(endpoint, { cache: "no-store" });
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        
+        const json = await res.json();
+        const batch = json.data || [];
+        const more = json.has_more ?? batch.length === LIMIT;
+
+        if (!cancelled) {
+          setPapers((prev) => {
+            // For page 1, replace; for subsequent pages, append
+            if (page === 1) {
+              return batch;
+            }
+            // Avoid duplicates by checking if papers already exist
+            const existingPmids = new Set(prev.map(p => String(p.pmid)));
+            const newPapers = batch.filter((p: Paper) => !existingPmids.has(String(p.pmid)));
+            return [...prev, ...newPapers];
+          });
+          setHasMore(more);
+        }
+      } catch (error: any) {
+        if (!cancelled) {
+          console.error("Error fetching papers:", error);
+          setHasMore(false);
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    };
+    
+    doFetch();
+    
+    return () => {
+      cancelled = true;
+    };
+  }, [endpoint, initialized, page, hasMore]);
+
+  // ✅ Infinite scroll intersection observer
   useEffect(() => {
     const node = sentinelRef.current;
-    if (!node) return;
+    if (!node || !hasMore || loading) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
