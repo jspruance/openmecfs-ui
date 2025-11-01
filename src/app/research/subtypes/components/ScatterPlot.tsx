@@ -12,6 +12,8 @@ interface ScatterPlotProps {
   selectedCluster: number | null;
 }
 
+type EmbeddingPayload = ScatterPoint[] | { data: ScatterPoint[] };
+
 export default function ScatterPlot({
   onSelectCluster,
   selectedCluster,
@@ -21,22 +23,37 @@ export default function ScatterPlot({
   useEffect(() => {
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/embeddings`)
       .then((res) => res.json())
-      .then((payload: unknown) => {
+      .then((payload: EmbeddingPayload) => {
         const list = Array.isArray(payload)
           ? payload
-          : typeof payload === "object" &&
-            payload &&
-            Array.isArray((payload as any).data)
-          ? (payload as any).data
+          : Array.isArray(payload?.data)
+          ? payload.data
           : [];
 
-        setPoints(list as ScatterPoint[]);
+        setPoints(list);
       })
       .catch((err: unknown) => {
         console.error("Error fetching embeddings:", err);
         setPoints([]);
       });
   }, []);
+
+  // Plotly click event type (minimal shape we care about)
+  interface PlotClickEvent {
+    points?: Array<{
+      pointIndex: number;
+    }>;
+    event?: { preventDefault?: () => void };
+  }
+
+  const handleClick = (e: PlotClickEvent) => {
+    const idx = e.points?.[0]?.pointIndex;
+    if (typeof idx === "number") {
+      const point = points[idx];
+      if (point) onSelectCluster(point.cluster_label);
+      e.event?.preventDefault?.();
+    }
+  };
 
   return (
     <Card className="w-full">
@@ -71,13 +88,7 @@ export default function ScatterPlot({
           }}
           style={{ width: "100%", height: "400px" }}
           config={{ displayModeBar: false }}
-          onClick={(e: Readonly<any>) => {
-            const idx: number | undefined = e?.points?.[0]?.pointIndex;
-            if (typeof idx === "number") {
-              const point = points[idx];
-              if (point) onSelectCluster(point.cluster_label);
-            }
-          }}
+          onClick={handleClick}
         />
       </CardContent>
     </Card>
