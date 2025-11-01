@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import ClusterGrid from "./components/ClusterGrid";
 import PapersPanel from "./components/PapersPanel";
@@ -11,7 +11,7 @@ import "./subtypes.css";
 import { Cluster } from "./types";
 import { fetchClusters } from "@/lib/api";
 
-export default function SubtypesPage() {
+function SubtypesPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -103,5 +103,22 @@ export default function SubtypesPage() {
         </div>
       </section>
     </main>
+  );
+}
+
+export default function SubtypesPage() {
+  return (
+    <Suspense fallback={
+      <main className="subtypes-theme">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+            <p className="text-gray-600">Loading subtypes...</p>
+          </div>
+        </div>
+      </main>
+    }>
+      <SubtypesPageContent />
+    </Suspense>
   );
 }
