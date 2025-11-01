@@ -1,56 +1,106 @@
-// src/app/research/mechanisms/data.ts
-
-export interface Mechanism {
-  id: string;
-  title: string;
-  summary: string;
-  evidence_level: "emerging" | "moderate" | "strong";
-  key_findings: string[];
-  related_subtypes: number[];
-  related_papers: string[]; // PMIDs
-}
-
-export const mechanisms: Mechanism[] = [
+export const mechanisms = [
   {
     id: "neuroinflammation",
+    icon: "🧠🔥",
     title: "Neuroinflammation",
-    summary:
+    evidence: "MODERATE",
+    findingSummary:
       "Chronic activation of microglia and central inflammatory signaling may drive fatigue, cognitive impairment, and sensory hypersensitivity in ME/CFS.",
-    evidence_level: "moderate",
-    key_findings: [
+    findings: [
       "Microglial activation observed in PET imaging",
       "Elevated neuroinflammatory cytokines in CSF",
       "Neuroimmune overlap with Long COVID",
     ],
-    related_subtypes: [0, 1],
-    related_papers: ["32497511", "35123455"],
   },
   {
-    id: "autonomic-dysfunction",
+    id: "autonomic",
+    icon: "⚡🩺",
     title: "Autonomic Dysregulation / OI",
-    summary:
+    evidence: "STRONG",
+    findingSummary:
       "Autonomic imbalance, impaired cerebral blood flow, and orthostatic intolerance are common in ME/CFS, suggesting disruption of autonomic nervous system control.",
-    evidence_level: "strong",
-    key_findings: [
+    findings: [
       "Reduced cerebral blood flow during tilt-table tests",
       "High prevalence of POTS and orthostatic intolerance",
-      "Autonomic symptom improvement linked with pacing",
+      "Autonomic symptoms improve with volume/sodium therapy",
     ],
-    related_subtypes: [1],
-    related_papers: ["28396082", "37512499"],
   },
   {
-    id: "mitochondrial-dysfunction",
+    id: "mitochondria",
+    icon: "🧬🔋",
     title: "Mitochondrial Energy Impairment",
-    summary:
-      "Evidence shows impaired ATP production, redox imbalance, and altered metabolic pathways that limit cellular energy availability.",
-    evidence_level: "emerging",
-    key_findings: [
-      "Reduced ATP synthesis in muscle biopsy studies",
+    evidence: "EMERGING",
+    findingSummary:
+      "Impaired ATP production, redox imbalance, and altered metabolic pathways may limit cellular energy availability.",
+    findings: [
+      "Reduced ATP synthesis in muscle biopsies",
       "Altered redox metabolism and lactate abnormalities",
       "Overlap with metabolic post-viral syndromes",
     ],
-    related_subtypes: [0],
-    related_papers: ["31245678"],
+  },
+  {
+    id: "viral-immune",
+    icon: "🛡️🦠",
+    title: "Immune Dysfunction & Viral Reactivation",
+    evidence: "MODERATE",
+    findingSummary:
+      "Immune dysregulation and possible herpesvirus reactivation may contribute to chronic symptoms.",
+    findings: [
+      "Altered NK cell function",
+      "Elevated inflammatory cytokines",
+      "EBV / HHV-6 reactivation signals in subsets",
+    ],
+  },
+  {
+    id: "vascular",
+    icon: "💉🧠",
+    title: "Neurovascular Dysfunction",
+    evidence: "EMERGING",
+    findingSummary:
+      "Impaired microcirculation and endothelial dysfunction may affect oxygen delivery and cognitive performance.",
+    findings: [
+      "Reduced cerebral perfusion seen in imaging",
+      "Endothelial dysfunction evidence",
+      "Hypoperfusion overlaps with Long COVID findings",
+    ],
+  },
+  {
+    id: "hpa-axis",
+    icon: "🧠⚖️",
+    title: "HPA Axis / Hormonal Dysregulation",
+    evidence: "EMERGING",
+    findingSummary:
+      "Altered stress-response signaling and dysregulated cortisol rhythms may contribute to fatigue and immune changes.",
+    findings: [
+      "Flattened cortisol curve in some patients",
+      "HPA axis sensitivity to stress",
+      "Possible subset-specific hormonal patterns",
+    ],
+  },
+  {
+    id: "microbiome",
+    icon: "🦠🌿",
+    title: "Gut–Brain–Immune Axis & Microbiome",
+    evidence: "MODERATE",
+    findingSummary:
+      "Gut dysbiosis and microbial translocation may drive systemic inflammation and neuroimmune signaling.",
+    findings: [
+      "Reduced microbial diversity",
+      "Elevated gut-permeability markers",
+      "Shared patterns with Long COVID dysbiosis",
+    ],
+  },
+  {
+    id: "oxidative-stress",
+    icon: "🧪⚡",
+    title: "Oxidative & Nitrosative Stress",
+    evidence: "EMERGING",
+    findingSummary:
+      "Oxidative imbalance may impair cellular metabolism and mitochondrial efficiency.",
+    findings: [
+      "Elevated oxidative stress markers",
+      "Nitrosative stress abnormalities reported",
+      "Ties to fatigue & PEM responses",
+    ],
   },
 ];

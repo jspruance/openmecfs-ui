@@ -18,12 +18,10 @@ export default function MechanismsPage() {
       </section>
 
       {/* Mechanism Cards */}
-      <section className="max-w-7xl mx-auto px-4 pb-16">
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {mechanisms.map((mech) => (
-            <MechanismCard key={mech.id} mech={mech} />
-          ))}
-        </div>
+      <section className="max-w-7xl mx-auto px-4 pb-16 space-y-6">
+        {mechanisms.map((mech) => (
+          <MechanismCard key={mech.id} mech={mech} />
+        ))}
       </section>
     </main>
   );
