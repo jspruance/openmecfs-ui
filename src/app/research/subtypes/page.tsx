@@ -11,6 +11,8 @@ import "./subtypes.css";
 import { Cluster } from "./types";
 import { fetchClusters } from "@/lib/api";
 
+export const dynamic = 'force-dynamic';
+
 function SubtypesPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
