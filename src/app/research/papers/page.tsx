@@ -42,51 +42,50 @@ function ResearchPapersPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const [query, setQuery] = useState<string>(() => searchParams.get("q") || "");
-  const [sort, setSort] = useState<string>(
-    () => searchParams.get("sort") || "year"
-  );
-  const [selectedTopic, setSelectedTopic] = useState<string>(
+  const [query, setQuery] = useState(() => searchParams.get("q") || "");
+  const [sort, setSort] = useState(() => searchParams.get("sort") || "year");
+  const [selectedTopic, setSelectedTopic] = useState(
     () => searchParams.get("topic") || ""
   );
 
   const [papers, setPapers] = useState<Paper[]>([]);
-  const [page, setPage] = useState<number>(() =>
-    Number(searchParams.get("page") || 1)
-  );
-  const [loading, setLoading] = useState<boolean>(false);
-  const [hasMore, setHasMore] = useState<boolean>(true);
-  const [initializedFromUrl, setInitializedFromUrl] = useState<boolean>(false);
+  const [page, setPage] = useState(() => Number(searchParams.get("page") || 1));
+  const [loading, setLoading] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const [initialized, setInitialized] = useState(false);
 
   const sentinelRef = useRef<HTMLDivElement | null>(null);
 
   const endpoint = useMemo(() => {
     const base = process.env.NEXT_PUBLIC_API_URL;
     const usp = new URLSearchParams();
+
     if (query) usp.set("q", query);
     if (sort) usp.set("sort", sort);
     if (selectedTopic) usp.set("topic", selectedTopic);
+
     usp.set("limit", String(LIMIT));
     usp.set("page", String(page));
-    return `${base}/papers-sb?${usp.toString()}`;
+
+    // ✅ Always use `/papers-sb/`
+    return `${base}/papers-sb/?${usp.toString()}`;
   }, [query, sort, selectedTopic, page]);
 
   const pushUrl = useCallback(
     (next: { q?: string; sort?: string; topic?: string; page?: number }) => {
       const usp = new URLSearchParams(window.location.search);
+
       if (next.q !== undefined) {
         if (next.q) usp.set("q", next.q);
         else usp.delete("q");
       }
-      if (next.sort !== undefined) {
-        if (next.sort) usp.set("sort", next.sort);
-        else usp.delete("sort");
-      }
+      if (next.sort !== undefined) usp.set("sort", next.sort);
       if (next.topic !== undefined) {
         if (next.topic) usp.set("topic", next.topic);
         else usp.delete("topic");
       }
       if (next.page !== undefined) usp.set("page", String(next.page));
+
       router.replace(`?${usp.toString()}`, { scroll: false });
     },
     [router]
@@ -95,10 +94,10 @@ function ResearchPapersPageContent() {
   const fetchPage = useCallback(async () => {
     if (loading || !hasMore) return;
     setLoading(true);
+
     try {
       const res = await fetch(endpoint, { cache: "no-store" });
       const json = await res.json();
-
       const batch = json.data || [];
       const more = json.has_more ?? batch.length === LIMIT;
 
@@ -111,24 +110,21 @@ function ResearchPapersPageContent() {
     }
   }, [endpoint, page, loading, hasMore]);
 
-  // ✅ Initialize from URL ONCE
+  // ✅ One-time init from URL, THEN fetch
   useEffect(() => {
-    if (initializedFromUrl) return;
-    setInitializedFromUrl(true);
-    setPapers([]);
-    setHasMore(true);
-    setPage(1);
-  }, [initializedFromUrl]);
-
-  // ✅ Fetch AFTER initialized
-  useEffect(() => {
-    if (!initializedFromUrl) return;
+    if (!initialized) {
+      setInitialized(true);
+      setPapers([]);
+      setHasMore(true);
+      return;
+    }
     fetchPage();
-  }, [endpoint, initializedFromUrl, fetchPage]);
+  }, [endpoint, initialized, fetchPage]);
 
   useEffect(() => {
     const node = sentinelRef.current;
     if (!node) return;
+
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting && hasMore && !loading) {
@@ -139,6 +135,7 @@ function ResearchPapersPageContent() {
       },
       { rootMargin: "400px 0px" }
     );
+
     observer.observe(node);
     return () => observer.disconnect();
   }, [page, hasMore, loading, pushUrl]);
@@ -205,7 +202,7 @@ function ResearchPapersPageContent() {
             </select>
           </div>
 
-          {/* Topic filters */}
+          {/* Topic Filters */}
           <div className="mt-4 flex gap-2 flex-wrap">
             {Object.keys(topicMap).map((label) => {
               const mapped = topicMap[label];
