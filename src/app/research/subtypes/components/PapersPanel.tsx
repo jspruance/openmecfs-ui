@@ -4,17 +4,17 @@ import { useEffect, useState, useRef } from "react";
 import { ChevronDown, ExternalLink, Search } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import api from "@/lib/api";
+import { fetchPapersByCluster } from "@/lib/api";
 
 interface Paper {
-  id: string;
+  id?: string;
+  pmid?: string | number;
   title: string;
   authors: string | string[];
   year: number;
   abstract?: string;
   cluster_label?: number;
   cluster?: number;
-  pmid?: string | number;
 }
 
 interface Props {
@@ -31,7 +31,7 @@ export default function PapersPanel({ clusterId }: Props) {
 
   const containerRef = useRef<HTMLDivElement | null>(null);
 
-  // ✅ Debounce search input
+  // Debounce search input
   useEffect(() => {
     const t = setTimeout(() => setDebouncedSearch(searchTerm), 250);
     return () => clearTimeout(t);
@@ -43,7 +43,7 @@ export default function PapersPanel({ clusterId }: Props) {
     );
   };
 
-  // ✅ Reset scroll + search when cluster changes
+  // Reset when cluster changes
   useEffect(() => {
     if (containerRef.current && containerRef.current.scrollTop > 0) {
       containerRef.current.scrollTo({ top: 0, behavior: "smooth" });
@@ -51,17 +51,14 @@ export default function PapersPanel({ clusterId }: Props) {
     setSearchTerm("");
   }, [clusterId]);
 
-  // ✅ Fetch papers filtered by cluster
+  // ✅ Fetch papers from /papers-sb
   useEffect(() => {
     if (clusterId === null) return;
     setLoading(true);
     setExpandedIds([]);
 
-    async function loadPapers() {
-      try {
-        const res = await api.get(`/papers?cluster=${clusterId}`);
-
-        const raw = res.data;
+    fetchPapersByCluster(clusterId)
+      .then((raw: any) => {
         const list = Array.isArray(raw)
           ? raw
           : Array.isArray(raw?.data)
@@ -69,12 +66,8 @@ export default function PapersPanel({ clusterId }: Props) {
           : [];
 
         setPapers(list);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    loadPapers();
+      })
+      .finally(() => setLoading(false));
   }, [clusterId]);
 
   if (clusterId === null) {
@@ -119,7 +112,7 @@ export default function PapersPanel({ clusterId }: Props) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.25, ease: "easeOut" }}
     >
-      {/* ✅ Search bar */}
+      {/* Search */}
       <div className="flex items-center gap-2 sticky top-0 bg-white dark:bg-slate-900 py-2 z-10">
         <div className="relative w-full">
           <Search className="absolute left-2 top-2.5 h-4 w-4 text-slate-400" />
