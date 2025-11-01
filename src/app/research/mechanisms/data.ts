@@ -1,4 +1,13 @@
-export const mechanisms = [
+export interface Mechanism {
+  id: string;
+  icon: string;
+  title: string;
+  evidence: "STRONG" | "MODERATE" | "EMERGING";
+  findingSummary: string;
+  findings: string[];
+}
+
+export const mechanisms: Mechanism[] = [
   {
     id: "neuroinflammation",
     icon: "🧠🔥",
