@@ -5,6 +5,7 @@ export interface Mechanism {
   evidence: "STRONG" | "MODERATE" | "EMERGING";
   findingSummary: string;
   findings: string[];
+  papers?: string[];
 }
 
 export const mechanisms: Mechanism[] = [
@@ -20,6 +21,7 @@ export const mechanisms: Mechanism[] = [
       "Elevated neuroinflammatory cytokines in CSF",
       "Neuroimmune overlap with Long COVID",
     ],
+    papers: ["paper_neuro_01", "paper_inflammation_02"],
   },
   {
     id: "autonomic",
@@ -33,6 +35,7 @@ export const mechanisms: Mechanism[] = [
       "High prevalence of POTS and orthostatic intolerance",
       "Autonomic symptoms improve with volume/sodium therapy",
     ],
+    papers: ["paper_oi_01", "paper_pots_02"],
   },
   {
     id: "mitochondria",
@@ -46,6 +49,7 @@ export const mechanisms: Mechanism[] = [
       "Altered redox metabolism and lactate abnormalities",
       "Overlap with metabolic post-viral syndromes",
     ],
+    papers: ["paper_mito_01", "paper_energy_02"],
   },
   {
     id: "viral-immune",
@@ -59,6 +63,7 @@ export const mechanisms: Mechanism[] = [
       "Elevated inflammatory cytokines",
       "EBV / HHV-6 reactivation signals in subsets",
     ],
+    papers: ["paper_immune_01", "paper_virus_02"],
   },
   {
     id: "vascular",
@@ -72,6 +77,7 @@ export const mechanisms: Mechanism[] = [
       "Endothelial dysfunction evidence",
       "Hypoperfusion overlaps with Long COVID findings",
     ],
+    papers: ["paper_vascular_01"],
   },
   {
     id: "hpa-axis",
@@ -85,6 +91,7 @@ export const mechanisms: Mechanism[] = [
       "HPA axis sensitivity to stress",
       "Possible subset-specific hormonal patterns",
     ],
+    papers: ["paper_hpa_01"],
   },
   {
     id: "microbiome",
@@ -98,6 +105,7 @@ export const mechanisms: Mechanism[] = [
       "Elevated gut-permeability markers",
       "Shared patterns with Long COVID dysbiosis",
     ],
+    papers: ["paper_microbiome_01", "paper_gut_02"],
   },
   {
     id: "oxidative-stress",
@@ -111,5 +119,6 @@ export const mechanisms: Mechanism[] = [
       "Nitrosative stress abnormalities reported",
       "Ties to fatigue & PEM responses",
     ],
+    papers: ["paper_oxidative_01"],
   },
 ];
