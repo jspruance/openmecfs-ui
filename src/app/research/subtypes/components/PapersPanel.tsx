@@ -5,7 +5,7 @@ import { useEffect, useState, useRef } from "react";
 import { ChevronDown, ExternalLink, Search } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { fetchPapersByCluster } from "@/lib/api";
+import api from "@/lib/api";
 
 interface Paper {
   id?: string;
@@ -14,8 +14,8 @@ interface Paper {
   authors: string | string[];
   year: number;
   abstract?: string;
-  cluster_label?: number;
   cluster?: number;
+  cluster_label?: number;
 }
 
 interface Props {
@@ -52,14 +52,18 @@ export default function PapersPanel({ clusterId }: Props) {
     setSearchTerm("");
   }, [clusterId]);
 
-  // ✅ Fetch papers from /papers-sb
+  // ✅ Fetch papers from `/papers-sb/`
   useEffect(() => {
     if (clusterId === null) return;
     setLoading(true);
     setExpandedIds([]);
 
-    fetchPapersByCluster(clusterId)
-      .then((raw: any) => {
+    api
+      .get("/papers-sb/", {
+        params: { cluster: clusterId },
+      })
+      .then((res) => {
+        const raw = res.data;
         const list = Array.isArray(raw)
           ? raw
           : Array.isArray(raw?.data)

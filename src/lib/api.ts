@@ -23,14 +23,14 @@ export async function fetchClusters() {
 // ----- Papers -----
 export async function fetchPapersByCluster(clusterId: number) {
   if (clusterId === null || clusterId === undefined) return [];
-  const res = await api.get("/papers-sb", {
+  const res = await api.get("/papers-sb/", {
     params: { cluster_label: clusterId },
   });
   return res.data;
 }
 
 export async function searchPapers(query: string) {
-  const res = await api.get("/papers-sb", {
+  const res = await api.get("/papers-sb/", {
     params: { q: query },
   });
   return res.data;
