@@ -23,18 +23,34 @@ export default function ClusterGrid({
   const [clusters, setClusters] = useState<Cluster[]>([]);
 
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/clusters`)
-      .then((res) => res.json())
-      .then((payload) => {
+    async function load() {
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/clusters`, {
+          method: "GET",
+          headers: { Accept: "application/json" },
+        });
+
+        const payload = await res.json();
         const list = Array.isArray(payload)
           ? payload
           : Array.isArray(payload?.data)
           ? payload.data
           : [];
 
+        if (!Array.isArray(list)) {
+          console.error("Unexpected /clusters response:", payload);
+          setClusters([]);
+          return;
+        }
+
         setClusters(list);
-      })
-      .catch(console.error);
+      } catch (err) {
+        console.error("Failed to load clusters:", err);
+        setClusters([]);
+      }
+    }
+
+    load();
   }, []);
 
   useEffect(() => {

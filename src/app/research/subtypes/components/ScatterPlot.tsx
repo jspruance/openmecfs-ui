@@ -48,15 +48,17 @@ export default function ScatterPlot({
               x: points.map((p) => p.x),
               y: points.map((p) => p.y),
               text: points.map(
-                (p) => `Subtype ${p.cluster_label}<br>PMID: ${p.pmid}`
+                (p) => `Subtype ${p.cluster_label}<br>PMID: ${p.pmid ?? p.id}`
               ),
               mode: "markers",
               type: "scatter",
               marker: {
                 size: 10,
-                color: points.map((p) =>
-                  p.cluster_label === selectedCluster ? "#e11d48" : "#2563eb"
-                ),
+                color: points.map((p) => {
+                  const cluster =
+                    (p as any).cluster_label ?? (p as any).cluster ?? null;
+                  return cluster === selectedCluster ? "#e11d48" : "#2563eb";
+                }),
                 opacity: 0.85,
               },
             },
@@ -69,11 +71,13 @@ export default function ScatterPlot({
           }}
           style={{ width: "100%", height: "400px" }}
           config={{ displayModeBar: false }}
-          onClick={(e) => {
+          onClick={(e: any) => {
             const idx = e.points?.[0]?.pointIndex;
             if (idx != null) {
               const point = points[idx];
-              if (point) onSelectCluster(point.cluster_label);
+              const cluster =
+                (point as any).cluster_label ?? (point as any).cluster ?? null;
+              if (cluster !== null) onSelectCluster(cluster);
               e.event?.preventDefault?.();
             }
           }}
