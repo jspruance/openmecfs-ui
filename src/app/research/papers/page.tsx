@@ -7,12 +7,12 @@ import { Search, ArrowRight } from "lucide-react";
 interface Paper {
   pmid: string;
   title: string;
-  authors: string[];
+  authors: string[] | string;
   year?: number;
   patient_summary?: string;
 }
 
-// Human label → keyword fragment your API expects
+// Human label → keyword fragment
 const topicMap: Record<string, string> = {
   "Long COVID": "long covid",
   Neurology: "neuro",
@@ -23,7 +23,6 @@ const topicMap: Record<string, string> = {
 
 const LIMIT = 10;
 
-// ✅ highlight matches in title + summary
 function highlight(text: string, query: string) {
   if (!query) return text;
   const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -33,23 +32,26 @@ function highlight(text: string, query: string) {
 
 export default function ResearchPapersPage() {
   const router = useRouter();
-  const params = useSearchParams();
+  const searchParams = useSearchParams();
 
-  const [query, setQuery] = useState(() => params.get("q") || "");
-  const [sort, setSort] = useState(() => params.get("sort") || "year");
-  const [selectedTopic, setSelectedTopic] = useState(
-    () => params.get("topic") || ""
+  const [query, setQuery] = useState<string>(() => searchParams.get("q") || "");
+  const [sort, setSort] = useState<string>(
+    () => searchParams.get("sort") || "year"
+  );
+  const [selectedTopic, setSelectedTopic] = useState<string>(
+    () => searchParams.get("topic") || ""
   );
 
   const [papers, setPapers] = useState<Paper[]>([]);
-  const [page, setPage] = useState(() => Number(params.get("page") || 1));
-  const [loading, setLoading] = useState(false);
-  const [hasMore, setHasMore] = useState(true);
-  const [initializedFromUrl, setInitializedFromUrl] = useState(false);
+  const [page, setPage] = useState<number>(() =>
+    Number(searchParams.get("page") || 1)
+  );
+  const [loading, setLoading] = useState<boolean>(false);
+  const [hasMore, setHasMore] = useState<boolean>(true);
+  const [initializedFromUrl, setInitializedFromUrl] = useState<boolean>(false);
 
   const sentinelRef = useRef<HTMLDivElement | null>(null);
 
-  // Build API endpoint
   const endpoint = useMemo(() => {
     const base = process.env.NEXT_PUBLIC_API_URL;
     const usp = new URLSearchParams();
@@ -61,7 +63,6 @@ export default function ResearchPapersPage() {
     return `${base}/papers-sb?${usp.toString()}`;
   }, [query, sort, selectedTopic, page]);
 
-  // Sync URL
   const pushUrl = useCallback(
     (next: { q?: string; sort?: string; topic?: string; page?: number }) => {
       const usp = new URLSearchParams(window.location.search);
@@ -81,33 +82,32 @@ export default function ResearchPapersPage() {
     setLoading(true);
     try {
       const res = await fetch(endpoint, { cache: "no-store" });
-      const data = await res.json();
-      const batch: Paper[] = Array.isArray(data) ? data : data.results || [];
+      const data: Paper[] | { results: Paper[] } = await res.json();
+      const batch = Array.isArray(data) ? data : data.results || [];
       setPapers((prev) => (page === 1 ? batch : [...prev, ...batch]));
       setHasMore(batch.length === LIMIT);
-    } catch (e) {
-      console.error("Error fetching papers:", e);
+    } catch (error) {
+      console.error("Error fetching papers:", error);
     } finally {
       setLoading(false);
     }
   }, [endpoint, page, loading, hasMore]);
 
   useEffect(() => {
-    if (initializedFromUrl) return;
-    setInitializedFromUrl(true);
-    setPapers([]);
-    setHasMore(true);
+    if (!initializedFromUrl) {
+      setInitializedFromUrl(true);
+      setPapers([]);
+      setHasMore(true);
+    }
   }, [initializedFromUrl]);
 
   useEffect(() => {
-    if (!initializedFromUrl) return;
-    fetchPage();
+    if (initializedFromUrl) fetchPage();
   }, [endpoint, initializedFromUrl, fetchPage]);
 
   useEffect(() => {
     const node = sentinelRef.current;
     if (!node) return;
-
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting && hasMore && !loading) {
@@ -118,7 +118,6 @@ export default function ResearchPapersPage() {
       },
       { rootMargin: "400px 0px" }
     );
-
     observer.observe(node);
     return () => observer.disconnect();
   }, [page, hasMore, loading, pushUrl]);
@@ -139,27 +138,9 @@ export default function ResearchPapersPage() {
     pushUrl({ sort: value, page: 1 });
   };
 
-  const toggleTopic = (label: string) => {
-    const mapped = topicMap[label];
-    const newTopic = selectedTopic === mapped ? "" : mapped;
-    setSelectedTopic(newTopic);
-    setPapers([]);
-    setHasMore(true);
-    setPage(1);
-    pushUrl({ topic: newTopic, page: 1 });
-  };
-
-  const clearTopic = () => {
-    setSelectedTopic("");
-    setPapers([]);
-    setHasMore(true);
-    setPage(1);
-    pushUrl({ topic: "", page: 1 });
-  };
-
   return (
     <main className="min-h-screen flex flex-col text-gray-800 font-sans bg-white">
-      {/* ✅ ✅ YOUR ORIGINAL HEADER (no changes) */}
+      {/* ✅ Hero */}
       <section className="w-full border-b border-transparent">
         <div className="max-w-5xl mx-auto px-6 pb-6">
           <h1 className="text-3xl font-semibold tracking-tight text-gray-900">
@@ -168,9 +149,10 @@ export default function ResearchPapersPage() {
 
           <p className="mt-2 text-[15px] text-gray-600 max-w-2xl leading-relaxed">
             Search, filter, and explore structured ME/CFS literature — powered
-            by AI summaries and semantic understanding.
+            by AI summaries.
           </p>
 
+          {/* Search */}
           <div className="mt-6 flex flex-col md:flex-row md:items-center gap-3 w-full">
             <form
               onSubmit={handleSubmitSearch}
@@ -202,6 +184,7 @@ export default function ResearchPapersPage() {
             </select>
           </div>
 
+          {/* Topic Filters */}
           <div className="mt-4 flex gap-2 flex-wrap">
             {Object.keys(topicMap).map((label) => {
               const mapped = topicMap[label];
@@ -210,7 +193,14 @@ export default function ResearchPapersPage() {
               return (
                 <button
                   key={label}
-                  onClick={() => toggleTopic(label)}
+                  onClick={() => {
+                    const newTopic = isActive ? "" : mapped;
+                    setSelectedTopic(newTopic);
+                    setPapers([]);
+                    setHasMore(true);
+                    setPage(1);
+                    pushUrl({ topic: newTopic, page: 1 });
+                  }}
                   className={`px-3 py-1.5 rounded-md text-sm font-medium border cursor-pointer transition ${
                     isActive
                       ? "bg-blue-100 text-brand border-brand"
@@ -224,7 +214,13 @@ export default function ResearchPapersPage() {
 
             {selectedTopic && (
               <button
-                onClick={clearTopic}
+                onClick={() => {
+                  setSelectedTopic("");
+                  setPapers([]);
+                  setHasMore(true);
+                  setPage(1);
+                  pushUrl({ topic: "", page: 1 });
+                }}
                 className="text-sm text-gray-500 underline ml-1 hover:text-gray-700 cursor-pointer"
               >
                 Clear
@@ -237,7 +233,7 @@ export default function ResearchPapersPage() {
       {/* ✅ Results */}
       <section className="max-w-4xl mx-auto px-6 pb-12 pt-4">
         {papers.length === 0 && loading ? (
-          <div className="rounded-xl border border-gray-200 p-8 text-center flex flex-col items-center justify-center text-gray-600">
+          <div className="rounded-xl border border-gray-200 p-8 text-center text-gray-600 flex flex-col items-center justify-center">
             <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-3"></div>
             <p>Loading papers…</p>
           </div>
@@ -246,14 +242,15 @@ export default function ResearchPapersPage() {
         ) : (
           <>
             <ul className="flex flex-col gap-3">
-              {papers.map((paper, idx) => (
+              {papers.map((paper) => (
                 <li
-                  key={`${paper.pmid}-${idx}`}
-                  className="group bg-white border border-gray-100 rounded-lg p-4 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-150 cursor-pointer"
+                  key={paper.pmid}
+                  className="group bg-white border border-gray-100 rounded-lg p-4 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition cursor-pointer"
                   onClick={() =>
                     window.open(`/research/papers/${paper.pmid}`, "_blank")
                   }
                 >
+                  {/* Title */}
                   <div className="flex items-start justify-between">
                     <h3
                       className="font-medium text-gray-900 text-base group-hover:text-brand leading-snug transition-colors"
@@ -261,28 +258,28 @@ export default function ResearchPapersPage() {
                         __html: highlight(paper.title, query),
                       }}
                     />
-
                     {paper.year && (
                       <span className="ml-2 text-xs font-semibold bg-blue-100 text-brand px-2 py-0.5 rounded-md shrink-0">
                         {paper.year}
                       </span>
                     )}
-
                     <ArrowRight
                       className="text-gray-300 group-hover:text-brand opacity-0 group-hover:opacity-100 ml-2"
                       size={16}
                     />
                   </div>
 
-                  <p className="text-xs italic text-gray-500 mt-1.5 leading-snug">
+                  {/* Authors */}
+                  <p className="text-xs italic text-gray-500 mt-1.5">
                     {Array.isArray(paper.authors)
                       ? paper.authors.join(", ")
-                      : (paper.authors as any)}
+                      : paper.authors}
                   </p>
 
+                  {/* Summary */}
                   {paper.patient_summary && (
                     <p
-                      className="text-sm text-gray-600 mt-2 line-clamp-2 leading-relaxed"
+                      className="text-sm text-gray-600 mt-2 line-clamp-2"
                       dangerouslySetInnerHTML={{
                         __html: highlight(paper.patient_summary, query),
                       }}
@@ -292,6 +289,7 @@ export default function ResearchPapersPage() {
               ))}
             </ul>
 
+            {/* Infinite Scroll */}
             <div className="mt-6 flex flex-col items-center gap-3">
               {loading && (
                 <div className="rounded-xl border border-gray-200 p-4 text-center text-gray-600">
@@ -299,20 +297,18 @@ export default function ResearchPapersPage() {
                   <span className="text-sm">Loading more…</span>
                 </div>
               )}
-
               {!loading && hasMore && (
                 <button
                   onClick={() => {
-                    const next = page + 1;
-                    setPage(next);
-                    pushUrl({ page: next });
+                    const nextPage = page + 1;
+                    setPage(nextPage);
+                    pushUrl({ page: nextPage });
                   }}
                   className="px-4 py-2 text-sm font-medium border border-gray-300 rounded-md hover:bg-gray-50 cursor-pointer"
                 >
                   Load more
                 </button>
               )}
-
               <div ref={sentinelRef} className="h-1 w-full" />
             </div>
           </>
