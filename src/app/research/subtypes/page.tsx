@@ -10,8 +10,6 @@ import "./subtypes.css";
 
 import { Cluster } from "./types";
 import { fetchClusters } from "@/lib/api";
-
-// ✅ NEW
 import ClusterIntelligence from "./components/ClusterIntelligence";
 
 export const dynamic = "force-dynamic";
@@ -37,11 +35,11 @@ function SubtypesPageContent() {
         const match = data.find(
           (c: Cluster) => c.cluster_num === clusterFromUrl
         );
-        if (match) {
-          setSelectedCluster(clusterFromUrl);
+        if (match && match.cluster_num !== selectedCluster) {
+          setSelectedCluster(match.cluster_num);
           setSelectedClusterData(match);
-          return;
         }
+        return;
       }
 
       if (data.length > 0 && selectedCluster === null) {
@@ -51,7 +49,9 @@ function SubtypesPageContent() {
     };
 
     loadClusters();
-  }, [searchParams, selectedCluster]);
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams.toString()]);
 
   const selectCluster = (id: number) => {
     const cluster = clusters.find((c) => c.cluster_num === id) || null;
@@ -92,21 +92,22 @@ function SubtypesPageContent() {
               selectedCluster={selectedCluster}
             />
 
-            {selectedClusterData && (
-              <>
-                <div className="mt-4 p-4 rounded-lg border bg-blue-50 dark:bg-slate-800 dark:border-slate-700">
-                  <h3 className="font-semibold text-lg text-blue-700 dark:text-blue-300 mb-1">
-                    {selectedClusterData.cluster_label.replace(/\"/g, "")}
-                  </h3>
-                  <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
-                    {selectedClusterData.cluster_summary}
-                  </p>
-                </div>
+            {selectedCluster !== null &&
+              selectedClusterData &&
+              selectedClusterData.cluster_num === selectedCluster && (
+                <>
+                  <div className="mt-4 p-4 rounded-lg border bg-blue-50 dark:bg-slate-800 dark:border-slate-700">
+                    <h3 className="font-semibold text-lg text-blue-700 dark:text-blue-300 mb-1">
+                      {selectedClusterData.cluster_label.replace(/\"/g, "")}
+                    </h3>
+                    <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
+                      {selectedClusterData.cluster_summary}
+                    </p>
+                  </div>
 
-                {/* ✅ NEW SUBTYPE INTELLIGENCE PANEL */}
-                <ClusterIntelligence cluster={selectedClusterData} />
-              </>
-            )}
+                  <ClusterIntelligence cluster={selectedClusterData} />
+                </>
+              )}
           </div>
 
           <div className="subtypes-card min-h-[400px]">
