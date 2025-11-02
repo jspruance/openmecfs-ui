@@ -30,7 +30,13 @@ export default function EvidenceDialog({ mech, open, onOpenChange }: Props) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!open || !mech.papers) return;
+    // Reset when dialog opens fresh
+    if (open) {
+      setPapers([]);
+      setError(null);
+    }
+
+    if (!open || !mech.papers?.length) return;
 
     async function loadPapers() {
       setLoading(true);
@@ -39,7 +45,7 @@ export default function EvidenceDialog({ mech, open, onOpenChange }: Props) {
       try {
         const results: PaperMeta[] = [];
 
-        for (const id of mech.papers) {
+        for (const id of mech.papers ?? []) {
           try {
             const data = await fetchEuropePmcPaper(id);
 
@@ -71,12 +77,10 @@ export default function EvidenceDialog({ mech, open, onOpenChange }: Props) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         className="
-          max-w-lg 
-          rounded-xl 
+          max-w-lg rounded-xl 
           bg-white dark:bg-slate-900 
           border border-slate-200 dark:border-slate-700
-          shadow-2xl 
-          p-6
+          shadow-2xl p-6
         "
       >
         <DialogHeader>
