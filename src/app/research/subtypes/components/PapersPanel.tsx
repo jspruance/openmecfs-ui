@@ -84,13 +84,9 @@ export default function PapersPanel({ clusterId }: Props) {
 
   if (loading) {
     return (
-      <div className="space-y-3">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <div
-            key={i}
-            className="h-20 animate-pulse bg-slate-200 dark:bg-slate-700 rounded-xl"
-          />
-        ))}
+      <div className="rounded-xl border border-gray-200 dark:border-slate-700 p-8 text-center text-gray-600 dark:text-gray-400 flex flex-col items-center justify-center">
+        <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-3"></div>
+        <p>Loading papers…</p>
       </div>
     );
   }
