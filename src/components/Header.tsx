@@ -48,6 +48,15 @@ export default function Header() {
             ME/CFS
           </Link>
           <Link
+            href="/research"
+            className="text-gray-600 hover:text-gray-900 transition-colors"
+          >
+            Research Lab
+            <span className="ml-1 rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold text-amber-700">
+              NEW
+            </span>
+          </Link>
+          <Link
             href="/patients"
             className="text-gray-600 hover:text-gray-900 transition-colors"
           >
@@ -58,15 +67,6 @@ export default function Header() {
             className="text-gray-600 hover:text-gray-900 transition-colors"
           >
             Provider Education
-            <span className="ml-1 rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold text-amber-700">
-              NEW
-            </span>
-          </Link>
-          <Link
-            href="/research"
-            className="text-gray-600 hover:text-gray-900 transition-colors"
-          >
-            Research Lab
           </Link>
 
           {/* 🔗 Contact Anchor */}
