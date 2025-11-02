@@ -59,9 +59,8 @@ export default function EvidenceDialog({ mech, open, onOpenChange }: Props) {
             results.push({
               pmid: id,
               title: data?.title || `Paper ${id}`,
-              year:
-                data?.pubYear ?? data?.firstPublicationDate?.slice(0, 4) ?? "",
-              abstract: data?.abstractText ?? data?.abstract ?? "",
+              year: data?.year ?? "",
+              abstract: data?.abstract ?? "",
             });
           } catch {
             results.push({
