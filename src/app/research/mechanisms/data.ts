@@ -22,7 +22,7 @@ export const mechanisms: Mechanism[] = [
       "Neuroimmune overlap with Long COVID",
     ],
     // We'll populate with verified PMIDs next pass
-    papers: [],
+    papers: ["26310269", "33200941", "24785653", "26001304", "23407465"],
   },
   {
     id: "autonomic",
