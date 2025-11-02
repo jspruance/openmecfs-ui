@@ -24,7 +24,13 @@ export async function GET(req: Request) {
     }
 
     console.log("[ClinicAPI] Initializing Supabase client...");
-    const supabase = createClient(url, anon);
+    // Ensure we're using the correct Supabase client configuration
+    // If legacy keys are disabled, make sure SUPABASE_ANON_KEY is a valid project API key
+    const supabase = createClient(url, anon, {
+      auth: {
+        persistSession: false,
+      },
+    });
     
     const { searchParams } = new URL(req.url);
     const featured = searchParams.get("featured");

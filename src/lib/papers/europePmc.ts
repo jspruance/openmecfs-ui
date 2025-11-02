@@ -124,6 +124,8 @@ export async function fetchEuropePmcPaper(
       hasAuthors: !!data?.authors,
       hasJournal: !!data?.journal,
       title: data?.title?.substring(0, 50),
+      authors: data?.authors?.substring(0, 100), // Show first 100 chars of authors
+      authorsFull: data?.authors, // For debugging
     });
 
     const cleaned = {
@@ -137,6 +139,13 @@ export async function fetchEuropePmcPaper(
         (data?.link?.trim() ||
           (pmid ? `https://pubmed.ncbi.nlm.nih.gov/${pmid}/` : "")) as string,
     };
+    
+    console.log(`[fetchEuropePmcPaper] Cleaned data for ${pmid}:`, {
+      hasTitle: !!cleaned.title,
+      hasAuthors: !!cleaned.authors,
+      authorsLength: cleaned.authors.length,
+      authorsValue: cleaned.authors.substring(0, 100),
+    });
 
     const missingKeyFields =
       !cleaned.title ||
@@ -175,6 +184,16 @@ export async function fetchEuropePmcPaper(
       console.log(`[fetchEuropePmcPaper] Successfully fetched data for ${pmid}`);
     }
 
+    // If authors is empty, try PubMed fallback to get authors
+    if (!cleaned.authors) {
+      console.warn(`[fetchEuropePmcPaper] No authors found for ${pmid}, trying PubMed fallback...`);
+      const fb = await fetchPubmedFallback(pmid);
+      if (fb && fb.authors) {
+        console.log(`[fetchEuropePmcPaper] Using PubMed fallback authors for ${pmid}`);
+        cleaned.authors = fb.authors;
+      }
+    }
+    
     // Return cleaned data even if some fields are missing
     // The page component will show defaults for empty strings
     return cleaned;

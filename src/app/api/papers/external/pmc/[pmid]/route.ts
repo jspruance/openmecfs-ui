@@ -97,7 +97,10 @@ export async function GET(
             "",
           authors: (() => {
             // Try authorString first (most common)
-            if (doc.authorString?.trim()) return doc.authorString.trim();
+            if (doc.authorString?.trim()) {
+              console.log(`[PMC API] Using authorString for ${pmid}:`, doc.authorString.substring(0, 100));
+              return doc.authorString.trim();
+            }
             
             // Fallback to authorList parsing
             if (Array.isArray(doc.authorList?.author)) {
@@ -110,9 +113,13 @@ export async function GET(
                 })
                 .filter(Boolean)
                 .join(", ");
-              if (authorList) return authorList;
+              if (authorList) {
+                console.log(`[PMC API] Parsed authorList for ${pmid}:`, authorList.substring(0, 100));
+                return authorList;
+              }
             }
             
+            console.warn(`[PMC API] No authors found in PMC response for ${pmid}`);
             return "";
           })(),
           abstract: doc.abstractText?.trim() || "",
@@ -143,12 +150,24 @@ export async function GET(
           title: result?.title || fb.title || "Title unavailable",
           journal: result?.journal || fb.journal || "Unknown journal",
           year: result?.year || fb.year || "n.d.",
-          authors: result?.authors || fb.authors || "Unknown authors",
+          authors: result?.authors || fb.authors || "",
           abstract: result?.abstract || fb.abstract || "",
           link: fb.link,
           source: fb.source,
         };
+        
+        console.log(`[PMC API] Merged result for ${pmid}:`, {
+          hasAuthors: !!result.authors,
+          authorsLength: result.authors?.length || 0,
+          authorsPreview: result.authors?.substring(0, 100),
+        });
       }
+    } else {
+      console.log(`[PMC API] Result for ${pmid}:`, {
+        hasAuthors: !!result?.authors,
+        authorsLength: result?.authors?.length || 0,
+        authorsPreview: result?.authors?.substring(0, 100),
+      });
     }
 
     if (!result) {
