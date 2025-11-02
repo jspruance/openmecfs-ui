@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -18,27 +18,46 @@ interface Props {
   onOpenChange: (v: boolean) => void;
 }
 
+type PaperMeta = {
+  title: string;
+  year?: string;
+  pmid: string;
+};
+
 export default function EvidenceDialog({ mech, open, onOpenChange }: Props) {
+  const [papers, setPapers] = useState<PaperMeta[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Stub: load papers when modal opens (real fetch later)
   useEffect(() => {
-    async function loadPapers() {
-      if (!open || !mech.papers) return;
+    if (!open || !mech.papers) return;
 
+    async function loadPapers() {
       setLoading(true);
       setError(null);
 
       try {
-        await Promise.all(
-          mech.papers.map(async (pmid) => ({
-            pmid,
-            data: await fetchEuropePmcPaper(pmid),
-          }))
-        );
-        // Papers loaded but not displayed yet - will be used when evidence display is implemented
-      } catch {
+        const results: PaperMeta[] = [];
+
+        for (const id of mech.papers) {
+          try {
+            const data = await fetchEuropePmcPaper(id);
+
+            results.push({
+              pmid: id,
+              title: data?.title || `Paper ${id}`,
+              year: data?.pubYear || "",
+            });
+          } catch {
+            results.push({
+              pmid: id,
+              title: `Paper ${id}`,
+            });
+          }
+        }
+
+        setPapers(results);
+      } catch (e) {
         setError("Failed to fetch evidence");
       } finally {
         setLoading(false);
@@ -70,38 +89,43 @@ export default function EvidenceDialog({ mech, open, onOpenChange }: Props) {
           </DialogDescription>
         </DialogHeader>
 
-        {/* Loading state */}
+        {/* Loading */}
         {loading && (
           <p className="text-sm text-muted-foreground mt-4">Loading papers…</p>
         )}
 
-        {/* Error state */}
+        {/* Error */}
         {error && <p className="text-sm text-red-600 mt-4">{error}</p>}
 
-        {/* Paper list (still showing raw PMIDs for now) */}
+        {/* Paper list */}
         {!loading && !error && (
           <div className="mt-4 space-y-2">
-            {mech.papers && mech.papers.length > 0 ? (
-              mech.papers.map((p) => (
-                <div
-                  key={p}
+            {papers.length > 0 ? (
+              papers.map((p) => (
+                <button
+                  key={p.pmid}
+                  onClick={() =>
+                    window.open(
+                      `https://europepmc.org/article/MED/${p.pmid}`,
+                      "_blank"
+                    )
+                  }
                   className="
-                    flex items-center gap-2 
-                    text-sm 
-                    p-2 
-                    rounded-md 
-                    border 
-                    bg-slate-50 dark:bg-slate-800 
+                    w-full text-left flex items-center gap-2 
+                    text-sm p-2 rounded-md border 
+                    bg-slate-50 hover:bg-slate-100 
+                    dark:bg-slate-800 dark:hover:bg-slate-700
                     text-slate-700 dark:text-slate-300 
                     border-slate-200 dark:border-slate-700
+                    transition
                   "
                 >
-                  📄 {p}
-                </div>
+                  📄 {p.title} {p.year && `(${p.year})`}
+                </button>
               ))
             ) : (
               <p className="text-sm text-muted-foreground">
-                No papers linked yet — coming soon.
+                No papers yet — coming soon.
               </p>
             )}
           </div>
