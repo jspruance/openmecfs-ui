@@ -22,6 +22,7 @@ type PaperMeta = {
   title: string;
   year?: string;
   pmid: string;
+  abstract?: string;
 };
 
 export default function EvidenceDialog({ mech, open, onOpenChange }: Props) {
@@ -60,9 +61,15 @@ export default function EvidenceDialog({ mech, open, onOpenChange }: Props) {
               title: data?.title || `Paper ${id}`,
               year:
                 data?.pubYear ?? data?.firstPublicationDate?.slice(0, 4) ?? "",
+              abstract: data?.abstractText ?? data?.abstract ?? "",
             });
           } catch {
-            results.push({ pmid: id, title: `Paper ${id}`, year: "" });
+            results.push({
+              pmid: id,
+              title: `Paper ${id}`,
+              year: "",
+              abstract: "",
+            });
           }
         }
 
@@ -106,33 +113,59 @@ export default function EvidenceDialog({ mech, open, onOpenChange }: Props) {
         {error && <p className="text-sm text-red-600 mt-4">{error}</p>}
 
         {!loading && !error && (
-          <div className="mt-4 space-y-2">
+          <div className="mt-4 space-y-3">
             {papers.length > 0 ? (
               papers.map((p) => (
-                <button
+                <div
                   key={p.pmid}
-                  onClick={() =>
-                    window.open(
-                      `https://europepmc.org/article/MED/${p.pmid}`,
-                      "_blank"
-                    )
-                  }
                   className="
-                    w-full flex items-center gap-2 
-                    text-sm font-medium
-                    p-3 rounded-lg
-                    border border-slate-300 dark:border-slate-700
+                    w-full text-left flex flex-col gap-2
+                    p-3 rounded-lg border 
                     bg-white dark:bg-slate-800
                     text-slate-700 dark:text-slate-200
+                    border-slate-300 dark:border-slate-700
                     hover:bg-slate-100 dark:hover:bg-slate-700
                     hover:border-slate-400 dark:hover:border-slate-500
                     shadow-sm hover:shadow-md
-                    cursor-pointer
                     transition-all duration-150 active:scale-[0.98]
                   "
                 >
-                  📄 {p.title} {p.year && `(${p.year})`}
-                </button>
+                  {/* Title clickable */}
+                  <div
+                    className="cursor-pointer font-medium"
+                    onClick={() =>
+                      window.open(
+                        `https://europepmc.org/article/MED/${p.pmid}`,
+                        "_blank"
+                      )
+                    }
+                  >
+                    📄 {p.title} {p.year && `(${p.year})`}
+                  </div>
+
+                  {/* Abstract teaser */}
+                  {p.abstract && (
+                    <div className="text-xs text-slate-600 dark:text-slate-400">
+                      {p.abstract.slice(0, 160)}…
+                    </div>
+                  )}
+
+                  {/* View internal paper page link */}
+                  <div
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      window.open(`/papers/${p.pmid}`, "_blank");
+                    }}
+                    className="
+                      text-xs text-blue-600 dark:text-blue-400 
+                      underline underline-offset-2 
+                      cursor-pointer
+                      mt-1
+                    "
+                  >
+                    View details →
+                  </div>
+                </div>
               ))
             ) : (
               <p className="text-sm text-muted-foreground">
