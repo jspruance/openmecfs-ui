@@ -58,7 +58,9 @@ export default function EvidenceDialog({ mech, open, onOpenChange }: Props) {
             results.push({
               pmid: id,
               title: data?.title || `Paper ${id}`,
-              year: data?.pubYear ?? "",
+              // ✅ unified year extraction
+              year:
+                data?.pubYear ?? data?.firstPublicationDate?.slice(0, 4) ?? "",
             });
           } catch {
             results.push({ pmid: id, title: `Paper ${id}`, year: "" });
@@ -74,7 +76,6 @@ export default function EvidenceDialog({ mech, open, onOpenChange }: Props) {
     }
 
     loadPapers();
-
     return () => {
       cancelled = true;
     };
