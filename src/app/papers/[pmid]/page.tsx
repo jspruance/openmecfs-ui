@@ -1,13 +1,10 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useParams } from "next/navigation";
 import { fetchEuropePmcPaper, type EuropePmcPaper } from "@/lib/papers/europePmc";
 import EvidenceChips from "@/components/EvidenceChips";
 import GenerateEvidenceButton from "@/components/GenerateEvidenceButton";
-
-interface Params {
-  params: { pmid: string };
-}
 
 interface InternalPaper {
   id: string;
@@ -21,8 +18,9 @@ interface Evidence {
   [key: string]: unknown;
 }
 
-export default function PaperPage({ params }: Params) {
-  const { pmid } = params;
+export default function PaperPage() {
+  const params = useParams();
+  const pmid = params.pmid as string;
 
   const [paper, setPaper] = useState<EuropePmcPaper | null>(null);
   const [internalPaper, setInternalPaper] = useState<InternalPaper | null>(null);
