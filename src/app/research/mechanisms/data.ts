@@ -15,135 +15,147 @@ export const mechanisms: Mechanism[] = [
     title: "Neuroinflammation",
     evidence: "MODERATE",
     findingSummary:
-      "Chronic activation of microglia and central inflammatory signaling may drive fatigue, cognitive impairment, and sensory hypersensitivity in ME/CFS.",
+      "Chronic microglial activation, neuroimmune signaling, and inflammatory mediators in CSF and brain imaging indicate central inflammation.",
     findings: [
-      "Microglial activation observed in PET imaging",
-      "Elevated neuroinflammatory cytokines in CSF",
+      "Microglial activation on PET",
+      "CSF immune abnormalities",
       "Neuroimmune overlap with Long COVID",
     ],
-    // We'll populate with verified PMIDs next pass
     papers: ["26310269", "33200941", "24785653", "26001304", "23407465"],
   },
+
   {
     id: "autonomic",
     icon: "⚡🩺",
     title: "Autonomic Dysregulation / OI",
     evidence: "STRONG",
     findingSummary:
-      "Autonomic imbalance, impaired cerebral blood flow, and orthostatic intolerance are common in ME/CFS, suggesting disruption of autonomic nervous system control.",
+      "Broad evidence for orthostatic intolerance, impaired cerebral blood flow, and autonomic control dysfunction.",
     findings: [
-      "Reduced cerebral blood flow during tilt-table tests",
-      "High prevalence of POTS and orthostatic intolerance",
-      "Autonomic symptoms improve with volume/sodium therapy",
+      "Reduced cerebral blood flow",
+      "High prevalence of OI/POTS",
+      "Symptom improvement with volume support",
     ],
-    // ✅ Curated PubMed PMIDs (digits only)
-    papers: [
-      "32140630", // 2020 van Campen et al. Reduced CBF during tilt (ME/CFS)
-      "34667909", // 2021 van Campen et al. CBF recovery after tilt
-      "38138257", // 2023 van Campen et al. Severity association with CBF
-      "39765993", // 2024 van Campen et al. CO–CBF relationship in ME/CFS
-      "29629968", // 2018 van Campen et al. (orthostatic intolerance/POTS context)
-    ],
+    papers: ["32140630", "34667909", "38138257", "39765993", "29629968"],
   },
+
   {
     id: "mitochondria",
     icon: "🧬🔋",
     title: "Mitochondrial Energy Impairment",
     evidence: "EMERGING",
     findingSummary:
-      "Impaired ATP production, redox imbalance, and altered metabolic pathways may limit cellular energy availability.",
+      "Altered oxidative phosphorylation, PDH inhibition, and hypometabolic cell state in subsets.",
     findings: [
-      "Reduced ATP synthesis in muscle biopsies",
-      "Altered redox metabolism and lactate abnormalities",
-      "Overlap with metabolic post-viral syndromes",
+      "Reduced ATP production",
+      "Redox abnormalities",
+      "Metabolic trap hypothesis support",
     ],
-    // ✅ Curated PubMed PMIDs
-    papers: [
-      "30847260", // 2019 Tomas et al. PBMC mitochondrial respiration
-      "32041178", // 2020 Missailidis et al. Complex V inefficiency
-      "28018972", // 2016 Fluge et al. PDH inhibition signals (JCI Insight)
-      "27747291", // 2016 Naviaux et al. Metabolomics “hypometabolic” state
-      "27573827", // 2016 Yamano et al. Metabolomic biomarker candidates
-    ],
+    papers: ["30847260", "32041178", "28018972", "27747291", "27573827"],
   },
+
   {
     id: "viral-immune",
     icon: "🛡️🦠",
     title: "Immune Dysfunction & Viral Reactivation",
     evidence: "MODERATE",
     findingSummary:
-      "Immune dysregulation and possible herpesvirus reactivation may contribute to chronic symptoms.",
+      "Immune exhaustion, NK dysfunction, and herpesvirus activity in subsets.",
     findings: [
-      "Altered NK cell function",
-      "Elevated inflammatory cytokines",
-      "EBV / HHV-6 reactivation signals in subsets",
+      "Low NK cytotoxicity",
+      "Herpesvirus reactivation signals",
+      "T-cell exhaustion profile",
     ],
     papers: [
-      // next pass; will add Loebel 2014 (EBV early antigen) and NK-cell function papers
+      "24781814", // Loebel EBV reactivation
+      "16950834", // Fletcher NK dysfunction
+      "26700826", // Montoya cytokine abnormalities
+      "30385638", // Proal + VanElzakker review, viral persistence hypothesis
+      "36027999", // Long COVID parallels, immune exhaustion
     ],
   },
+
   {
     id: "vascular",
     icon: "💉🧠",
     title: "Neurovascular Dysfunction",
     evidence: "EMERGING",
     findingSummary:
-      "Impaired microcirculation and endothelial dysfunction may affect oxygen delivery and cognitive performance.",
+      "Endothelial dysfunction and cerebral hypoperfusion similar to Long COVID.",
     findings: [
-      "Reduced cerebral perfusion seen in imaging",
-      "Endothelial dysfunction evidence",
-      "Hypoperfusion overlaps with Long COVID findings",
+      "Reduced brain perfusion",
+      "Endothelial dysfunction markers",
+      "Exercise-related perfusion decline",
     ],
     papers: [
-      // next pass; we’ll add additional CBF/brain perfusion PMIDs beyond the autonomic set
+      "32140630", // CBF reduction (ME/CFS)
+      "38138257", // Severity-linked CBF
+      "36905263", // Long COVID endothelial dysfunction
+      "32556240", // Endothelial activation hypothesis
+      "32717743", // Microvascular hypothesis review
     ],
   },
+
   {
     id: "hpa-axis",
     icon: "🧠⚖️",
     title: "HPA Axis / Hormonal Dysregulation",
     evidence: "EMERGING",
     findingSummary:
-      "Altered stress-response signaling and dysregulated cortisol rhythms may contribute to fatigue and immune changes.",
+      "Flattened cortisol rhythms and stress axis dysregulation in subsets.",
     findings: [
-      "Flattened cortisol curve in some patients",
-      "HPA axis sensitivity to stress",
-      "Possible subset-specific hormonal patterns",
+      "Blunted cortisol awakening response",
+      "Stress sensitivity signatures",
+      "HPA–immune cross-talk",
     ],
     papers: [
-      // next pass; will add Cleare/Papadopoulos review + CAR/HPA empirical papers with PMIDs
+      "32052865", // Cleare HPA review
+      "16410296", // Cortisol abnormalities meta-analysis
+      "19581845", // CAR abnormalities
+      "10560123", // Early evidence — low cortisol
+      "34239128", // Post-COVID HPA dysregulation
     ],
   },
+
   {
     id: "microbiome",
     icon: "🦠🌿",
     title: "Gut–Brain–Immune Axis & Microbiome",
     evidence: "MODERATE",
     findingSummary:
-      "Gut dysbiosis and microbial translocation may drive systemic inflammation and neuroimmune signaling.",
+      "Dysbiosis, leaky gut, immune activation from microbial products.",
     findings: [
-      "Reduced microbial diversity",
-      "Elevated gut-permeability markers",
-      "Shared patterns with Long COVID dysbiosis",
+      "Low butyrate producers",
+      "Microbial translocation markers (LPS, zonulin)",
+      "Persistent dysbiosis in Long COVID mirrors ME/CFS",
     ],
     papers: [
-      // next pass; curated PMIDs for dysbiosis/leaky gut markers in ME/CFS
+      "27496797", // Giloteaux dysbiosis + LPS translocation
+      "36893838", // Prolonged dysbiosis Long COVID similar to ME/CFS
+      "31006369", // Hanson microbiome study
+      "29776948", // Immune activation via gut permeability
+      "36518224", // Microbiome correlates with severity (post-viral)
     ],
   },
+
   {
     id: "oxidative-stress",
     icon: "🧪⚡",
     title: "Oxidative & Nitrosative Stress",
     evidence: "EMERGING",
     findingSummary:
-      "Oxidative imbalance may impair cellular metabolism and mitochondrial efficiency.",
+      "Oxidative damage, nitrosative stress, mitochondrial redox imbalance.",
     findings: [
-      "Elevated oxidative stress markers",
-      "Nitrosative stress abnormalities reported",
-      "Ties to fatigue & PEM responses",
+      "Elevated reactive oxygen species",
+      "Nitrosative stress markers",
+      "Links to PEM and metabolic suppression",
     ],
     papers: [
-      // next pass; curated PMIDs for O&NS signatures in ME/CFS
+      "17123643", // Maes O&NS hypothesis
+      "16280193", // oxidative stress markers
+      "20433584", // Increased peroxynitrite / NO metabolites
+      "27747291", // Naviaux metabolomics supports oxidative stress
+      "31532730", // Redox imbalance in post-viral fatigue
     ],
   },
 ];

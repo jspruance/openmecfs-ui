@@ -127,6 +127,7 @@ const STATE_LOOKUP = Object.entries(STATE_NAMES).reduce((acc, [abbr, full]) => {
 export default function DoctorsDirectoryPage() {
   const [loading, setLoading] = useState(true);
   const [clinics, setClinics] = useState<ClinicType[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
   const [q, setQ] = useState("");
   const [country, setCountry] = useState<(typeof COUNTRIES)[number]>("All");
@@ -139,27 +140,48 @@ export default function DoctorsDirectoryPage() {
     let mounted = true;
     (async () => {
       try {
+        setError(null);
         const res = await fetch("/api/clinics", { cache: "no-store" });
         
         if (!res.ok) {
-          console.error("Load clinics failed - HTTP error:", res.status);
-          if (mounted) setLoading(false);
+          const errorData = await res.json().catch(() => ({ error: `HTTP ${res.status}` }));
+          const errorMsg = errorData?.error || `Failed to load clinics (${res.status})`;
+          console.error("Load clinics failed - HTTP error:", res.status, errorMsg);
+          if (mounted) {
+            setError(errorMsg);
+            setClinics([]);
+          }
           return;
         }
         
         const data = await res.json();
+        console.log("[Directory] API response:", { ok: data?.ok, clinicCount: data?.clinics?.length });
         
         if (!data?.ok) {
-          console.error("Load clinics failed - API error:", data?.error);
-          if (mounted) setLoading(false);
+          const errorMsg = data?.error || "Failed to load clinics";
+          console.error("Load clinics failed - API error:", errorMsg);
+          if (mounted) {
+            setError(errorMsg);
+            setClinics([]);
+          }
           return;
         }
         
         if (mounted) {
-          setClinics(Array.isArray(data.clinics) ? data.clinics : []);
+          const clinicList = Array.isArray(data.clinics) ? data.clinics : [];
+          console.log("[Directory] Loaded clinics:", clinicList.length);
+          setClinics(clinicList);
+          if (clinicList.length === 0) {
+            setError("No clinics found in database.");
+          }
         }
       } catch (e) {
+        const errorMsg = e instanceof Error ? e.message : "Failed to load clinics";
         console.error("Load clinics failed", e);
+        if (mounted) {
+          setError(errorMsg);
+          setClinics([]);
+        }
       } finally {
         if (mounted) setLoading(false);
       }
@@ -338,6 +360,14 @@ export default function DoctorsDirectoryPage() {
           <div className="rounded-xl border border-gray-200 p-8 text-center flex flex-col items-center justify-center text-gray-600">
             <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-3"></div>
             <p>Loading clinics…</p>
+          </div>
+        ) : error ? (
+          <div className="rounded-xl border border-red-200 bg-red-50 p-6 text-red-800">
+            <p className="font-semibold mb-2">⚠️ Error loading clinics</p>
+            <p className="text-sm">{error}</p>
+            <p className="text-sm mt-2 text-red-700">
+              Please check the browser console for more details or try refreshing the page.
+            </p>
           </div>
         ) : filtered.length === 0 ? (
           <EmptyState />

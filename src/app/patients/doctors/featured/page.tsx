@@ -12,15 +12,39 @@ export default function FeaturedClinicsPage() {
     let mounted = true;
     (async () => {
       try {
+        setErr(null);
+        console.log("[Featured] Fetching clinics...");
         const res = await fetch("/api/clinics?featured=1", {
           cache: "no-store",
         });
+        
+        console.log("[Featured] Response status:", res.status, res.ok);
+        
+        if (!res.ok) {
+          const errorData = await res.json().catch(() => ({ error: `HTTP ${res.status}` }));
+          const errorMsg = errorData?.error || `Failed to load featured clinics (${res.status})`;
+          console.error("[Featured] HTTP error:", res.status, errorMsg);
+          throw new Error(errorMsg);
+        }
+        
         const data = await res.json();
-        if (!res.ok || !data?.ok)
-          throw new Error(data?.error || "Failed to load featured clinics");
-        if (mounted) setClinics(data.clinics || []);
+        console.log("[Featured] API response:", { ok: data?.ok, clinicCount: data?.clinics?.length, error: data?.error });
+        
+        if (!data?.ok) {
+          const errorMsg = data?.error || "Failed to load featured clinics";
+          console.error("[Featured] API error:", errorMsg);
+          throw new Error(errorMsg);
+        }
+        
+        if (mounted) {
+          const clinicList = Array.isArray(data.clinics) ? data.clinics : [];
+          console.log("[Featured] Loaded clinics:", clinicList.length);
+          setClinics(clinicList);
+        }
       } catch (e: unknown) {
-        if (mounted) setErr(e instanceof Error ? e.message : "Unexpected error.");
+        const errorMsg = e instanceof Error ? e.message : "Unexpected error.";
+        console.error("[Featured] Fetch failed:", e);
+        if (mounted) setErr(errorMsg);
       } finally {
         if (mounted) setLoading(false);
       }
@@ -50,8 +74,20 @@ export default function FeaturedClinicsPage() {
             <p>Loading featured clinics…</p>
           </div>
         ) : err ? (
-          <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-red-800">
-            {err}
+          <div className="rounded-xl border border-red-200 bg-red-50 p-6 text-red-800">
+            <p className="font-semibold mb-2">⚠️ Error loading featured clinics</p>
+            <p className="text-sm">{err}</p>
+            <p className="text-sm mt-2 text-red-700">
+              Please check the browser console for more details or try refreshing the page.
+            </p>
+            <details className="mt-3 text-xs">
+              <summary className="cursor-pointer text-red-700 hover:text-red-900">
+                Technical details
+              </summary>
+              <pre className="mt-2 p-2 bg-red-100 rounded text-red-900 overflow-auto">
+                {err}
+              </pre>
+            </details>
           </div>
         ) : clinics.length === 0 ? (
           <div className="rounded-xl border border-gray-200 p-8 text-center text-gray-600">
