@@ -20,9 +20,9 @@ const BASE_URL = "https://www.ebi.ac.uk/europepmc/webservices/rest/search";
 
 export async function GET(
   req: Request,
-  { params }: { params: { pmid: string } }
+  context: { params: Promise<{ pmid: string }> }
 ) {
-  const { pmid } = params;
+  const { pmid } = await context.params;
   if (!pmid) {
     return NextResponse.json({ error: "PMID is required" }, { status: 400 });
   }
