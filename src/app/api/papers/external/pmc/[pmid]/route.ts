@@ -3,6 +3,17 @@ import { NextResponse } from "next/server";
 const PMC_SEARCH = "https://www.ebi.ac.uk/europepmc/webservices/rest/search";
 const PUBMED_XML = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi";
 
+interface PaperResult {
+  pmid: string;
+  title: string;
+  journal: string;
+  year: string;
+  authors: string;
+  abstract: string;
+  link: string;
+  source: string;
+}
+
 async function fetchPMC(pmid: string, core = false) {
   const url = `${PMC_SEARCH}?query=EXT_ID:${pmid}${
     core ? "&resultType=core" : ""
@@ -75,7 +86,7 @@ export async function GET(
     if (!doc) doc = await fetchPMC(pmid, true);
 
     // Base structure from PMC
-    let result: any = doc
+    let result: PaperResult | null = doc
       ? {
           pmid,
           title: doc.title?.trim() || "",
