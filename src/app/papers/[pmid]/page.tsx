@@ -8,11 +8,13 @@ export default async function PaperPage({
   const { pmid } = await params;
   const data = await fetchEuropePmcPaper(pmid);
 
-  const title = data?.title || "Title unavailable";
-  const abstract = data?.abstract || "Abstract not available.";
-  const journal = data?.journal || "Unknown journal";
-  const year = data?.year || "n.d.";
-  const authors = data?.authors || "Unknown authors";
+  // Defensive defaults
+  const title = data?.title?.trim() || "Title unavailable";
+  const abstract = data?.abstract?.trim() || "Abstract not available.";
+  const journal = data?.journal?.trim() || "Unknown journal";
+  const year = data?.year?.toString() || "n.d.";
+  const authors = data?.authors?.trim() || "Unknown authors";
+  const link = data?.link;
 
   return (
     <div className="mx-auto max-w-3xl px-6 py-8">
@@ -36,10 +38,11 @@ export default async function PaperPage({
           {abstract}
         </p>
 
-        {data?.link && (
+        {link && (
           <a
-            href={data.link}
+            href={link}
             target="_blank"
+            rel="noopener noreferrer"
             className="mt-4 inline-block text-blue-600 dark:text-blue-400 underline underline-offset-2"
           >
             View on Europe PMC →

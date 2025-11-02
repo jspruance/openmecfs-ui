@@ -1,4 +1,3 @@
-// src/lib/papers/europePmc.ts
 // Europe PMC paper fetch helper for internal ME/CFS evidence explorer
 
 export type EuropePmcPaper = {
@@ -17,30 +16,23 @@ export async function fetchEuropePmcPaper(
   if (!pmid || !/^\d+$/.test(pmid)) return null;
 
   try {
-    const res = await fetch(`/api/papers/external/pmc/${pmid}`);
+    const res = await fetch(`/api/papers/external/pmc/${pmid}`, {
+      next: { revalidate: 3600 }, // cache 1h to avoid hammering API
+    });
+
     if (!res.ok) return null;
 
     const data = await res.json();
-    if (!data?.title) return null;
-
-    const authors =
-      data?.authorList?.author?.length > 0
-        ? data.authorList.author
-            .map((a: { fullName?: string }) => a?.fullName?.trim())
-            .filter(Boolean)
-            .join(", ")
-        : undefined;
+    if (!data) return null;
 
     return {
       pmid,
-      title: data.title,
-      journal: data.journalTitle ?? "",
-      year: data.pubYear ?? data.firstPublicationDate?.slice(0, 4) ?? "",
-      authors,
-      abstract: data.abstractText ?? "",
-      link: data.doi
-        ? `https://doi.org/${data.doi}`
-        : `https://pubmed.ncbi.nlm.nih.gov/${pmid}`,
+      title: data.title?.trim() || "",
+      journal: data.journal?.trim() || "",
+      year: data.year?.toString() || "",
+      authors: data.authors?.trim() || "",
+      abstract: data.abstract?.trim() || "",
+      link: data.link,
     };
   } catch (err) {
     console.error(`❌ Europe PMC fetch failed for PMID ${pmid}`, err);
