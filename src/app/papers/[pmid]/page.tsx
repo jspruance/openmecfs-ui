@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { fetchEuropePmcPaper } from "@/lib/papers/europePmc";
+import { useState, useEffect, useCallback } from "react";
+import { fetchEuropePmcPaper, type EuropePmcPaper } from "@/lib/papers/europePmc";
 import EvidenceChips from "@/components/EvidenceChips";
 import GenerateEvidenceButton from "@/components/GenerateEvidenceButton";
 
@@ -9,16 +9,28 @@ interface Params {
   params: { pmid: string };
 }
 
+interface InternalPaper {
+  id: string;
+  [key: string]: unknown;
+}
+
+interface Evidence {
+  mechanisms?: string[];
+  biomarkers?: string[];
+  confidence?: number;
+  [key: string]: unknown;
+}
+
 export default function PaperPage({ params }: Params) {
   const { pmid } = params;
 
-  const [paper, setPaper] = useState<any>(null);
-  const [internalPaper, setInternalPaper] = useState<any>(null);
-  const [evidence, setEvidence] = useState<any>(null);
+  const [paper, setPaper] = useState<EuropePmcPaper | null>(null);
+  const [internalPaper, setInternalPaper] = useState<InternalPaper | null>(null);
+  const [evidence, setEvidence] = useState<Evidence | null>(null);
   const [loading, setLoading] = useState(true);
 
   // Fetch both external PMC + internal DB record
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setLoading(true);
 
     // 1️⃣ External fetch (PMC)
@@ -31,7 +43,7 @@ export default function PaperPage({ params }: Params) {
       `${process.env.NEXT_PUBLIC_API_URL}/papers/sync/${pmid}`,
       { method: "POST" }
     );
-    const dbPaper = await dbRes.json();
+    const dbPaper = (await dbRes.json()) as InternalPaper;
     setInternalPaper(dbPaper);
 
     // 3️⃣ Fetch existing evidence if exists
@@ -40,15 +52,15 @@ export default function PaperPage({ params }: Params) {
       { cache: "no-store" }
     ).catch(() => null);
 
-    const ev = evRes?.ok ? await evRes.json() : null;
+    const ev = evRes?.ok ? ((await evRes.json()) as Evidence) : null;
     setEvidence(ev);
 
     setLoading(false);
-  };
+  }, [pmid]);
 
   useEffect(() => {
     loadData();
-  }, [pmid]);
+  }, [loadData]);
 
   if (loading) {
     return (
