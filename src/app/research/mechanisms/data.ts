@@ -5,7 +5,7 @@ export interface Mechanism {
   evidence: "STRONG" | "MODERATE" | "EMERGING";
   findingSummary: string;
   findings: string[];
-  papers?: string[];
+  papers?: string[]; // PubMed PMIDs (digits only)
 }
 
 export const mechanisms: Mechanism[] = [
@@ -21,7 +21,8 @@ export const mechanisms: Mechanism[] = [
       "Elevated neuroinflammatory cytokines in CSF",
       "Neuroimmune overlap with Long COVID",
     ],
-    papers: ["paper_neuro_01", "paper_inflammation_02"],
+    // We'll populate with verified PMIDs next pass
+    papers: [],
   },
   {
     id: "autonomic",
@@ -35,7 +36,14 @@ export const mechanisms: Mechanism[] = [
       "High prevalence of POTS and orthostatic intolerance",
       "Autonomic symptoms improve with volume/sodium therapy",
     ],
-    papers: ["paper_oi_01", "paper_pots_02"],
+    // ✅ Curated PubMed PMIDs (digits only)
+    papers: [
+      "32140630", // 2020 van Campen et al. Reduced CBF during tilt (ME/CFS)
+      "34667909", // 2021 van Campen et al. CBF recovery after tilt
+      "38138257", // 2023 van Campen et al. Severity association with CBF
+      "39765993", // 2024 van Campen et al. CO–CBF relationship in ME/CFS
+      "29629968", // 2018 van Campen et al. (orthostatic intolerance/POTS context)
+    ],
   },
   {
     id: "mitochondria",
@@ -49,7 +57,14 @@ export const mechanisms: Mechanism[] = [
       "Altered redox metabolism and lactate abnormalities",
       "Overlap with metabolic post-viral syndromes",
     ],
-    papers: ["paper_mito_01", "paper_energy_02"],
+    // ✅ Curated PubMed PMIDs
+    papers: [
+      "30847260", // 2019 Tomas et al. PBMC mitochondrial respiration
+      "32041178", // 2020 Missailidis et al. Complex V inefficiency
+      "28018972", // 2016 Fluge et al. PDH inhibition signals (JCI Insight)
+      "27747291", // 2016 Naviaux et al. Metabolomics “hypometabolic” state
+      "27573827", // 2016 Yamano et al. Metabolomic biomarker candidates
+    ],
   },
   {
     id: "viral-immune",
@@ -63,7 +78,9 @@ export const mechanisms: Mechanism[] = [
       "Elevated inflammatory cytokines",
       "EBV / HHV-6 reactivation signals in subsets",
     ],
-    papers: ["paper_immune_01", "paper_virus_02"],
+    papers: [
+      // next pass; will add Loebel 2014 (EBV early antigen) and NK-cell function papers
+    ],
   },
   {
     id: "vascular",
@@ -77,7 +94,9 @@ export const mechanisms: Mechanism[] = [
       "Endothelial dysfunction evidence",
       "Hypoperfusion overlaps with Long COVID findings",
     ],
-    papers: ["paper_vascular_01"],
+    papers: [
+      // next pass; we’ll add additional CBF/brain perfusion PMIDs beyond the autonomic set
+    ],
   },
   {
     id: "hpa-axis",
@@ -91,7 +110,9 @@ export const mechanisms: Mechanism[] = [
       "HPA axis sensitivity to stress",
       "Possible subset-specific hormonal patterns",
     ],
-    papers: ["paper_hpa_01"],
+    papers: [
+      // next pass; will add Cleare/Papadopoulos review + CAR/HPA empirical papers with PMIDs
+    ],
   },
   {
     id: "microbiome",
@@ -105,7 +126,9 @@ export const mechanisms: Mechanism[] = [
       "Elevated gut-permeability markers",
       "Shared patterns with Long COVID dysbiosis",
     ],
-    papers: ["paper_microbiome_01", "paper_gut_02"],
+    papers: [
+      // next pass; curated PMIDs for dysbiosis/leaky gut markers in ME/CFS
+    ],
   },
   {
     id: "oxidative-stress",
@@ -119,6 +142,8 @@ export const mechanisms: Mechanism[] = [
       "Nitrosative stress abnormalities reported",
       "Ties to fatigue & PEM responses",
     ],
-    papers: ["paper_oxidative_01"],
+    papers: [
+      // next pass; curated PMIDs for O&NS signatures in ME/CFS
+    ],
   },
 ];
