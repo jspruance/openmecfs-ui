@@ -85,7 +85,7 @@ export default function EvidenceDialog({ mech, open, onOpenChange }: Props) {
     return () => {
       cancelled = true;
     };
-  }, [open, mech.id]);
+  }, [open, mech.papers]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

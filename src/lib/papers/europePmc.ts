@@ -25,7 +25,7 @@ export async function fetchEuropePmcPaper(
       title: data.title,
       journal: data.journalTitle,
       year: data.pubYear ?? data.firstPublicationDate?.slice(0, 4),
-      authors: data.authorList?.author?.map((a: any) => a.fullName).join(", "),
+      authors: data.authorList?.author?.map((a: { fullName?: string }) => a.fullName).filter(Boolean).join(", "),
       abstract: data.abstractText ?? "",
       link: data.doi
         ? `https://doi.org/${data.doi}`
