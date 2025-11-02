@@ -119,13 +119,17 @@ export default function EvidenceDialog({ mech, open, onOpenChange }: Props) {
                     )
                   }
                   className="
-                    w-full text-left flex items-center gap-2 
-                    text-sm p-2 rounded-md border 
-                    bg-slate-50 hover:bg-slate-100 
-                    dark:bg-slate-800 dark:hover:bg-slate-700
-                    text-slate-700 dark:text-slate-300 
-                    border-slate-200 dark:border-slate-700
-                    transition
+                    w-full flex items-center gap-2 
+                    text-sm font-medium
+                    p-3 rounded-lg
+                    border border-slate-300 dark:border-slate-700
+                    bg-white dark:bg-slate-800
+                    text-slate-700 dark:text-slate-200
+                    hover:bg-slate-100 dark:hover:bg-slate-700
+                    hover:border-slate-400 dark:hover:border-slate-500
+                    shadow-sm hover:shadow-md
+                    cursor-pointer
+                    transition-all duration-150 active:scale-[0.98]
                   "
                 >
                   📄 {p.title} {p.year && `(${p.year})`}
