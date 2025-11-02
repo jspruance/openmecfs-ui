@@ -1,3 +1,6 @@
+// src/lib/papers/europePmc.ts
+// Europe PMC paper fetch helper for internal ME/CFS evidence explorer
+
 export type EuropePmcPaper = {
   pmid: string;
   title: string;
@@ -20,18 +23,27 @@ export async function fetchEuropePmcPaper(
     const data = await res.json();
     if (!data?.title) return null;
 
+    const authors =
+      data?.authorList?.author?.length > 0
+        ? data.authorList.author
+            .map((a: { fullName?: string }) => a?.fullName?.trim())
+            .filter(Boolean)
+            .join(", ")
+        : undefined;
+
     return {
       pmid,
       title: data.title,
-      journal: data.journalTitle,
-      year: data.pubYear ?? data.firstPublicationDate?.slice(0, 4),
-      authors: data.authorList?.author?.map((a: { fullName?: string }) => a.fullName).filter(Boolean).join(", "),
+      journal: data.journalTitle ?? "",
+      year: data.pubYear ?? data.firstPublicationDate?.slice(0, 4) ?? "",
+      authors,
       abstract: data.abstractText ?? "",
       link: data.doi
         ? `https://doi.org/${data.doi}`
         : `https://pubmed.ncbi.nlm.nih.gov/${pmid}`,
     };
-  } catch {
+  } catch (err) {
+    console.error(`❌ Europe PMC fetch failed for PMID ${pmid}`, err);
     return null;
   }
 }
