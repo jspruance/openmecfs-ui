@@ -30,7 +30,6 @@ export default function EvidenceDialog({ mech, open, onOpenChange }: Props) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Reset when dialog opens fresh
     if (open) {
       setPapers([]);
       setError(null);
@@ -52,12 +51,15 @@ export default function EvidenceDialog({ mech, open, onOpenChange }: Props) {
             results.push({
               pmid: id,
               title: data?.title || `Paper ${id}`,
-              year: data?.pubYear || "",
+              year: data?.firstPublicationDate
+                ? data.firstPublicationDate.slice(0, 4)
+                : "",
             });
           } catch {
             results.push({
               pmid: id,
               title: `Paper ${id}`,
+              year: "",
             });
           }
         }
@@ -93,15 +95,12 @@ export default function EvidenceDialog({ mech, open, onOpenChange }: Props) {
           </DialogDescription>
         </DialogHeader>
 
-        {/* Loading */}
         {loading && (
           <p className="text-sm text-muted-foreground mt-4">Loading papers…</p>
         )}
 
-        {/* Error */}
         {error && <p className="text-sm text-red-600 mt-4">{error}</p>}
 
-        {/* Paper list */}
         {!loading && !error && (
           <div className="mt-4 space-y-2">
             {papers.length > 0 ? (
