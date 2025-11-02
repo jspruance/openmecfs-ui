@@ -58,7 +58,6 @@ export default function EvidenceDialog({ mech, open, onOpenChange }: Props) {
             results.push({
               pmid: id,
               title: data?.title || `Paper ${id}`,
-              // ✅ unified year extraction
               year:
                 data?.pubYear ?? data?.firstPublicationDate?.slice(0, 4) ?? "",
             });
