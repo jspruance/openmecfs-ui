@@ -79,7 +79,9 @@ export default function EvidenceDialog({ mech, open, onOpenChange }: Props) {
     }
 
     load();
-    return () => (cancelled = true);
+    return () => {
+      cancelled = true;
+    };
   }, [open, mech.papers]);
 
   return (
@@ -148,12 +150,12 @@ export default function EvidenceDialog({ mech, open, onOpenChange }: Props) {
                       e.stopPropagation();
                       window.open(`/papers/${p.pmid}`, "_blank");
                     }}
-                    className="
-                      text-[11px] text-blue-600 dark:text-blue-400 
-                      underline underline-offset-2 
-                      cursor:pointer
-                      mt-1
-                    "
+                      className="
+                       text-[11px] text-blue-600 dark:text-blue-400 
+                       underline underline-offset-2 
+                       cursor-pointer
+                       mt-1
+                     "
                   >
                     View internal summary →
                   </div>
