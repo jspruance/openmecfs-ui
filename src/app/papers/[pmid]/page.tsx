@@ -1,54 +1,55 @@
-import { fetchEuropePmcPaper, type EuropePmcPaper } from "@/lib/papers/europePmc";
+import { fetchEuropePmcPaper } from "@/lib/papers/europePmc";
 
-interface Props {
-  params: Promise<{ pmid: string }>;
-}
+export default async function PaperPage({
+  params,
+}: {
+  params: { pmid: string };
+}) {
+  const data = await fetchEuropePmcPaper(params.pmid);
 
-export default async function PaperPage({ params }: Props) {
-  const { pmid } = await params;
-
-  let paper: EuropePmcPaper | null = null;
-  try {
-    paper = await fetchEuropePmcPaper(pmid);
-  } catch (e) {
-    console.error("Error fetching Europe PMC data:", e);
-  }
+  const title = data?.title || "Title unavailable";
+  const abstract = data?.abstract || "Abstract not available.";
+  const journal = data?.journal || "Unknown journal";
+  const year = data?.year || "n.d.";
+  const authors = data?.authors || "Unknown authors";
+  const source = data?.source || "External";
 
   return (
-    <main className="max-w-3xl mx-auto px-6 py-10">
-      {/* Header */}
-      <h1 className="text-2xl font-semibold mb-4">📄 Paper Details — {pmid}</h1>
+    <div className="mx-auto max-w-3xl px-6 py-8">
+      <h1 className="text-2xl font-semibold flex items-center gap-2">
+        📄 Paper Details — {params.pmid}
+      </h1>
 
-      {/* Title */}
-      <h2 className="text-xl font-bold mb-2">
-        {paper?.title || "Title unavailable"}
-      </h2>
+      <div className="mt-4 rounded-lg border p-4 bg-white dark:bg-slate-900">
+        <div className="text-xl font-medium">{title}</div>
 
-      {/* Year & Journal */}
-      <p className="text-sm text-slate-600 dark:text-slate-400 mb-6">
-        {paper?.year ? `Published ${paper.year}` : ""}
-        {paper?.journal ? ` • ${paper.journal}` : ""}
-      </p>
+        <div className="mt-2 text-sm text-slate-600 dark:text-slate-300">
+          {authors}
+        </div>
 
-      {/* Abstract */}
-      <div className="mb-6">
-        <h3 className="font-medium mb-2">Abstract</h3>
-        <p className="text-sm leading-relaxed text-slate-700 dark:text-slate-300">
-          {paper?.abstract || "Abstract not available."}
+        <div className="mt-1 text-xs text-slate-500">
+          {journal} • {year}
+        </div>
+
+        <span className="mt-2 inline-block px-2 py-1 rounded text-xs bg-blue-100 text-blue-700">
+          {source}
+        </span>
+
+        <h2 className="mt-6 font-semibold">Abstract</h2>
+        <p className="mt-1 text-sm text-slate-700 dark:text-slate-300 whitespace-pre-line">
+          {abstract}
         </p>
-      </div>
 
-      {/* External Link */}
-      <a
-        href={`https://europepmc.org/article/MED/${pmid}`}
-        target="_blank"
-        className="
-          inline-block mt-6 text-blue-600 dark:text-blue-400 underline 
-          underline-offset-2 cursor-pointer
-        "
-      >
-        View on Europe PMC →
-      </a>
-    </main>
+        {data?.link && (
+          <a
+            href={data.link}
+            target="_blank"
+            className="mt-4 inline-block text-blue-600 dark:text-blue-400 underline underline-offset-2"
+          >
+            View on Europe PMC →
+          </a>
+        )}
+      </div>
+    </div>
   );
 }
