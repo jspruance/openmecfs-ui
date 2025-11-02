@@ -1,11 +1,11 @@
 import { fetchEuropePmcPaper, type EuropePmcPaper } from "@/lib/papers/europePmc";
 
 interface Props {
-  params: { pmid: string };
+  params: Promise<{ pmid: string }>;
 }
 
 export default async function PaperPage({ params }: Props) {
-  const { pmid } = params;
+  const { pmid } = await params;
 
   let paper: EuropePmcPaper | null = null;
   try {
