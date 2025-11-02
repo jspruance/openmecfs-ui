@@ -30,17 +30,28 @@ export default function EvidenceDialog({ mech, open, onOpenChange }: Props) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!open || !mech.papers?.length) return;
+    if (!open) return;
+
+    const ids: string[] = Array.isArray(mech.papers) ? mech.papers : [];
+
+    if (ids.length === 0) {
+      setPapers([]);
+      setError(null);
+      setLoading(false);
+      return;
+    }
+
+    setPapers([]);
+    setError(null);
+    setLoading(true);
+
+    let cancelled = false;
 
     async function loadPapers() {
-      setLoading(true);
-      setError(null);
-      setPapers([]);
-
       try {
         const results: PaperMeta[] = [];
 
-        for (const id of mech.papers) {
+        for (const id of ids) {
           try {
             const data = await fetchEuropePmcPaper(id);
             results.push({
@@ -57,16 +68,20 @@ export default function EvidenceDialog({ mech, open, onOpenChange }: Props) {
           }
         }
 
-        setPapers(results);
-      } catch (e) {
-        setError("Failed to fetch evidence");
+        if (!cancelled) setPapers(results);
+      } catch {
+        if (!cancelled) setError("Failed to fetch evidence");
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     }
 
     loadPapers();
-  }, [open, mech]);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [open, mech.id]); // ✅ stable dependency so TypeScript doesn't widen types
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -91,6 +106,7 @@ export default function EvidenceDialog({ mech, open, onOpenChange }: Props) {
         {loading && (
           <p className="text-sm text-muted-foreground mt-4">Loading papers…</p>
         )}
+
         {error && <p className="text-sm text-red-600 mt-4">{error}</p>}
 
         {!loading && !error && (
