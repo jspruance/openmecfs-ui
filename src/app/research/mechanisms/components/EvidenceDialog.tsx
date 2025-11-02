@@ -32,7 +32,7 @@ export default function EvidenceDialog({ mech, open, onOpenChange }: Props) {
   useEffect(() => {
     if (!open) return;
 
-    const ids: string[] = Array.isArray(mech.papers) ? mech.papers : [];
+    const ids = Array.isArray(mech.papers) ? mech.papers : [];
 
     if (ids.length === 0) {
       setPapers([]);
@@ -54,17 +54,14 @@ export default function EvidenceDialog({ mech, open, onOpenChange }: Props) {
         for (const id of ids) {
           try {
             const data = await fetchEuropePmcPaper(id);
+
             results.push({
               pmid: id,
               title: data?.title || `Paper ${id}`,
-              year: data?.firstPublicationDate?.slice(0, 4) ?? "",
+              year: data?.pubYear ?? "",
             });
           } catch {
-            results.push({
-              pmid: id,
-              title: `Paper ${id}`,
-              year: "",
-            });
+            results.push({ pmid: id, title: `Paper ${id}`, year: "" });
           }
         }
 
@@ -81,17 +78,17 @@ export default function EvidenceDialog({ mech, open, onOpenChange }: Props) {
     return () => {
       cancelled = true;
     };
-  }, [open, mech.id]); // ✅ stable dependency so TypeScript doesn't widen types
+  }, [open, mech.id]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         className="
-        max-w-lg rounded-xl 
-        bg-white dark:bg-slate-900 
-        border border-slate-200 dark:border-slate-700
-        shadow-2xl p-6
-      "
+          max-w-lg rounded-xl 
+          bg-white dark:bg-slate-900 
+          border border-slate-200 dark:border-slate-700
+          shadow-2xl p-6
+        "
       >
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-lg font-semibold">
@@ -106,7 +103,6 @@ export default function EvidenceDialog({ mech, open, onOpenChange }: Props) {
         {loading && (
           <p className="text-sm text-muted-foreground mt-4">Loading papers…</p>
         )}
-
         {error && <p className="text-sm text-red-600 mt-4">{error}</p>}
 
         {!loading && !error && (
