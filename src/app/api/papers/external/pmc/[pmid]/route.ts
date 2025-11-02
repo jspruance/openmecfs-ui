@@ -28,7 +28,7 @@ async function fetchPubMedFallback(pmid: string) {
     title: doc.title,
     journal: doc.fulljournalname,
     year: doc.pubdate?.slice(0, 4),
-    authors: doc.authors?.map((a: any) => a.name).join(", "),
+    authors: doc.authors?.map((a: { name?: string }) => a.name).filter(Boolean).join(", "),
     source: "PUBMED",
     link: `https://pubmed.ncbi.nlm.nih.gov/${pmid}/`,
   };
@@ -72,7 +72,7 @@ export async function GET(
         ? `https://doi.org/${doc.doi}`
         : `https://pubmed.ncbi.nlm.nih.gov/${pmid}/`,
     });
-  } catch (err) {
+  } catch {
     return NextResponse.json(
       { error: "Failed to fetch paper" },
       { status: 500 }
