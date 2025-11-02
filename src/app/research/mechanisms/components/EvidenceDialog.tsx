@@ -19,7 +19,6 @@ interface Props {
 }
 
 export default function EvidenceDialog({ mech, open, onOpenChange }: Props) {
-  const [papers, setPapers] = useState<any[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -32,15 +31,14 @@ export default function EvidenceDialog({ mech, open, onOpenChange }: Props) {
       setError(null);
 
       try {
-        const results = await Promise.all(
+        await Promise.all(
           mech.papers.map(async (pmid) => ({
             pmid,
             data: await fetchEuropePmcPaper(pmid),
           }))
         );
-
-        setPapers(results);
-      } catch (err) {
+        // Papers loaded but not displayed yet - will be used when evidence display is implemented
+      } catch {
         setError("Failed to fetch evidence");
       } finally {
         setLoading(false);

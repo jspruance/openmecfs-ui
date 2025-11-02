@@ -49,7 +49,7 @@ export async function GET(
         ? `https://doi.org/${doc.doi}`
         : `https://pubmed.ncbi.nlm.nih.gov/${pmid}/`,
     });
-  } catch (err) {
+  } catch {
     return NextResponse.json(
       { error: "Failed to fetch paper" },
       { status: 500 }
