@@ -19,9 +19,9 @@ interface Props {
 }
 
 type PaperMeta = {
+  pmid: string;
   title: string;
   year?: string;
-  pmid: string;
   abstract?: string;
 };
 
@@ -32,7 +32,6 @@ export default function EvidenceDialog({ mech, open, onOpenChange }: Props) {
 
   useEffect(() => {
     if (!open) return;
-
     const ids = Array.isArray(mech.papers) ? mech.papers : [];
 
     if (ids.length === 0) {
@@ -42,20 +41,19 @@ export default function EvidenceDialog({ mech, open, onOpenChange }: Props) {
       return;
     }
 
-    setPapers([]);
-    setError(null);
     setLoading(true);
+    setError(null);
+    setPapers([]);
 
     let cancelled = false;
 
-    async function loadPapers() {
+    async function load() {
       try {
         const results: PaperMeta[] = [];
 
         for (const id of ids) {
           try {
             const data = await fetchEuropePmcPaper(id);
-
             results.push({
               pmid: id,
               title: data?.title || `Paper ${id}`,
@@ -80,10 +78,8 @@ export default function EvidenceDialog({ mech, open, onOpenChange }: Props) {
       }
     }
 
-    loadPapers();
-    return () => {
-      cancelled = true;
-    };
+    load();
+    return () => (cancelled = true);
   }, [open, mech.papers]);
 
   return (
@@ -112,26 +108,25 @@ export default function EvidenceDialog({ mech, open, onOpenChange }: Props) {
         {error && <p className="text-sm text-red-600 mt-4">{error}</p>}
 
         {!loading && !error && (
-          <div className="mt-4 space-y-3">
+          <div className="mt-4 max-h-72 overflow-y-auto pr-1 space-y-2">
             {papers.length > 0 ? (
               papers.map((p) => (
                 <div
                   key={p.pmid}
                   className="
-                    w-full text-left flex flex-col gap-2
-                    p-3 rounded-lg border 
+                    w-full text-left flex flex-col gap-1
+                    p-2 rounded-md border 
                     bg-white dark:bg-slate-800
                     text-slate-700 dark:text-slate-200
                     border-slate-300 dark:border-slate-700
                     hover:bg-slate-100 dark:hover:bg-slate-700
                     hover:border-slate-400 dark:hover:border-slate-500
-                    shadow-sm hover:shadow-md
-                    transition-all duration-150 active:scale-[0.98]
+                    shadow-sm hover:shadow
+                    transition duration-150 active:scale-[0.98]
                   "
                 >
-                  {/* Title clickable */}
                   <div
-                    className="cursor-pointer font-medium"
+                    className="cursor-pointer text-sm font-medium truncate"
                     onClick={() =>
                       window.open(
                         `https://europepmc.org/article/MED/${p.pmid}`,
@@ -142,27 +137,25 @@ export default function EvidenceDialog({ mech, open, onOpenChange }: Props) {
                     📄 {p.title} {p.year && `(${p.year})`}
                   </div>
 
-                  {/* Abstract teaser */}
                   {p.abstract && (
-                    <div className="text-xs text-slate-600 dark:text-slate-400">
-                      {p.abstract.slice(0, 160)}…
+                    <div className="text-xs text-slate-600 dark:text-slate-400 leading-snug">
+                      {p.abstract.slice(0, 140)}…
                     </div>
                   )}
 
-                  {/* View internal paper page link */}
                   <div
                     onClick={(e) => {
                       e.stopPropagation();
                       window.open(`/papers/${p.pmid}`, "_blank");
                     }}
                     className="
-                      text-xs text-blue-600 dark:text-blue-400 
+                      text-[11px] text-blue-600 dark:text-blue-400 
                       underline underline-offset-2 
-                      cursor-pointer
+                      cursor:pointer
                       mt-1
                     "
                   >
-                    View details →
+                    View internal summary →
                   </div>
                 </div>
               ))
