@@ -21,7 +21,7 @@ function SubtypesPageContent() {
   const [selectedClusterData, setSelectedClusterData] =
     useState<Cluster | null>(null);
   const [clusters, setClusters] = useState<Cluster[]>([]);
-  const [showPlot, setShowPlot] = useState(false);
+  const [activeView, setActiveView] = useState<"papers" | "map">("papers");
 
   useEffect(() => {
     const loadClusters = async () => {
@@ -66,14 +66,41 @@ function SubtypesPageContent() {
     <main className="bg-white dark:bg-slate-900">
       {/* ✅ Research-app style header, matching Papers page */}
       <section className="max-w-7xl mx-auto px-4 pt-0 pb-10">
-        <h1 className="text-3xl font-semibold mb-2">
-          ME/CFS Subtypes Explorer
-        </h1>
-        <p className="text-sm text-muted-foreground max-w-2xl">
-          Understand biological subtypes identified by the{" "}
-          <strong>AI Cure engine</strong>. Explore patterns in molecular,
-          immune, and neurological research.
-        </p>
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex-1">
+            <h1 className="text-3xl font-semibold mb-2">
+              ME/CFS Subtypes Explorer
+            </h1>
+            <p className="text-sm text-muted-foreground max-w-2xl">
+              Understand biological subtypes identified by the{" "}
+              <strong>AI Cure engine</strong>. Explore patterns in molecular,
+              immune, and neurological research.
+            </p>
+          </div>
+          {/* ✅ View switcher tabs */}
+          <div className="flex gap-2 border border-gray-300 dark:border-slate-600 rounded-md p-1 bg-gray-50 dark:bg-slate-800">
+            <button
+              onClick={() => setActiveView("papers")}
+              className={`px-4 py-2 text-sm font-medium rounded transition cursor-pointer whitespace-nowrap ${
+                activeView === "papers"
+                  ? "bg-white text-blue-700 dark:bg-slate-700 dark:text-blue-300 shadow-sm"
+                  : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
+              }`}
+            >
+              Papers
+            </button>
+            <button
+              onClick={() => setActiveView("map")}
+              className={`px-4 py-2 text-sm font-medium rounded transition cursor-pointer whitespace-nowrap ${
+                activeView === "map"
+                  ? "bg-white text-blue-700 dark:bg-slate-700 dark:text-blue-300 shadow-sm"
+                  : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
+              }`}
+            >
+              Map
+            </button>
+          </div>
+        </div>
       </section>
 
       <section className="max-w-7xl mx-auto px-4 pb-16 space-y-8 fade-in">
@@ -102,23 +129,12 @@ function SubtypesPageContent() {
             )}
         </div>
 
-        {/* ✅ Papers */}
-        <div className="subtypes-card min-h-[400px]">
-          <PapersPanel clusterId={selectedCluster} />
-        </div>
-
-        {/* ✅ UMAP toggle */}
-        <div className="text-center">
-          <button
-            onClick={() => setShowPlot((prev) => !prev)}
-            className="px-4 py-2 text-sm rounded-md border hover:bg-muted transition cursor-pointer"
-          >
-            {showPlot ? "Hide embedding map" : "View embedding map (UMAP)"}
-          </button>
-        </div>
-
-        {/* ✅ Collapsible scatter plot */}
-        {showPlot && (
+        {/* ✅ Content view - switch between Papers and Map */}
+        {activeView === "papers" ? (
+          <div className="subtypes-card min-h-[400px]">
+            <PapersPanel clusterId={selectedCluster} />
+          </div>
+        ) : (
           <div className="subtypes-card fade-in">
             <ScatterPlot
               onSelectCluster={selectCluster}
