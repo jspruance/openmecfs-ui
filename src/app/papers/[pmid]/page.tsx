@@ -24,10 +24,10 @@ export default async function PaperPage({ params }: Props) {
         {paper?.title || "Title unavailable"}
       </h2>
 
-      {/* Year & Source */}
+      {/* Year & Journal */}
       <p className="text-sm text-slate-600 dark:text-slate-400 mb-6">
         {paper?.year ? `Published ${paper.year}` : ""}
-        {paper?.source ? ` • ${paper.source}` : ""}
+        {paper?.journal ? ` • ${paper.journal}` : ""}
       </p>
 
       {/* Abstract */}
