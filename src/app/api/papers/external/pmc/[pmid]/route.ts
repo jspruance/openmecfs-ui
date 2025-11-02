@@ -95,7 +95,26 @@ export async function GET(
             doc.pubYear?.toString() ||
             doc.firstPublicationDate?.slice(0, 4) ||
             "",
-          authors: doc.authorString?.trim() || "",
+          authors: (() => {
+            // Try authorString first (most common)
+            if (doc.authorString?.trim()) return doc.authorString.trim();
+            
+            // Fallback to authorList parsing
+            if (Array.isArray(doc.authorList?.author)) {
+              const authorList = doc.authorList.author
+                .map((a: { fullName?: string; firstName?: string; lastName?: string }) => {
+                  if (a.fullName) return a.fullName.trim();
+                  if (a.firstName && a.lastName) return `${a.firstName.trim()} ${a.lastName.trim()}`;
+                  if (a.lastName) return a.lastName.trim();
+                  return null;
+                })
+                .filter(Boolean)
+                .join(", ");
+              if (authorList) return authorList;
+            }
+            
+            return "";
+          })(),
           abstract: doc.abstractText?.trim() || "",
           link: doc.doi
             ? `https://doi.org/${doc.doi}`

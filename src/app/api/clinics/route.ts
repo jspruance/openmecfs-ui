@@ -7,6 +7,15 @@ const anon = process.env.SUPABASE_ANON_KEY!;
 
 export async function GET(req: Request) {
   try {
+    // Validate environment variables
+    if (!url || !anon) {
+      console.error("CLINICS_LIST_ERROR: Missing Supabase credentials");
+      return NextResponse.json(
+        { ok: false, error: "Server configuration error" },
+        { status: 500 }
+      );
+    }
+
     const supabase = createClient(url, anon);
     const { searchParams } = new URL(req.url);
 
@@ -29,13 +38,21 @@ export async function GET(req: Request) {
     if (country) q = q.eq("country", country);
 
     const { data, error } = await q;
-    if (error) throw error;
+    
+    if (error) {
+      console.error("CLINICS_LIST_ERROR - Supabase query failed:", error);
+      throw error;
+    }
 
-    return NextResponse.json({ ok: true, clinics: data });
+    // Ensure we always return an array
+    const clinics = Array.isArray(data) ? data : [];
+
+    return NextResponse.json({ ok: true, clinics });
   } catch (e: unknown) {
     console.error("CLINICS_LIST_ERROR", e);
+    const errorMessage = e instanceof Error ? e.message : "Failed to load clinics";
     return NextResponse.json(
-      { ok: false, error: e instanceof Error ? e.message : "Failed" },
+      { ok: false, error: errorMessage },
       { status: 500 }
     );
   }

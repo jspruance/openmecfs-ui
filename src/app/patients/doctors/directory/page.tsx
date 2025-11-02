@@ -140,8 +140,24 @@ export default function DoctorsDirectoryPage() {
     (async () => {
       try {
         const res = await fetch("/api/clinics", { cache: "no-store" });
+        
+        if (!res.ok) {
+          console.error("Load clinics failed - HTTP error:", res.status);
+          if (mounted) setLoading(false);
+          return;
+        }
+        
         const data = await res.json();
-        if (mounted && data?.ok) setClinics(data.clinics || []);
+        
+        if (!data?.ok) {
+          console.error("Load clinics failed - API error:", data?.error);
+          if (mounted) setLoading(false);
+          return;
+        }
+        
+        if (mounted) {
+          setClinics(Array.isArray(data.clinics) ? data.clinics : []);
+        }
       } catch (e) {
         console.error("Load clinics failed", e);
       } finally {
