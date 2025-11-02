@@ -58,20 +58,84 @@ export async function fetchEuropePmcPaper(
 
   try {
     // Hit our API (PMC proxy)
-    const res = await fetch(`/api/papers/external/pmc/${pmid}`, {
+    // For server components, use full URL in production, relative URL in development
+    let apiUrl: string;
+    
+    if (typeof window === "undefined") {
+      // Server-side: construct full URL
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 
+        (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null) ||
+        process.env.NEXT_PUBLIC_SITE_URL ||
+        "http://localhost:3000";
+      apiUrl = `${baseUrl}/api/papers/external/pmc/${pmid}`;
+    } else {
+      // Client-side: use relative URL
+      apiUrl = `/api/papers/external/pmc/${pmid}`;
+    }
+
+    console.log(`[fetchEuropePmcPaper] Fetching from: ${apiUrl}`);
+
+    const res = await fetch(apiUrl, {
       next: { revalidate: 3600 },
+      cache: "no-store", // Force fresh fetch for debugging
     });
-    const data = res.ok ? await res.json() : null;
+
+    if (!res.ok) {
+      console.warn(`⚠️ API returned ${res.status} for ${pmid}`);
+      // Try PubMed fallback if API fails
+      const fb = await fetchPubmedFallback(pmid);
+      if (fb && fb.title) {
+        return {
+          pmid,
+          title: fb.title,
+          journal: fb.journal || "Unknown journal",
+          year: fb.year || "n.d.",
+          authors: fb.authors || "Unknown authors",
+          abstract: fb.abstract || "",
+          link: fb.link,
+        };
+      }
+      return null;
+    }
+
+    const data = await res.json();
+
+    // Check if we got an error response
+    if (data.error) {
+      console.warn(`⚠️ API error for ${pmid}: ${data.error}`);
+      const fb = await fetchPubmedFallback(pmid);
+      if (fb && fb.title) {
+        return {
+          pmid,
+          title: fb.title,
+          journal: fb.journal || "Unknown journal",
+          year: fb.year || "n.d.",
+          authors: fb.authors || "Unknown authors",
+          abstract: fb.abstract || "",
+          link: fb.link,
+        };
+      }
+      return null;
+    }
+
+    console.log(`[fetchEuropePmcPaper] API response for ${pmid}:`, {
+      hasTitle: !!data?.title,
+      hasAbstract: !!data?.abstract,
+      hasAuthors: !!data?.authors,
+      hasJournal: !!data?.journal,
+      title: data?.title?.substring(0, 50),
+    });
 
     const cleaned = {
       pmid,
-      title: data?.title?.trim() || "",
-      journal: data?.journal?.trim() || "",
-      year: data?.year?.toString() || "",
-      authors: data?.authors?.trim() || "",
-      abstract: data?.abstract?.trim() || "",
+      title: (data?.title?.trim() || "") as string,
+      journal: (data?.journal?.trim() || "") as string,
+      year: (data?.year?.toString() || "") as string,
+      authors: (data?.authors?.trim() || "") as string,
+      abstract: (data?.abstract?.trim() || "") as string,
       link:
-        data?.link || (pmid ? `https://pubmed.ncbi.nlm.nih.gov/${pmid}/` : ""),
+        (data?.link?.trim() ||
+          (pmid ? `https://pubmed.ncbi.nlm.nih.gov/${pmid}/` : "")) as string,
     };
 
     const missingKeyFields =
@@ -82,12 +146,19 @@ export async function fetchEuropePmcPaper(
 
     if (missingKeyFields) {
       console.warn(
-        `⚠️ Missing fields from PMC, fetching PubMed fallback for ${pmid}`
+        `⚠️ Missing fields from PMC for ${pmid}, fetching PubMed fallback. Missing:`,
+        {
+          title: !cleaned.title,
+          abstract: !cleaned.abstract,
+          authors: !cleaned.authors,
+          journal: !cleaned.journal,
+        }
       );
 
       const fb = await fetchPubmedFallback(pmid);
 
-      if (fb) {
+      if (fb && fb.title) {
+        console.log(`[fetchEuropePmcPaper] Using PubMed fallback for ${pmid}`);
         return {
           pmid,
           title: cleaned.title || fb.title || "Title unavailable",
@@ -98,11 +169,34 @@ export async function fetchEuropePmcPaper(
           link: fb.link,
         };
       }
+      
+      console.warn(`[fetchEuropePmcPaper] Fallback also failed for ${pmid}`);
+    } else {
+      console.log(`[fetchEuropePmcPaper] Successfully fetched data for ${pmid}`);
     }
 
+    // Return cleaned data even if some fields are missing
+    // The page component will show defaults for empty strings
     return cleaned;
   } catch (err) {
     console.error(`❌ Europe PMC fetch failed for PMID ${pmid}`, err);
+    // Last resort: try PubMed fallback
+    try {
+      const fb = await fetchPubmedFallback(pmid);
+      if (fb && fb.title) {
+        return {
+          pmid,
+          title: fb.title,
+          journal: fb.journal || "Unknown journal",
+          year: fb.year || "n.d.",
+          authors: fb.authors || "Unknown authors",
+          abstract: fb.abstract || "",
+          link: fb.link,
+        };
+      }
+    } catch {
+      // Ignore fallback errors
+    }
     return null;
   }
 }

@@ -6,7 +6,23 @@ export default async function PaperPage({
   params: Promise<{ pmid: string }>;
 }) {
   const { pmid } = await params;
+  
+  // Debug logging
+  console.log(`[PaperPage] Fetching data for PMID: ${pmid}`);
+  
   const data = await fetchEuropePmcPaper(pmid);
+  
+  // Debug logging
+  if (!data) {
+    console.warn(`[PaperPage] No data returned for PMID: ${pmid}`);
+  } else {
+    console.log(`[PaperPage] Received data for ${pmid}:`, {
+      hasTitle: !!data.title,
+      hasAbstract: !!data.abstract,
+      hasAuthors: !!data.authors,
+      hasJournal: !!data.journal,
+    });
+  }
 
   // Defensive defaults
   const title = data?.title?.trim() || "Title unavailable";
