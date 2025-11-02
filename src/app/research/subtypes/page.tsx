@@ -104,30 +104,32 @@ function SubtypesPageContent() {
       </section>
 
       <section className="max-w-7xl mx-auto px-4 pb-16 space-y-8 fade-in">
-        {/* ✅ Subtype pills */}
-        <div className="subtypes-card pb-4">
-          <ClusterGrid
-            onSelectCluster={selectCluster}
-            selectedCluster={selectedCluster}
-          />
+        {/* ✅ Subtype pills - only show on Papers tab */}
+        {activeView === "papers" && (
+          <div className="subtypes-card pb-4">
+            <ClusterGrid
+              onSelectCluster={selectCluster}
+              selectedCluster={selectedCluster}
+            />
 
-          {selectedCluster !== null &&
-            selectedClusterData &&
-            selectedClusterData.cluster_num === selectedCluster && (
-              <>
-                <div className="mt-4 p-4 rounded-lg border bg-blue-50 dark:bg-slate-800 dark:border-slate-700">
-                  <h3 className="font-semibold text-lg text-blue-700 dark:text-blue-300 mb-1">
-                    {selectedClusterData.cluster_label.replace(/\"/g, "")}
-                  </h3>
-                  <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
-                    {selectedClusterData.cluster_summary}
-                  </p>
-                </div>
+            {selectedCluster !== null &&
+              selectedClusterData &&
+              selectedClusterData.cluster_num === selectedCluster && (
+                <>
+                  <div className="mt-4 p-4 rounded-lg border bg-blue-50 dark:bg-slate-800 dark:border-slate-700">
+                    <h3 className="font-semibold text-lg text-blue-700 dark:text-blue-300 mb-1">
+                      {selectedClusterData.cluster_label.replace(/\"/g, "")}
+                    </h3>
+                    <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
+                      {selectedClusterData.cluster_summary}
+                    </p>
+                  </div>
 
-                <ClusterIntelligence cluster={selectedClusterData} />
-              </>
-            )}
-        </div>
+                  <ClusterIntelligence cluster={selectedClusterData} />
+                </>
+              )}
+          </div>
+        )}
 
         {/* ✅ Content view - switch between Papers and Map */}
         {activeView === "papers" ? (
