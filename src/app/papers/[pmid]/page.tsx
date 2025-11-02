@@ -1,58 +1,112 @@
-import { fetchEuropePmcPaper } from "@/lib/papers/europePmc";
+"use client";
 
-export default async function PaperPage({
-  params,
-}: {
-  params: Promise<{ pmid: string }>;
-}) {
-  const { pmid } = await params;
-  
-  // Debug logging
-  console.log(`[PaperPage] Fetching data for PMID: ${pmid}`);
-  
-  const data = await fetchEuropePmcPaper(pmid);
-  
-  // Debug logging
-  if (!data) {
-    console.warn(`[PaperPage] No data returned for PMID: ${pmid}`);
-  } else {
-    console.log(`[PaperPage] Received data for ${pmid}:`, {
-      hasTitle: !!data.title,
-      hasAbstract: !!data.abstract,
-      hasAuthors: !!data.authors,
-      hasJournal: !!data.journal,
-    });
+import { useState, useEffect } from "react";
+import { fetchEuropePmcPaper } from "@/lib/papers/europePmc";
+import EvidenceChips from "@/components/EvidenceChips";
+import GenerateEvidenceButton from "@/components/GenerateEvidenceButton";
+
+interface Params {
+  params: { pmid: string };
+}
+
+export default function PaperPage({ params }: Params) {
+  const { pmid } = params;
+
+  const [paper, setPaper] = useState<any>(null);
+  const [internalPaper, setInternalPaper] = useState<any>(null);
+  const [evidence, setEvidence] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch both external PMC + internal DB record
+  const loadData = async () => {
+    setLoading(true);
+
+    // 1️⃣ External fetch (PMC)
+    const external = await fetchEuropePmcPaper(pmid);
+
+    setPaper(external);
+
+    // 2️⃣ Ensure internal paper exists in Supabase
+    const dbRes = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/papers/sync/${pmid}`,
+      { method: "POST" }
+    );
+    const dbPaper = await dbRes.json();
+    setInternalPaper(dbPaper);
+
+    // 3️⃣ Fetch existing evidence if exists
+    const evRes = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/papers/${dbPaper.id}/summaries`,
+      { cache: "no-store" }
+    ).catch(() => null);
+
+    const ev = evRes?.ok ? await evRes.json() : null;
+    setEvidence(ev);
+
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    loadData();
+  }, [pmid]);
+
+  if (loading) {
+    return (
+      <div className="mx-auto max-w-3xl px-6 py-10 text-sm opacity-70">
+        Loading paper details...
+      </div>
+    );
   }
 
-  // Defensive defaults
-  const title = data?.title?.trim() || "Title unavailable";
-  const abstract = data?.abstract?.trim() || "Abstract not available.";
-  const journal = data?.journal?.trim() || "Unknown journal";
-  const year = data?.year?.toString() || "n.d.";
-  const authors = data?.authors?.trim() || "Unknown authors";
-  const link = data?.link;
+  if (!paper) {
+    return (
+      <div className="mx-auto max-w-3xl px-6 py-10">
+        ❓ Paper not found for PMID: {pmid}
+      </div>
+    );
+  }
+
+  const { title, abstract, journal, year, authors, link } = paper;
 
   return (
     <div className="mx-auto max-w-3xl px-6 py-8">
       <h1 className="text-2xl font-semibold flex items-center gap-2">
-        📄 Paper Details — {pmid}
+        📄 Paper — {pmid}
       </h1>
 
       <div className="mt-4 rounded-lg border p-4 bg-white dark:bg-slate-900">
-        <div className="text-xl font-medium">{title}</div>
+        <div className="text-xl font-medium">
+          {title || "Title unavailable"}
+        </div>
 
         <div className="mt-2 text-sm text-slate-600 dark:text-slate-300">
-          {authors}
+          {authors || "Unknown authors"}
         </div>
 
         <div className="mt-1 text-xs text-slate-500">
-          {journal} • {year}
+          {journal || "Unknown journal"} • {year || "n.d."}
         </div>
 
         <h2 className="mt-6 font-semibold">Abstract</h2>
         <p className="mt-1 text-sm text-slate-700 dark:text-slate-300 whitespace-pre-line">
-          {abstract}
+          {abstract || "No abstract available."}
         </p>
+
+        {/* Evidence Engine actions & display */}
+        {internalPaper && (
+          <GenerateEvidenceButton
+            paperId={internalPaper.id}
+            onComplete={() => loadData()}
+          />
+        )}
+
+        {evidence && (
+          <EvidenceChips
+            mechanisms={evidence.mechanisms}
+            biomarkers={evidence.biomarkers}
+            confidence={evidence.confidence}
+          />
+        )}
 
         {link && (
           <a
@@ -60,6 +114,7 @@ export default async function PaperPage({
             target="_blank"
             rel="noopener noreferrer"
             className="mt-4 inline-block text-blue-600 dark:text-blue-400 underline underline-offset-2"
+            style={{ cursor: "pointer" }}
           >
             View on Europe PMC →
           </a>
