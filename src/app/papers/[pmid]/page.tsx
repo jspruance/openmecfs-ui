@@ -6,8 +6,9 @@ import {
   fetchEuropePmcPaper,
   type EuropePmcPaper,
 } from "@/lib/papers/europePmc";
-import EvidenceChips from "@/components/EvidenceChips";
 import GenerateEvidenceButton from "@/components/GenerateEvidenceButton";
+import ConfidenceBar from "@/components/ConfidenceBar";
+import SmartChipList from "@/components/SmartChipList";
 
 interface InternalPaper {
   pmid: string;
@@ -21,6 +22,7 @@ interface Evidence {
   mechanisms?: string[];
   biomarkers?: string[];
   confidence?: number;
+  created_at?: string;
   status?: string;
 }
 
@@ -39,20 +41,19 @@ export default function PaperPage() {
   const loadData = useCallback(async () => {
     setLoading(true);
 
-    // 1️⃣ Fetch external PMC metadata
+    // ✅ 1) External metadata
     const external = await fetchEuropePmcPaper(pmid);
     setPaper(external);
 
-    // 2️⃣ Ensure paper exists in our database
+    // ✅ 2) Ensure paper exists in DB
     const dbRes = await fetch(
       `${process.env.NEXT_PUBLIC_API_URL}/papers/sync/${pmid}`,
       { method: "POST" }
     );
-
     const dbPaper = (await dbRes.json()) as InternalPaper;
     setInternalPaper(dbPaper);
 
-    // 3️⃣ Load existing AI evidence if present
+    // ✅ 3) Load AI evidence if exists
     const evRes = await fetch(
       `${process.env.NEXT_PUBLIC_API_URL}/papers/summaries/${pmid}`,
       { cache: "no-store" }
@@ -71,7 +72,6 @@ export default function PaperPage() {
       method: "POST",
     });
 
-    // wait a moment, then reload
     setTimeout(async () => {
       await loadData();
       setSummarizing(false);
@@ -154,12 +154,19 @@ export default function PaperPage() {
                 </div>
               )}
 
-              {/* AI Tags */}
-              <EvidenceChips
-                mechanisms={evidence.mechanisms}
-                biomarkers={evidence.biomarkers}
-                confidence={evidence.confidence}
-              />
+              {/* ✅ Confidence Bar */}
+              <ConfidenceBar confidence={evidence.confidence} />
+
+              {/* ✅ Smart Chip Lists */}
+              <SmartChipList items={evidence.mechanisms} title="Mechanisms" />
+              <SmartChipList items={evidence.biomarkers} title="Biomarkers" />
+
+              {/* ✅ Last Updated */}
+              {evidence.created_at && (
+                <div className="text-xs text-slate-400">
+                  Updated {new Date(evidence.created_at).toLocaleDateString()}
+                </div>
+              )}
             </div>
           ) : (
             <div className="text-sm text-slate-500 italic">
@@ -167,7 +174,7 @@ export default function PaperPage() {
             </div>
           )}
 
-          {/* Summarize Button */}
+          {/* ✅ Generate Summary (first time) */}
           {!evidence?.one_sentence && internalPaper && (
             <button
               onClick={handleSummarize}
@@ -179,8 +186,7 @@ export default function PaperPage() {
           )}
         </div>
 
-        {/* REFRESH SUMMARY BUTTON (legacy) */}
-        {/* Refresh summary ONLY if one already exists */}
+        {/* ✅ Refresh Summary (if exists) */}
         {evidence?.one_sentence && internalPaper && (
           <div className="mt-4">
             <GenerateEvidenceButton
@@ -191,13 +197,13 @@ export default function PaperPage() {
           </div>
         )}
 
-        {/* Original PMC link */}
+        {/* ✅ Link to source */}
         {link && (
           <a
             href={link}
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-4 inline-block text-blue-600 dark:text-blue-400 underline underline-offset-2"
+            className="mt-4 inline-block text-blue-600 dark:text-blue-400 underline underline-offset-2 cursor-pointer"
           >
             View on Europe PMC →
           </a>
