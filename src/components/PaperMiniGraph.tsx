@@ -80,8 +80,8 @@ export default function PaperMiniGraph({ pmid }: { pmid: string }) {
           cooldownTicks={30}
           //linkColor={() => "rgba(148,163,184,0.4)"} // ✅ restore links
           //linkWidth={() => 1}
-          enablePanInteraction={false} // ✅ stop dragging screen
-          enableZoomInteraction={false} // ✅ stop rogue zoom nodes
+          //enablePanInteraction={false} // ✅ stop dragging screen
+          // enableZoomInteraction={false} // ✅ stop rogue zoom nodes
           nodeCanvasObject={(node, ctx) => drawNode(node as GraphNode, ctx)}
         />
       </div>
