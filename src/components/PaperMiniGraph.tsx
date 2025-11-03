@@ -35,30 +35,20 @@ export default function PaperMiniGraph({ pmid }: { pmid: string }) {
       cache: "no-store",
     })
       .then((r) => r.json())
-      .then((d: GraphData) => {
-        // Ensure no undefined values
-        if (!d?.nodes || !d?.links) {
-          setData({ nodes: [], links: [] });
-        } else {
-          setData(d);
-        }
-      })
+      .then((d) => setData(d?.nodes?.length ? d : { nodes: [], links: [] }))
       .catch(() => setData({ nodes: [], links: [] }));
   }, [pmid]);
 
-  // ✅ If no graph data, show clean placeholder
   const isEmpty = data.nodes.length <= 1;
 
   if (isEmpty) {
     return (
-      <div className="mt-6 rounded border bg-white dark:bg-slate-900">
+      <div className="mt-6 rounded border bg-white dark:bg-slate-900 overflow-hidden">
         <div className="px-3 py-2 text-xs text-slate-500 border-b">
           Mechanisms & Biomarkers Network
         </div>
-        <div className="h-40 flex items-center justify-center text-xs text-slate-400 px-4 text-center">
+        <div className="h-40 flex items-center justify-center text-xs text-slate-400 text-center">
           🧠 Mechanistic network coming soon
-          <br />
-          This paper does not yet have structured mechanism links.
         </div>
       </div>
     );
@@ -66,7 +56,6 @@ export default function PaperMiniGraph({ pmid }: { pmid: string }) {
 
   const drawNode = (node: GraphNode, ctx: CanvasRenderingContext2D) => {
     const size = node.type === "paper" ? 9 : 5;
-
     const colors = {
       paper: "#2563eb",
       mechanism: "#f59e0b",
@@ -80,17 +69,19 @@ export default function PaperMiniGraph({ pmid }: { pmid: string }) {
   };
 
   return (
-    <div className="mt-6 rounded border bg-white dark:bg-slate-900">
+    <div className="mt-6 rounded border bg-white dark:bg-slate-900 overflow-hidden">
       <div className="px-3 py-2 text-xs text-slate-500 border-b">
         Mechanisms & Biomarkers Network
       </div>
-      <div className="h-64">
+      <div className="h-64 w-full">
         <ForceGraph2D
           graphData={data}
           nodeRelSize={4}
-          cooldownTicks={40}
-          //linkColor={() => "rgba(148,163,184,0.4)"} // slate-400/40
+          cooldownTicks={30}
+          //linkColor={() => "rgba(148,163,184,0.4)"} // ✅ restore links
           //linkWidth={() => 1}
+          enablePanInteraction={false} // ✅ stop dragging screen
+          enableZoomInteraction={false} // ✅ stop rogue zoom nodes
           nodeCanvasObject={(node, ctx) => drawNode(node as GraphNode, ctx)}
         />
       </div>
