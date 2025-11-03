@@ -16,7 +16,9 @@ export default function GenerateEvidenceButton({
   variant = "default",
 }: Props) {
   const [loading, setLoading] = useState(false);
-  const [status, setStatus] = useState<"idle" | "cached" | "done" | "error">("idle");
+  const [status, setStatus] = useState<"idle" | "cached" | "done" | "error">(
+    "idle"
+  );
 
   const handleClick = async () => {
     if (loading) return;
@@ -56,7 +58,7 @@ export default function GenerateEvidenceButton({
     hover:opacity-80 disabled:opacity-50 disabled:cursor-not-allowed
   `;
 
-  // ✅ Variant theme logic
+  // ✅ Variant style logic
   const variantStyles =
     variant === "refresh"
       ? "bg-black text-white dark:bg-white dark:text-black"
@@ -89,7 +91,6 @@ export default function GenerateEvidenceButton({
                 fill="currentColor"
                 d="M4 12a8 8 0 018-8v4A4 4 0 008 12H4z"
               />
-            </path>
             </svg>
             {label ? "Refreshing…" : "Generating…"}
           </>
@@ -104,14 +105,10 @@ export default function GenerateEvidenceButton({
         </div>
       )}
       {status === "done" && (
-        <div className="text-xs text-green-500 mt-2">
-          ✅ Summary updated
-        </div>
+        <div className="text-xs text-green-500 mt-2">✅ Summary updated</div>
       )}
       {status === "error" && (
-        <div className="text-xs text-red-500 mt-2">
-          ❌ Error — try again
-        </div>
+        <div className="text-xs text-red-500 mt-2">❌ Error — try again</div>
       )}
     </div>
   );
