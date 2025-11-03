@@ -87,3 +87,8 @@ html.dark .card {
     --border: 217.2 32.6% 27.5%;
   }
 }
+
+/* Remove fallback mini demo graph */
+div[class*="force-graph-container"] > div[style*="position: absolute"] {
+  display: none !important;
+}
