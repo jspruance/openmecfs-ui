@@ -179,10 +179,15 @@ export default function PaperPage() {
           )}
         </div>
 
-        {/* EVIDENCE ENGINE BUTTON (legacy) */}
-        {internalPaper && (
-          <div className="mt-8">
-            <GenerateEvidenceButton pmid={pmid} onComplete={() => loadData()} />
+        {/* REFRESH SUMMARY BUTTON (legacy) */}
+        {/* Refresh summary ONLY if one already exists */}
+        {evidence?.one_sentence && internalPaper && (
+          <div className="mt-3">
+            <GenerateEvidenceButton
+              pmid={pmid}
+              onComplete={() => loadData()}
+              label="↻ Refresh Summary"
+            />
           </div>
         )}
 
