@@ -29,7 +29,6 @@ interface GraphData {
 
 export default function PaperMiniGraph({ pmid }: { pmid: string }) {
   const [data, setData] = useState<GraphData>({ nodes: [], links: [] });
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/graph/paper/${pmid}`, {
@@ -37,18 +36,36 @@ export default function PaperMiniGraph({ pmid }: { pmid: string }) {
     })
       .then((r) => r.json())
       .then((d: GraphData) => {
-        setData(d);
-        setLoading(false);
+        // Ensure no undefined values
+        if (!d?.nodes || !d?.links) {
+          setData({ nodes: [], links: [] });
+        } else {
+          setData(d);
+        }
       })
-      .catch(() => setLoading(false));
+      .catch(() => setData({ nodes: [], links: [] }));
   }, [pmid]);
 
-  const drawNode = (
-    node: GraphNode,
-    ctx: CanvasRenderingContext2D,
-    _scale: number
-  ) => {
-    const size = node.type === "paper" ? 8 : 5;
+  // ✅ If no graph data, show clean placeholder
+  const isEmpty = data.nodes.length <= 1;
+
+  if (isEmpty) {
+    return (
+      <div className="mt-6 rounded border bg-white dark:bg-slate-900">
+        <div className="px-3 py-2 text-xs text-slate-500 border-b">
+          Mechanisms & Biomarkers Network
+        </div>
+        <div className="h-40 flex items-center justify-center text-xs text-slate-400 px-4 text-center">
+          🧠 Mechanistic network coming soon
+          <br />
+          This paper does not yet have structured mechanism links.
+        </div>
+      </div>
+    );
+  }
+
+  const drawNode = (node: GraphNode, ctx: CanvasRenderingContext2D) => {
+    const size = node.type === "paper" ? 9 : 5;
 
     const colors = {
       paper: "#2563eb",
@@ -63,39 +80,19 @@ export default function PaperMiniGraph({ pmid }: { pmid: string }) {
   };
 
   return (
-    <div className="mt-8 rounded-lg border bg-white dark:bg-slate-900">
-      <div className="px-3 py-2 text-xs font-medium text-slate-600 dark:text-slate-300 border-b">
+    <div className="mt-6 rounded border bg-white dark:bg-slate-900">
+      <div className="px-3 py-2 text-xs text-slate-500 border-b">
         Mechanisms & Biomarkers Network
       </div>
-
-      <div
-        className="relative w-full"
-        style={{ height: "240px" }} // ✅ fixed height for mini graph
-      >
-        {loading && (
-          <div className="absolute inset-0 flex items-center justify-center text-xs text-slate-400">
-            Building graph…
-          </div>
-        )}
-
-        {!loading && data.nodes.length === 0 && (
-          <div className="absolute inset-0 flex items-center justify-center text-xs text-slate-400">
-            No mechanistic links yet.
-          </div>
-        )}
-
-        {data.nodes.length > 0 && (
-          <ForceGraph2D
-            graphData={data}
-            nodeRelSize={4}
-            cooldownTicks={40}
-            // linkColor={() => "rgba(148,163,184,0.4)"}
-            // linkWidth={1}
-            nodeCanvasObject={(node, ctx, scale) =>
-              drawNode(node as GraphNode, ctx, scale)
-            }
-          />
-        )}
+      <div className="h-64">
+        <ForceGraph2D
+          graphData={data}
+          nodeRelSize={4}
+          cooldownTicks={40}
+          linkColor={() => "rgba(148,163,184,0.4)"} // slate-400/40
+          linkWidth={() => 1}
+          nodeCanvasObject={(node, ctx) => drawNode(node as GraphNode, ctx)}
+        />
       </div>
     </div>
   );
