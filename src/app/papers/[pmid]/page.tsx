@@ -10,6 +10,7 @@ import GenerateEvidenceButton from "@/components/GenerateEvidenceButton";
 import ConfidenceBar from "@/components/ConfidenceBar";
 import SmartChipList from "@/components/SmartChipList";
 import { timeAgo } from "@/lib/timeAgo";
+import PaperMiniGraph from "@/components/PaperMiniGraph";
 
 interface InternalPaper {
   pmid: string;
@@ -161,6 +162,8 @@ export default function PaperPage() {
               {/* ✅ Smart Chip Lists */}
               <SmartChipList items={evidence.mechanisms} title="Mechanisms" />
               <SmartChipList items={evidence.biomarkers} title="Biomarkers" />
+
+              <PaperMiniGraph pmid={pmid} />
 
               {/* ✅ Last Updated */}
               {evidence.created_at && (
