@@ -3,31 +3,38 @@
 import { useState } from "react";
 
 interface Props {
-  paperId: string;
+  pmid: string;
   onComplete: () => void;
 }
 
-export default function GenerateEvidenceButton({ paperId, onComplete }: Props) {
+export default function GenerateEvidenceButton({ pmid, onComplete }: Props) {
   const [loading, setLoading] = useState(false);
-  const [status, setStatus] = useState<"idle" | "cached" | "done">("idle");
+  const [status, setStatus] = useState<"idle" | "cached" | "done" | "error">(
+    "idle"
+  );
 
   const handleClick = async () => {
     setLoading(true);
+    setStatus("idle");
 
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/evidence/papers/${paperId}/generate`,
+        `${process.env.NEXT_PUBLIC_API_URL}/papers/summarize/${pmid}`,
         { method: "POST" }
       );
 
-      const data = await res.json();
+      if (res.status === 409) {
+        setStatus("cached");
+      } else if (!res.ok) {
+        setStatus("error");
+      } else {
+        setStatus("done");
+      }
 
-      if (data.status === "cached") setStatus("cached");
-      else setStatus("done");
-
-      onComplete();
+      onComplete?.();
     } catch (e) {
       console.error("Evidence generation failed:", e);
+      setStatus("error");
     }
 
     setLoading(false);
@@ -46,14 +53,16 @@ export default function GenerateEvidenceButton({ paperId, onComplete }: Props) {
 
       {status === "cached" && (
         <div className="text-xs text-yellow-500 mt-2">
-          ✅ Evidence already generated
+          ✅ Already generated (cached)
         </div>
       )}
 
       {status === "done" && (
-        <div className="text-xs text-green-500 mt-2">
-          ✅ Evidence generated successfully
-        </div>
+        <div className="text-xs text-green-500 mt-2">✅ Evidence generated</div>
+      )}
+
+      {status === "error" && (
+        <div className="text-xs text-red-500 mt-2">❌ Error — try again</div>
       )}
     </div>
   );
