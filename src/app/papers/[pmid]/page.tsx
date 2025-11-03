@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useParams } from "next/navigation";
-import dynamic from "next/dynamic";
 import {
   fetchEuropePmcPaper,
   type EuropePmcPaper,
@@ -12,9 +11,6 @@ import ConfidenceBar from "@/components/ConfidenceBar";
 import SmartChipList from "@/components/SmartChipList";
 import { timeAgo } from "@/lib/timeAgo";
 import PaperMiniGraph from "@/components/PaperMiniGraph";
-const ForceGraph2D = dynamic(() => import("react-force-graph-2d"), {
-  ssr: false,
-});
 
 interface InternalPaper {
   pmid: string;
@@ -47,19 +43,20 @@ export default function PaperPage() {
   const loadData = useCallback(async () => {
     setLoading(true);
 
-    // ✅ 1) External metadata
+    // 1) External metadata
     const external = await fetchEuropePmcPaper(pmid);
     setPaper(external);
 
-    // ✅ 2) Ensure paper exists in DB
+    // 2) Ensure paper exists in DB
     const dbRes = await fetch(
       `${process.env.NEXT_PUBLIC_API_URL}/papers/sync/${pmid}`,
       { method: "POST" }
     );
+
     const dbPaper = (await dbRes.json()) as InternalPaper;
     setInternalPaper(dbPaper);
 
-    // ✅ 3) Load AI evidence if exists
+    // 3) Load AI evidence if exists
     const evRes = await fetch(
       `${process.env.NEXT_PUBLIC_API_URL}/papers/summaries/${pmid}`,
       { cache: "no-store" }
@@ -71,17 +68,15 @@ export default function PaperPage() {
     setLoading(false);
   }, [pmid]);
 
-  // Trigger summarize
   const handleSummarize = async () => {
     setSummarizing(true);
+
     await fetch(`${process.env.NEXT_PUBLIC_API_URL}/papers/summarize/${pmid}`, {
       method: "POST",
     });
 
-    setTimeout(async () => {
-      await loadData();
-      setSummarizing(false);
-    }, 2000);
+    setTimeout(loadData, 1700);
+    setTimeout(() => setSummarizing(false), 2000);
   };
 
   useEffect(() => {
@@ -91,7 +86,7 @@ export default function PaperPage() {
   if (loading) {
     return (
       <div className="mx-auto max-w-3xl px-6 py-10 text-sm opacity-70">
-        Loading paper details…
+        Loading paper…
       </div>
     );
   }
@@ -113,31 +108,33 @@ export default function PaperPage() {
       </h1>
 
       <div className="mt-4 rounded-lg border p-4 bg-white dark:bg-slate-900">
+        {/* Title + Metadata */}
         <div className="text-xl font-medium">
-          {title || "Title unavailable"}
+          {title ?? "Title unavailable"}
         </div>
 
         <div className="mt-2 text-sm text-slate-600 dark:text-slate-300">
-          {authors || "Unknown authors"}
+          {authors ?? "Unknown authors"}
         </div>
 
         <div className="mt-1 text-xs text-slate-500">
-          {journal || "Unknown journal"} • {year || "n.d."}
+          {journal ?? "Unknown journal"} • {year ?? "n.d."}
         </div>
 
+        {/* Abstract */}
         <h2 className="mt-6 font-semibold">Abstract</h2>
         <p className="mt-1 text-sm text-slate-700 dark:text-slate-300 whitespace-pre-line">
-          {abstract || "No abstract available."}
+          {abstract ?? "No abstract available."}
         </p>
 
-        {/* -------- AI SUMMARY BLOCK -------- */}
+        {/* AI Summary */}
         <div className="mt-8 border-t pt-6">
           <h2 className="font-semibold text-lg mb-3 flex items-center gap-2">
             🔬 AI Mechanistic Summary
           </h2>
 
           {evidence?.one_sentence ? (
-            <div className="space-y-4 text-sm">
+            <div className="space-y-5 text-sm">
               <p className="italic text-slate-700 dark:text-slate-200">
                 “{evidence.one_sentence}”
               </p>
@@ -160,16 +157,14 @@ export default function PaperPage() {
                 </div>
               )}
 
-              {/* ✅ Confidence Bar */}
               <ConfidenceBar confidence={evidence.confidence} />
 
-              {/* ✅ Smart Chip Lists */}
               <SmartChipList items={evidence.mechanisms} title="Mechanisms" />
               <SmartChipList items={evidence.biomarkers} title="Biomarkers" />
 
+              {/* Mini Graph */}
               <PaperMiniGraph pmid={pmid} />
 
-              {/* ✅ Last Updated */}
               {evidence.created_at && (
                 <div className="text-xs text-slate-400">
                   Updated {timeAgo(evidence.created_at)}
@@ -182,7 +177,6 @@ export default function PaperPage() {
             </div>
           )}
 
-          {/* ✅ Generate Summary (first time) */}
           {!evidence?.one_sentence && internalPaper && (
             <button
               onClick={handleSummarize}
@@ -194,25 +188,25 @@ export default function PaperPage() {
           )}
         </div>
 
-        {/* ✅ Refresh Summary (if exists) */}
+        {/* Refresh Button */}
         {evidence?.one_sentence && internalPaper && (
           <div className="mt-4">
             <GenerateEvidenceButton
               pmid={pmid}
-              onComplete={() => loadData()}
+              onComplete={loadData}
               label="↻ Refresh Summary"
               variant="refresh"
             />
           </div>
         )}
 
-        {/* ✅ Link to source */}
+        {/* View on PMC */}
         {link && (
           <a
             href={link}
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-4 inline-block text-blue-600 dark:text-blue-400 underline underline-offset-2 cursor-pointer"
+            className="mt-6 inline-block text-blue-600 dark:text-blue-400 underline underline-offset-2 cursor-pointer"
           >
             View on Europe PMC →
           </a>

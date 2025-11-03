@@ -29,21 +29,24 @@ interface GraphData {
 
 export default function PaperMiniGraph({ pmid }: { pmid: string }) {
   const [data, setData] = useState<GraphData>({ nodes: [], links: [] });
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/graph/paper/${pmid}`, {
       cache: "no-store",
     })
       .then((r) => r.json())
-      .then((d: GraphData) => setData(d));
+      .then((d: GraphData) => {
+        setData(d);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
   }, [pmid]);
-
-  if (!data.nodes.length) return null;
 
   const drawNode = (
     node: GraphNode,
     ctx: CanvasRenderingContext2D,
-    _globalScale: number
+    _scale: number
   ) => {
     const size = node.type === "paper" ? 8 : 5;
 
@@ -60,19 +63,39 @@ export default function PaperMiniGraph({ pmid }: { pmid: string }) {
   };
 
   return (
-    <div className="mt-6 rounded border">
-      <div className="px-3 py-2 text-xs text-slate-500 border-b">
-        Mechanisms & Biomarkers
+    <div className="mt-8 rounded-lg border bg-white dark:bg-slate-900">
+      <div className="px-3 py-2 text-xs font-medium text-slate-600 dark:text-slate-300 border-b">
+        Mechanisms & Biomarkers Network
       </div>
-      <div className="h-64">
-        <ForceGraph2D
-          graphData={data}
-          nodeRelSize={4}
-          cooldownTicks={40}
-          nodeCanvasObject={(node, ctx, scale) =>
-            drawNode(node as GraphNode, ctx, scale)
-          }
-        />
+
+      <div
+        className="relative w-full"
+        style={{ height: "240px" }} // ✅ fixed height for mini graph
+      >
+        {loading && (
+          <div className="absolute inset-0 flex items-center justify-center text-xs text-slate-400">
+            Building graph…
+          </div>
+        )}
+
+        {!loading && data.nodes.length === 0 && (
+          <div className="absolute inset-0 flex items-center justify-center text-xs text-slate-400">
+            No mechanistic links yet.
+          </div>
+        )}
+
+        {data.nodes.length > 0 && (
+          <ForceGraph2D
+            graphData={data}
+            nodeRelSize={4}
+            cooldownTicks={40}
+            linkColor={() => "rgba(148,163,184,0.4)"}
+            linkWidth={1}
+            nodeCanvasObject={(node, ctx, scale) =>
+              drawNode(node as GraphNode, ctx, scale)
+            }
+          />
+        )}
       </div>
     </div>
   );
