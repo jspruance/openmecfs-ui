@@ -9,6 +9,7 @@ import {
 import GenerateEvidenceButton from "@/components/GenerateEvidenceButton";
 import ConfidenceBar from "@/components/ConfidenceBar";
 import SmartChipList from "@/components/SmartChipList";
+import { timeAgo } from "@/lib/timeAgo";
 
 interface InternalPaper {
   pmid: string;
@@ -164,7 +165,7 @@ export default function PaperPage() {
               {/* ✅ Last Updated */}
               {evidence.created_at && (
                 <div className="text-xs text-slate-400">
-                  Updated {new Date(evidence.created_at).toLocaleDateString()}
+                  Updated {timeAgo(evidence.created_at)}
                 </div>
               )}
             </div>
