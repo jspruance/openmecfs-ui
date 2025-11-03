@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useParams } from "next/navigation";
+import dynamic from "next/dynamic";
 import {
   fetchEuropePmcPaper,
   type EuropePmcPaper,
@@ -11,6 +12,9 @@ import ConfidenceBar from "@/components/ConfidenceBar";
 import SmartChipList from "@/components/SmartChipList";
 import { timeAgo } from "@/lib/timeAgo";
 import PaperMiniGraph from "@/components/PaperMiniGraph";
+const ForceGraph2D = dynamic(() => import("react-force-graph-2d"), {
+  ssr: false,
+});
 
 interface InternalPaper {
   pmid: string;

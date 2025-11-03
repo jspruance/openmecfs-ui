@@ -3,10 +3,9 @@
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 
-const ForceGraph2D = dynamic(
-  () => import("react-force-graph").then((m) => m.ForceGraph2D),
-  { ssr: false }
-);
+const ForceGraph2D = dynamic(() => import("react-force-graph-2d"), {
+  ssr: false,
+});
 
 interface GraphNode {
   id: string;
