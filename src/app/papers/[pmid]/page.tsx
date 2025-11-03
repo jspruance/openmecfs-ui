@@ -2,12 +2,15 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useParams } from "next/navigation";
-import { fetchEuropePmcPaper, type EuropePmcPaper } from "@/lib/papers/europePmc";
+import {
+  fetchEuropePmcPaper,
+  type EuropePmcPaper,
+} from "@/lib/papers/europePmc";
 import EvidenceChips from "@/components/EvidenceChips";
 import GenerateEvidenceButton from "@/components/GenerateEvidenceButton";
 
 interface InternalPaper {
-  id: string;
+  pmid: string;
   [key: string]: unknown;
 }
 
@@ -23,30 +26,31 @@ export default function PaperPage() {
   const pmid = params.pmid as string;
 
   const [paper, setPaper] = useState<EuropePmcPaper | null>(null);
-  const [internalPaper, setInternalPaper] = useState<InternalPaper | null>(null);
+  const [internalPaper, setInternalPaper] = useState<InternalPaper | null>(
+    null
+  );
   const [evidence, setEvidence] = useState<Evidence | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Fetch both external PMC + internal DB record
   const loadData = useCallback(async () => {
     setLoading(true);
 
-    // 1️⃣ External fetch (PMC)
+    // 1️⃣ Fetch external PMC metadata
     const external = await fetchEuropePmcPaper(pmid);
-
     setPaper(external);
 
-    // 2️⃣ Ensure internal paper exists in Supabase
+    // 2️⃣ Ensure paper exists in our database
     const dbRes = await fetch(
       `${process.env.NEXT_PUBLIC_API_URL}/papers/sync/${pmid}`,
       { method: "POST" }
     );
+
     const dbPaper = (await dbRes.json()) as InternalPaper;
     setInternalPaper(dbPaper);
 
-    // 3️⃣ Fetch existing evidence if exists
+    // 3️⃣ Load existing AI evidence if present
     const evRes = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/papers/${dbPaper.id}/summaries`,
+      `${process.env.NEXT_PUBLIC_API_URL}/papers/summaries/${pmid}`,
       { cache: "no-store" }
     ).catch(() => null);
 
@@ -63,7 +67,7 @@ export default function PaperPage() {
   if (loading) {
     return (
       <div className="mx-auto max-w-3xl px-6 py-10 text-sm opacity-70">
-        Loading paper details...
+        Loading paper details…
       </div>
     );
   }
@@ -102,12 +106,9 @@ export default function PaperPage() {
           {abstract || "No abstract available."}
         </p>
 
-        {/* Evidence Engine actions & display */}
+        {/* Evidence Engine */}
         {internalPaper && (
-          <GenerateEvidenceButton
-            paperId={internalPaper.id}
-            onComplete={() => loadData()}
-          />
+          <GenerateEvidenceButton pmid={pmid} onComplete={() => loadData()} />
         )}
 
         {evidence && (
@@ -124,7 +125,6 @@ export default function PaperPage() {
             target="_blank"
             rel="noopener noreferrer"
             className="mt-4 inline-block text-blue-600 dark:text-blue-400 underline underline-offset-2"
-            style={{ cursor: "pointer" }}
           >
             View on Europe PMC →
           </a>
