@@ -37,4 +37,11 @@ export async function searchPapers(query: string) {
   return res.data;
 }
 
+export async function fetchPaperSummary(pmid: string) {
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/papers/summaries/${pmid}`
+  );
+  return res.json();
+}
+
 export default api;

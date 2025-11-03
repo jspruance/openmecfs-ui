@@ -15,10 +15,13 @@ interface InternalPaper {
 }
 
 interface Evidence {
+  one_sentence?: string;
+  technical_summary?: string;
+  patient_summary?: string;
   mechanisms?: string[];
   biomarkers?: string[];
   confidence?: number;
-  [key: string]: unknown;
+  status?: string;
 }
 
 export default function PaperPage() {
@@ -31,6 +34,7 @@ export default function PaperPage() {
   );
   const [evidence, setEvidence] = useState<Evidence | null>(null);
   const [loading, setLoading] = useState(true);
+  const [summarizing, setSummarizing] = useState(false);
 
   const loadData = useCallback(async () => {
     setLoading(true);
@@ -59,6 +63,20 @@ export default function PaperPage() {
 
     setLoading(false);
   }, [pmid]);
+
+  // Trigger summarize
+  const handleSummarize = async () => {
+    setSummarizing(true);
+    await fetch(`${process.env.NEXT_PUBLIC_API_URL}/papers/summarize/${pmid}`, {
+      method: "POST",
+    });
+
+    // wait a moment, then reload
+    setTimeout(async () => {
+      await loadData();
+      setSummarizing(false);
+    }, 2000);
+  };
 
   useEffect(() => {
     loadData();
@@ -106,19 +124,69 @@ export default function PaperPage() {
           {abstract || "No abstract available."}
         </p>
 
-        {/* Evidence Engine */}
+        {/* -------- AI SUMMARY BLOCK -------- */}
+        <div className="mt-8 border-t pt-6">
+          <h2 className="font-semibold text-lg mb-3 flex items-center gap-2">
+            🔬 AI Mechanistic Summary
+          </h2>
+
+          {evidence?.one_sentence ? (
+            <div className="space-y-4 text-sm">
+              <p className="italic text-slate-700 dark:text-slate-200">
+                “{evidence.one_sentence}”
+              </p>
+
+              {evidence.technical_summary && (
+                <div>
+                  <div className="font-medium mb-1">Technical Summary</div>
+                  <p className="text-slate-700 dark:text-slate-300">
+                    {evidence.technical_summary}
+                  </p>
+                </div>
+              )}
+
+              {evidence.patient_summary && (
+                <div>
+                  <div className="font-medium mb-1">Patient Summary</div>
+                  <p className="text-slate-700 dark:text-slate-300">
+                    {evidence.patient_summary}
+                  </p>
+                </div>
+              )}
+
+              {/* AI Tags */}
+              <EvidenceChips
+                mechanisms={evidence.mechanisms}
+                biomarkers={evidence.biomarkers}
+                confidence={evidence.confidence}
+              />
+            </div>
+          ) : (
+            <div className="text-sm text-slate-500 italic">
+              No AI summary exists yet.
+            </div>
+          )}
+
+          {/* Summarize Button */}
+          {!evidence?.one_sentence && internalPaper && (
+            <button
+              onClick={handleSummarize}
+              disabled={summarizing}
+              className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 disabled:opacity-50"
+            >
+              {summarizing ? "Summarizing…" : "✨ Generate AI Summary"}
+            </button>
+          )}
+        </div>
+
+        {/* EVIDENCE ENGINE BUTTON (legacy) */}
         {internalPaper && (
-          <GenerateEvidenceButton pmid={pmid} onComplete={() => loadData()} />
+          <div className="mt-8">
+            <GenerateEvidenceButton pmid={pmid} onComplete={() => loadData()} />
+          </div>
         )}
 
-        {evidence && (
-          <EvidenceChips
-            mechanisms={evidence.mechanisms}
-            biomarkers={evidence.biomarkers}
-            confidence={evidence.confidence}
-          />
-        )}
-
+        {/* Original PMC link */}
         {link && (
           <a
             href={link}
