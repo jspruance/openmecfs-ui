@@ -5,6 +5,7 @@ import { useState } from "react";
 interface Props {
   pmid: string;
   onComplete: () => void;
+  label?: string; // ✅ new optional prop
 }
 
 export default function GenerateEvidenceButton({ pmid, onComplete }: Props) {
