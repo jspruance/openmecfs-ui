@@ -8,55 +8,71 @@ const ForceGraph2D = dynamic(
   { ssr: false }
 );
 
-type Node = {
+interface GraphNode {
   id: string;
   label: string;
   type: "paper" | "mechanism" | "biomarker";
   size?: number;
-};
-type Link = { source: string; target: string; type: string };
+  x?: number;
+  y?: number;
+}
+
+interface GraphLink {
+  source: string;
+  target: string;
+  type: string;
+}
+
+interface GraphData {
+  nodes: GraphNode[];
+  links: GraphLink[];
+}
 
 export default function PaperMiniGraph({ pmid }: { pmid: string }) {
-  const [data, setData] = useState<{ nodes: Node[]; links: Link[] }>({
-    nodes: [],
-    links: [],
-  });
+  const [data, setData] = useState<GraphData>({ nodes: [], links: [] });
 
   useEffect(() => {
-    const url = `${process.env.NEXT_PUBLIC_API_URL}/graph/paper/${pmid}`;
-    fetch(url, { cache: "no-store" })
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/graph/paper/${pmid}`, {
+      cache: "no-store",
+    })
       .then((r) => r.json())
-      .then(setData);
+      .then((d: GraphData) => setData(d));
   }, [pmid]);
 
   if (!data.nodes.length) return null;
 
-  const nodeCanvasObject = (node: any, ctx: CanvasRenderingContext2D) => {
-    const n = node as Node;
-    const size = n.type === "paper" ? 8 : 5;
+  const drawNode = (
+    node: GraphNode,
+    ctx: CanvasRenderingContext2D,
+    _globalScale: number
+  ) => {
+    const size = node.type === "paper" ? 8 : 5;
+
     const colors = {
       paper: "#2563eb",
       mechanism: "#f59e0b",
       biomarker: "#10b981",
     };
 
-    ctx.fillStyle = colors[n.type] || "#64748b";
+    ctx.fillStyle = colors[node.type] || "#64748b";
     ctx.beginPath();
-    ctx.arc(node.x, node.y, size, 0, 2 * Math.PI, false);
+    ctx.arc(node.x ?? 0, node.y ?? 0, size, 0, 2 * Math.PI);
     ctx.fill();
   };
 
   return (
     <div className="mt-6 rounded border">
       <div className="px-3 py-2 text-xs text-slate-500 border-b">
-        Mechanisms & Biomarkers (mini graph)
+        Mechanisms & Biomarkers
       </div>
       <div className="h-64">
         <ForceGraph2D
           graphData={data}
           nodeRelSize={4}
           cooldownTicks={40}
-          nodeCanvasObject={nodeCanvasObject}
+          nodeCanvasObject={(node, ctx, scale) =>
+            drawNode(node as GraphNode, ctx, scale)
+          }
         />
       </div>
     </div>
