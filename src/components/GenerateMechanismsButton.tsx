@@ -23,8 +23,9 @@ export default function GenerateMechanismsButton({
       if (!res.ok) throw new Error(json.detail || "Extraction failed");
       setNote("✅ Mechanistic evidence extracted");
       onDone?.();
-    } catch (e: any) {
-      setNote(`⚠️ ${e.message}`);
+    } catch (e) {
+      const message = e instanceof Error ? e.message : String(e);
+      setNote(`⚠️ ${message}`);
     } finally {
       setLoading(false);
     }
