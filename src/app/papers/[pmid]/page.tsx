@@ -193,6 +193,7 @@ export default function PaperPage() {
               pmid={pmid}
               onComplete={() => loadData()}
               label="↻ Refresh Summary"
+              variant="refresh"
             />
           </div>
         )}
