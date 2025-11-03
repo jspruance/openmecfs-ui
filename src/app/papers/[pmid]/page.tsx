@@ -182,7 +182,7 @@ export default function PaperPage() {
         {/* REFRESH SUMMARY BUTTON (legacy) */}
         {/* Refresh summary ONLY if one already exists */}
         {evidence?.one_sentence && internalPaper && (
-          <div className="mt-3">
+          <div className="mt-4">
             <GenerateEvidenceButton
               pmid={pmid}
               onComplete={() => loadData()}

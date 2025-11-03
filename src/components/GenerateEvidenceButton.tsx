@@ -5,10 +5,14 @@ import { useState } from "react";
 interface Props {
   pmid: string;
   onComplete: () => void;
-  label?: string; // ✅ new optional prop
+  label?: string; // optional — used for "↻ Refresh Summary"
 }
 
-export default function GenerateEvidenceButton({ pmid, onComplete }: Props) {
+export default function GenerateEvidenceButton({
+  pmid,
+  onComplete,
+  label,
+}: Props) {
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState<"idle" | "cached" | "done" | "error">(
     "idle"
@@ -27,7 +31,7 @@ export default function GenerateEvidenceButton({ pmid, onComplete }: Props) {
       );
 
       if (res.status === 409) {
-        // cached / already exists
+        // Summary already exists (hash match)
         setStatus("cached");
       } else if (!res.ok) {
         setStatus("error");
@@ -35,7 +39,7 @@ export default function GenerateEvidenceButton({ pmid, onComplete }: Props) {
         setStatus("done");
       }
 
-      // ✅ Wait briefly so DB writes complete, then refresh
+      // allow backend to write before refresh
       setTimeout(() => {
         onComplete?.();
       }, 1200);
@@ -56,7 +60,7 @@ export default function GenerateEvidenceButton({ pmid, onComplete }: Props) {
           cursor-pointer
           inline-flex items-center gap-2
           px-3 py-2 text-sm
-          bg-purple-600 text-white rounded-lg font-medium
+          bg-indigo-600 text-white rounded-lg font-medium
           hover:opacity-80 
           disabled:opacity-50 disabled:cursor-not-allowed
           transition
@@ -83,10 +87,10 @@ export default function GenerateEvidenceButton({ pmid, onComplete }: Props) {
                 d="M4 12a8 8 0 018-8v4A4 4 0 008 12H4z"
               />
             </svg>
-            Generating…
+            {label ? "Refreshing…" : "Generating…"}
           </>
         ) : (
-          "Generate Mechanistic Evidence"
+          label ?? "✨ Generate AI Summary"
         )}
       </button>
 
@@ -96,7 +100,7 @@ export default function GenerateEvidenceButton({ pmid, onComplete }: Props) {
         </div>
       )}
       {status === "done" && (
-        <div className="text-xs text-green-500 mt-2">✅ Evidence generated</div>
+        <div className="text-xs text-green-500 mt-2">✅ Summary updated</div>
       )}
       {status === "error" && (
         <div className="text-xs text-red-500 mt-2">❌ Error — try again</div>
