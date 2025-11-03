@@ -89,8 +89,8 @@ export default function PaperMiniGraph({ pmid }: { pmid: string }) {
             graphData={data}
             nodeRelSize={4}
             cooldownTicks={40}
-            linkColor={() => "rgba(148,163,184,0.4)"}
-            linkWidth={1}
+            // linkColor={() => "rgba(148,163,184,0.4)"}
+            // linkWidth={1}
             nodeCanvasObject={(node, ctx, scale) =>
               drawNode(node as GraphNode, ctx, scale)
             }
