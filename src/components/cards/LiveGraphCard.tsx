@@ -58,7 +58,6 @@ export default function LiveGraphCard() {
           height={280}
           nodeRelSize={6}
           backgroundColor={"#ffffff"}
-          linkColor={() => "#999"}
           nodeLabel={(n: Node) => n.label || n.id}
         />
       </div>
