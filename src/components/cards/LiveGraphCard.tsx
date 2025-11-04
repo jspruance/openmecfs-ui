@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import dynamic from "next/dynamic";
-import type { ForceGraphMethods } from "react-force-graph-2d";
+import type { ForceGraphInstance } from "react-force-graph";
 
 const ForceGraph2D = dynamic(() => import("react-force-graph-2d"), {
   ssr: false,
@@ -27,7 +27,7 @@ interface Link {
 
 export default function LiveGraphCard() {
   const containerRef = useRef<HTMLDivElement>(null);
-  const fgRef = useRef<ForceGraphMethods<Node, Link> | null>(null);
+  const fgRef = useRef<ForceGraphInstance | null>(null);
 
   const [size, setSize] = useState({ w: 0, h: 0 });
   const [data, setData] = useState<{ nodes: Node[]; links: Link[] }>({
@@ -35,7 +35,6 @@ export default function LiveGraphCard() {
     links: [],
   });
 
-  // ✅ load graph data
   useEffect(() => {
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/graph/global`)
       .then((r) => r.json())
@@ -43,33 +42,23 @@ export default function LiveGraphCard() {
         const nodes: Node[] = res.nodes || [];
         const links: Link[] = res.links || [];
 
-        // ✅ Keep ONLY:
-        // hubs
-        // papers that have edges
         const connectedPapers = new Set(
           links.filter((l) => l.type === "paper-mechanism").map((l) => l.source)
         );
 
-        const filteredNodes = nodes.filter(
-          (n) => n.type === "hub" || connectedPapers.has(n.id)
-        );
-
-        // ✅ Assign visual weights
-        const finalNodes = filteredNodes.map((n) => ({
-          ...n,
-          val: n.type === "hub" ? 4 : 1.2,
-        }));
+        const finalNodes = nodes
+          .filter((n) => n.type === "hub" || connectedPapers.has(n.id))
+          .map((n) => ({
+            ...n,
+            val: n.type === "hub" ? 4 : 1.2,
+          }));
 
         setData({ nodes: finalNodes, links });
 
-        // ✅ Wait a tick then center graph
-        setTimeout(() => {
-          fgRef.current?.zoomToFit(400, 50);
-        }, 400);
+        setTimeout(() => fgRef.current?.zoomToFit(400, 50), 400);
       });
   }, []);
 
-  // ✅ resizing observer
   useEffect(() => {
     if (!containerRef.current) return;
     const obs = new ResizeObserver(() => {
@@ -82,7 +71,6 @@ export default function LiveGraphCard() {
     return () => obs.disconnect();
   }, []);
 
-  // 🎨 node draw
   const drawNode = (
     node: Node & { x: number; y: number },
     ctx: CanvasRenderingContext2D,
