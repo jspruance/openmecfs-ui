@@ -32,7 +32,6 @@ export default function LiveGraphCard() {
     links: [],
   });
 
-  // fetch graph data
   useEffect(() => {
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/graph/global`)
       .then((r) => r.json())
@@ -61,7 +60,7 @@ export default function LiveGraphCard() {
       });
   }, []);
 
-  // Track container size for auto-resize
+  // Track container size
   useEffect(() => {
     if (!containerRef.current) return;
     const obs = new ResizeObserver(() => {
@@ -84,7 +83,7 @@ export default function LiveGraphCard() {
 
     const COLORS = {
       hub: "#f59e0b", // amber
-      paper: "#2563eb", // indigo blue
+      paper: "#2563eb", // blue
       text: "#1e293b",
     };
 
@@ -120,8 +119,8 @@ export default function LiveGraphCard() {
             graphData={data}
             nodeRelSize={4}
             linkColor={() => "#CBD5E1"}
-            linkWidth={() => 1.2}
             linkOpacity={0.7}
+            linkWidth={() => 1.2}
             backgroundColor="#ffffff"
             cooldownTicks={80}
             d3VelocityDecay={0.45}
