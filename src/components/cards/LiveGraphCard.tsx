@@ -45,7 +45,7 @@ export default function LiveGraphCard() {
         );
 
         const filteredNodes = nodes.filter(
-          (n) => n.type === "hub" || connectedPapers.has(n.id)
+          (n: Node) => n.type === "hub" || connectedPapers.has(n.id)
         );
 
         setData({
