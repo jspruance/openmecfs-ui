@@ -3,14 +3,17 @@
 
 import { useEffect, useState, useRef } from "react";
 import dynamic from "next/dynamic";
+import * as d3 from "d3-force";
 
+// Dynamic import of force-graph (client only)
 const ForceGraph2D: any = dynamic(() => import("react-force-graph-2d"), {
   ssr: false,
 });
 
 interface Node {
   id: string;
-  label?: string;
+  label?: string; // ✅ human label (mechanism or paper summary)
+  fullLabel?: string; // ✅ full title for tooltip
   type: "hub" | "paper";
   x?: number;
   y?: number;
@@ -33,7 +36,7 @@ export default function LiveGraphCard() {
     links: [],
   });
 
-  // ✅ Debug mode: show all nodes (will add toggle later)
+  // ✅ Load graph data
   useEffect(() => {
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/graph/global`)
       .then((r) => r.json())
@@ -41,52 +44,69 @@ export default function LiveGraphCard() {
         const nodes: Node[] = res.nodes || [];
         const links: Link[] = res.links || [];
 
-        const finalNodes = nodes.map((n: Node) => ({
+        // ✅ enhance paper nodes with one-sentence mechanism summary
+        const enhancedNodes = nodes.map((n: Node) => ({
           ...n,
-          val: n.type === "hub" ? 4 : 1.2,
+          // Hub label stays; paper label becomes one-sentence summary
+          label:
+            n.type === "hub"
+              ? n.label
+              : res.paperSummaries?.[n.id]?.one_sentence ?? "(summary pending)",
+          fullLabel: res.paperSummaries?.[n.id]?.title ?? "Unknown title",
+          val: n.type === "hub" ? 8 : 2, // mass
         }));
 
-        setData({ nodes: finalNodes, links });
+        // ✅ Filter: hubs + papers linked to hubs
+        const connectedPapers = new Set(
+          links.filter((l) => l.type === "paper-mechanism").map((l) => l.source)
+        );
 
-        setTimeout(() => {
-          try {
-            fgRef.current?.zoomToFit?.(600, 80);
-          } catch {}
-        }, 800);
+        const filteredNodes = enhancedNodes.filter(
+          (n) => n.type === "hub" || connectedPapers.has(n.id)
+        );
+
+        setData({ nodes: filteredNodes, links });
+
+        // ✅ auto-fit view
+        setTimeout(() => fgRef.current?.zoomToFit?.(800, 120), 800);
       });
   }, []);
 
+  // ✅ Track container resize
   useEffect(() => {
     if (!containerRef.current) return;
-
     const obs = new ResizeObserver(() => {
       setSize({
         w: containerRef.current!.clientWidth,
         h: containerRef.current!.clientHeight,
       });
     });
-
     obs.observe(containerRef.current);
     return () => obs.disconnect();
   }, []);
 
+  // ✅ Space out papers around hubs
+  useEffect(() => {
+    if (!fgRef.current) return;
+    fgRef.current.d3Force(
+      "collision",
+      d3.forceCollide((n: Node) => (n.type === "hub" ? 32 : 18))
+    );
+    fgRef.current.d3Force("charge", d3.forceManyBody().strength(-90));
+  }, [data]);
+
+  // ✅ Draw Node
   const drawNode = (
     node: Node & { x: number; y: number },
     ctx: CanvasRenderingContext2D,
     scale: number
   ) => {
     const isHub = node.type === "hub";
-    const radius = isHub ? 14 : 6;
-
-    const COLORS = {
-      hub: "#f59e0b",
-      paper: "#2563eb",
-      text: "#1e293b",
-    };
+    const radius = isHub ? 16 : 8;
 
     ctx.beginPath();
     ctx.arc(node.x, node.y, radius, 0, 2 * Math.PI);
-    ctx.fillStyle = isHub ? COLORS.hub : COLORS.paper;
+    ctx.fillStyle = isHub ? "#f59e0b" : "#2563eb";
     ctx.fill();
 
     if (node.label) {
@@ -94,7 +114,8 @@ export default function LiveGraphCard() {
       ctx.font = `${fontSize}px Inter, sans-serif`;
       ctx.textAlign = "left";
       ctx.textBaseline = "middle";
-      ctx.fillStyle = COLORS.text;
+      ctx.fillStyle = "#1e293b";
+
       ctx.fillText(node.label, node.x + radius + 4, node.y);
     }
   };
@@ -103,9 +124,6 @@ export default function LiveGraphCard() {
     <div className="rounded-xl border border-gray-200 bg-white shadow-sm p-4">
       <div className="text-sm font-semibold mb-2 flex items-center gap-2">
         🧠 Live Mechanism Network
-        <span className="text-xs font-normal text-gray-500">
-          (debug mode — showing all papers)
-        </span>
       </div>
 
       <div
@@ -125,19 +143,32 @@ export default function LiveGraphCard() {
             linkWidth={() => 1.2}
             cooldownTicks={120}
             d3VelocityDecay={0.35}
-            nodeCanvasObject={(
-              node: Node & { x: number; y: number },
-              ctx: CanvasRenderingContext2D,
-              scale: number
-            ) => drawNode(node, ctx, scale)}
-            onNodeHover={(n: Node | null) => {
+            nodeCanvasObject={(node, ctx, scale) =>
+              drawNode(node as Node & { x: number; y: number }, ctx, scale)
+            }
+            onNodeHover={(n: any) => {
               document.body.style.cursor = n ? "pointer" : "default";
+              if (n && n.fullLabel) {
+                // tooltip
+                const tip = document.getElementById("fg-tip");
+                if (tip) {
+                  tip.style.display = "block";
+                  tip.innerHTML = n.fullLabel;
+                }
+              }
             }}
-            onNodeClick={(n: Node) => {
-              if (n.type === "paper") window.open(`/papers/${n.id}`, "_blank");
+            onNodeClick={(n: any) => {
+              if (n.type === "paper") {
+                window.open(`/papers/${n.id}`, "_blank");
+              }
             }}
           />
         )}
+        <div
+          id="fg-tip"
+          className="absolute bg-white text-xs border rounded px-2 py-1 shadow"
+          style={{ display: "none", pointerEvents: "none" }}
+        />
       </div>
     </div>
   );
