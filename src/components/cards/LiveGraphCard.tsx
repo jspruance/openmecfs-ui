@@ -59,7 +59,7 @@ export default function LiveGraphCard() {
           nodeRelSize={6}
           backgroundColor={"#ffffff"}
           linkColor={() => "#999"}
-          nodeLabel={(n: any) => n.label || n.id}
+          nodeLabel={(n: Node) => n.label || n.id}
         />
       </div>
     </div>

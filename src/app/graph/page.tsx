@@ -75,11 +75,6 @@ export default function GraphPage() {
     }
   };
 
-  const linkColor = (link: GraphLink) =>
-    link.type === "paper-mech"
-      ? "rgba(245,158,11,0.5)"
-      : "rgba(16,185,129,0.5)";
-
   return (
     <main className="mx-auto max-w-6xl px-4 py-6">
       <h1 className="text-2xl font-semibold mb-1">Mechanism Knowledge Graph</h1>

@@ -1,5 +1,3 @@
-import Link from "next/link";
-
 export default function ResearchHero() {
   return (
     <header className="rounded-2xl bg-gradient-to-r from-[#007BFF] to-[#1E88E5] text-white p-8 mb-8 shadow-sm">
