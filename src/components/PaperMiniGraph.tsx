@@ -1,9 +1,8 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
-// ✅ Load ONLY the 2D bundle
 const ForceGraph2D = dynamic(() => import("react-force-graph-2d"), {
   ssr: false,
 });
@@ -12,7 +11,6 @@ interface GraphNode {
   id: string;
   label: string;
   type: "paper" | "mechanism" | "biomarker";
-  size?: number;
   x?: number;
   y?: number;
 }
@@ -20,7 +18,6 @@ interface GraphNode {
 interface GraphLink {
   source: string;
   target: string;
-  type: string;
 }
 
 interface GraphData {
@@ -29,64 +26,76 @@ interface GraphData {
 }
 
 export default function PaperMiniGraph({ pmid }: { pmid: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [size, setSize] = useState({ w: 0, h: 0 });
   const [data, setData] = useState<GraphData>({ nodes: [], links: [] });
 
+  // ✅ Resize observer
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/graph/paper/${pmid}`, {
-      cache: "no-store",
-    })
+    if (!ref.current) return;
+    const obs = new ResizeObserver(() => {
+      setSize({
+        w: ref.current!.clientWidth,
+        h: ref.current!.clientHeight,
+      });
+    });
+    obs.observe(ref.current);
+    return () => obs.disconnect();
+  }, []);
+
+  // ✅ Fetch paper graph data
+  useEffect(() => {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/graph/paper/${pmid}`)
       .then((r) => r.json())
-      .then((d) => setData(d?.nodes?.length ? d : { nodes: [], links: [] }))
-      .catch(() => setData({ nodes: [], links: [] }));
+      .then((d) => setData(d ?? { nodes: [], links: [] }));
   }, [pmid]);
 
-  const isEmpty = data.nodes.length <= 1;
+  // ✅ Draw node + label
+  const drawNode = (
+    node: GraphNode,
+    ctx: CanvasRenderingContext2D,
+    scale: number
+  ) => {
+    const size = node.type === "paper" ? 8 : 5;
+    const colors: Record<GraphNode["type"], string> = {
+      paper: "#2563eb",
+      mechanism: "#f59e0b",
+      biomarker: "#10b981",
+    };
 
-  if (isEmpty) {
-    return (
-      <div className="mt-6 rounded border bg-white dark:bg-slate-900 overflow-hidden">
-        <div className="px-3 py-2 text-xs text-slate-500 border-b">
-          Mechanisms & Biomarkers Network
-        </div>
-        <div className="h-40 flex items-center justify-center text-xs text-slate-400 text-center">
-          🧠 Mechanistic network coming soon
-        </div>
-      </div>
-    );
-  }
-
-  const drawNode = (node: GraphNode, ctx: CanvasRenderingContext2D) => {
-    const size = node.type === "paper" ? 10 : 6;
-    const color =
-      node.type === "paper"
-        ? "#2563eb"
-        : node.type === "mechanism"
-        ? "#f59e0b"
-        : "#10b981";
-
-    ctx.fillStyle = color;
+    // circle
+    ctx.fillStyle = colors[node.type];
     ctx.beginPath();
     ctx.arc(node.x ?? 0, node.y ?? 0, size, 0, 2 * Math.PI);
     ctx.fill();
+
+    // text
+    const fontSize = 11 / scale;
+    ctx.font = `${fontSize}px Inter, sans-serif`;
+    ctx.fillStyle = "#334155";
+    ctx.textAlign = "left";
+    ctx.textBaseline = "middle";
+    ctx.fillText(node.label, (node.x ?? 0) + size + 4, node.y ?? 0);
   };
 
   return (
-    <div className="mt-6 rounded border bg-white dark:bg-slate-900 overflow-hidden">
-      <div className="px-3 py-2 text-xs text-slate-500 border-b">
-        Mechanisms & Biomarkers Network
-      </div>
-      <div className="h-64 w-full">
+    <div
+      ref={ref}
+      className="w-full h-60 border rounded bg-white dark:bg-slate-900 overflow-hidden relative"
+    >
+      {size.w > 0 && size.h > 0 && (
         <ForceGraph2D
+          width={size.w}
+          height={size.h}
           graphData={data}
           nodeRelSize={4}
-          cooldownTicks={30}
-          // linkColor={() => "rgba(148,163,184,0.4)"}
-          // linkWidth={() => 1}
-          // enablePanInteraction={false}
-          // enableZoomInteraction={false}
-          nodeCanvasObject={(node, ctx) => drawNode(node as GraphNode, ctx)}
+          cooldownTicks={20}
+          // ❌ Remove nodeLabel prop — manual labels are used instead
+          nodeCanvasObject={(node, ctx, scale) =>
+            drawNode(node as GraphNode, ctx, scale)
+          }
         />
-      </div>
+      )}
     </div>
   );
 }
