@@ -10,7 +10,7 @@ export default function ResearchHero() {
         treatment hypotheses, and AI-powered discovery tools.
       </p>
 
-      <div className="mt-5 flex flex-wrap gap-3">
+      {/* <div className="mt-5 flex flex-wrap gap-3">
         <Link
           href="/research/papers"
           className="cursor-pointer rounded-md bg-white/95 text-blue-900 px-4 py-2 font-semibold hover:scale-[1.02] transition"
@@ -52,7 +52,7 @@ export default function ResearchHero() {
         >
           AI Hypotheses
         </Link>
-      </div>
+      </div> */}
     </header>
   );
 }
