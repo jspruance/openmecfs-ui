@@ -46,14 +46,14 @@ export default function LiveGraphCard() {
           links.filter((l) => l.type === "paper-mechanism").map((l) => l.source)
         );
 
-        const finalNodes = nodes
+        const filteredNodes = nodes
           .filter((n) => n.type === "hub" || connectedPapers.has(n.id))
           .map((n) => ({
             ...n,
             val: n.type === "hub" ? 4 : 1.2,
           }));
 
-        setData({ nodes: finalNodes, links });
+        setData({ nodes: filteredNodes, links });
 
         setTimeout(() => fgRef.current?.zoomToFit(400, 50), 400);
       });
