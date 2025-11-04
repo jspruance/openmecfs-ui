@@ -1,8 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 declare module "react-force-graph-2d" {
-  import { ComponentType } from "react";
+  import { ComponentType, Ref } from "react";
+
+  export interface ForceGraphInstance {
+    zoomToFit: (duration?: number) => void;
+    d3ReheatSimulation: () => void;
+  }
 
   export interface ForceGraphProps {
+    ref?: Ref<ForceGraphInstance>;
     graphData: any;
     width?: number;
     height?: number;

@@ -24,14 +24,9 @@ interface Link {
   type: string;
 }
 
-interface ForceGraphRef {
-  zoomToFit: (duration?: number) => void;
-  d3ReheatSimulation: () => void;
-}
-
 export default function LiveGraphCard() {
   const containerRef = useRef<HTMLDivElement>(null);
-  const fgRef = useRef<ForceGraphRef | null>(null);
+  const fgRef = useRef<{ zoomToFit: (duration?: number) => void; d3ReheatSimulation: () => void } | null>(null);
 
   const [size, setSize] = useState({ w: 0, h: 0 });
   const [data, setData] = useState<{ nodes: Node[]; links: Link[] }>({
