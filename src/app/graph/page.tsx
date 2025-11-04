@@ -3,7 +3,7 @@
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 
-// ✅ Use pure 2D bundle — avoids rogue WebGL / icon weirdness
+// ✅ Pure 2D bundle — avoids rogue WebGL/WebVR overlays
 const ForceGraph2D = dynamic(() => import("react-force-graph-2d"), {
   ssr: false,
 });
@@ -44,7 +44,7 @@ export default function GraphPage() {
   const drawNode = (
     node: GraphNode,
     ctx: CanvasRenderingContext2D,
-    globalScale: number
+    scale: number
   ) => {
     const size = Math.max(4, Math.min(18, (node.size || 1) * 2));
 
@@ -59,18 +59,14 @@ export default function GraphPage() {
     ctx.arc(node.x ?? 0, node.y ?? 0, size, 0, 2 * Math.PI);
     ctx.fill();
 
-    // Label
     if (!node.label) return;
-    const fontSize = 12 / globalScale;
+    const fontSize = 12 / scale;
     ctx.font = `${fontSize}px Inter, sans-serif`;
     ctx.textAlign = "left";
     ctx.textBaseline = "middle";
     ctx.fillStyle = "#111827";
-    ctx.fillText(node.label, (node.x ?? 0) + size + 2, node.y ?? 0);
+    ctx.fillText(node.label, (node.x ?? 0) + size + 3, node.y ?? 0);
   };
-
-  const linkColor = (link: GraphLink) =>
-    link.type === "paper-mech" ? "#f59e0b66" : "#10b98166";
 
   const handleNodeClick = (node: GraphNode) => {
     if (node.type === "paper") {
@@ -79,6 +75,11 @@ export default function GraphPage() {
     }
   };
 
+  const linkColor = (link: GraphLink) =>
+    link.type === "paper-mech"
+      ? "rgba(245,158,11,0.5)"
+      : "rgba(16,185,129,0.5)";
+
   return (
     <main className="mx-auto max-w-6xl px-4 py-6">
       <h1 className="text-2xl font-semibold mb-1">Mechanism Knowledge Graph</h1>
@@ -86,7 +87,8 @@ export default function GraphPage() {
         Papers ↔ Mechanisms ↔ Biomarkers — click a paper to open it.
       </p>
 
-      <div className="h-[70vh] border rounded-md">
+      {/* ✅ Contain canvas, prevent overflow */}
+      <div className="h-[70vh] border rounded-md relative overflow-hidden bg-white dark:bg-slate-900">
         {loading ? (
           <div className="p-4 text-sm text-slate-500">Loading graph…</div>
         ) : (
@@ -94,7 +96,8 @@ export default function GraphPage() {
             graphData={data}
             nodeRelSize={4}
             cooldownTicks={60}
-            // linkColor={(l) => linkColor(l as GraphLink)}
+            linkColor={(l) => linkColor(l as GraphLink)}
+            linkWidth={1}
             nodeCanvasObject={(node, ctx, scale) =>
               drawNode(node as GraphNode, ctx, scale)
             }
