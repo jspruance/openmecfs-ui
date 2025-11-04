@@ -41,7 +41,7 @@ export default function LiveGraphCard() {
 
         // ✅ FILTER orphan papers (only show papers connected to hubs)
         const connectedPapers = new Set(
-          links.filter((l) => l.type === "paper-mechanism").map((l) => l.source)
+          links.filter((l: Link) => l.type === "paper-mechanism").map((l: Link) => l.source)
         );
 
         const filteredNodes = nodes.filter(
