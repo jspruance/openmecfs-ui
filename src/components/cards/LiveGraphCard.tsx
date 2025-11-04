@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 import dynamic from "next/dynamic";
 
-// ✅ Load force-graph only in browser
+// ✅ dynamically import ForceGraph2D (no SSR)
 const ForceGraph2D = dynamic(() => import("react-force-graph-2d"), {
   ssr: false,
 });
@@ -28,16 +28,19 @@ interface Link {
 export default function LiveGraphCard() {
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // ✅ We don't have official TS types for the instance → use generic type
-  const fgRef = useRef<{
-    zoomToFit: (ms?: number, padding?: number) => void;
-  } | null>(null);
+  // ✅ ref accepts unknown FG instance
+  const fgRef = useRef<unknown>(null);
 
   const [size, setSize] = useState({ w: 0, h: 0 });
   const [data, setData] = useState<{ nodes: Node[]; links: Link[] }>({
     nodes: [],
     links: [],
   });
+
+  // ✅ safe helper to call FG methods
+  const safeFG = fgRef.current as {
+    zoomToFit?: (ms?: number, padding?: number) => void;
+  } | null;
 
   useEffect(() => {
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/graph/global`)
@@ -59,12 +62,12 @@ export default function LiveGraphCard() {
 
         setData({ nodes: filteredNodes, links });
 
-        // ✅ Auto center when graph loads
-        setTimeout(() => fgRef.current?.zoomToFit(400, 50), 400);
+        setTimeout(() => {
+          if (safeFG?.zoomToFit) safeFG.zoomToFit(500, 60);
+        }, 400);
       });
   }, []);
 
-  // ✅ Resize observer for canvas
   useEffect(() => {
     if (!containerRef.current) return;
 
@@ -120,7 +123,7 @@ export default function LiveGraphCard() {
       >
         {size.w > 0 && size.h > 0 && (
           <ForceGraph2D
-            ref={fgRef}
+            ref={fgRef as any}
             width={size.w}
             height={size.h}
             graphData={data}
@@ -137,10 +140,8 @@ export default function LiveGraphCard() {
             onNodeHover={(n) => {
               document.body.style.cursor = n ? "pointer" : "default";
             }}
-            onNodeClick={(n) => {
-              if ((n as Node).type === "paper") {
-                window.open(`/papers/${(n as Node).id}`, "_blank");
-              }
+            onNodeClick={(n: any) => {
+              if (n.type === "paper") window.open(`/papers/${n.id}`, "_blank");
             }}
           />
         )}
