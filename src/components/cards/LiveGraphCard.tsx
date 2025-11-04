@@ -28,7 +28,7 @@ interface Link {
 
 export default function LiveGraphCard() {
   const containerRef = useRef<HTMLDivElement>(null);
-  const fgRef = useRef<any>(null); // ✅ nuke ForceGraph types
+  const fgRef = useRef<any>(null);
 
   const [size, setSize] = useState({ w: 0, h: 0 });
   const [data, setData] = useState<{ nodes: Node[]; links: Link[] }>({
@@ -130,13 +130,15 @@ export default function LiveGraphCard() {
             linkWidth={() => 1.2}
             cooldownTicks={80}
             d3VelocityDecay={0.4}
-            nodeCanvasObject={(node, ctx, scale) =>
-              drawNode(node as Node & { x: number; y: number }, ctx, scale)
-            }
-            onNodeHover={(n: any) => {
+            nodeCanvasObject={(
+              node: any,
+              ctx: CanvasRenderingContext2D,
+              scale: number
+            ) => drawNode(node as Node & { x: number; y: number }, ctx, scale)}
+            onNodeHover={(n: Node | null) => {
               document.body.style.cursor = n ? "pointer" : "default";
             }}
-            onNodeClick={(n: any) => {
+            onNodeClick={(n: Node) => {
               if (n.type === "paper") window.open(`/papers/${n.id}`, "_blank");
             }}
           />
