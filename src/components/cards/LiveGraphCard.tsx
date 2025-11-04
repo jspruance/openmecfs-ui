@@ -32,14 +32,15 @@ export default function LiveGraphCard() {
     links: [],
   });
 
+  // fetch graph data
   useEffect(() => {
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/graph/global`)
       .then((r) => r.json())
       .then((res) => {
-        const nodes: Node[] = Array.isArray(res.nodes) ? res.nodes : [];
-        const links: Link[] = Array.isArray(res.links) ? res.links : [];
+        const nodes = Array.isArray(res.nodes) ? res.nodes : [];
+        const links = Array.isArray(res.links) ? res.links : [];
 
-        // ✅ Keep hubs + only papers connected to hubs
+        // ✅ Only keep papers that connect to hubs
         const connectedPapers = new Set(
           links
             .filter((l: Link) => l.type === "paper-mechanism")
@@ -51,16 +52,16 @@ export default function LiveGraphCard() {
         );
 
         setData({
-          nodes: filteredNodes.map((n) => ({
+          nodes: filteredNodes.map((n: Node) => ({
             ...n,
-            val: n.type === "hub" ? 4 : 1, // hubs stronger repulsion
+            val: n.type === "hub" ? 3 : 1,
           })),
-          links: links.filter((l: Link) => connectedPapers.has(l.source)),
+          links,
         });
       });
   }, []);
 
-  // Track container size
+  // Track container size for auto-resize
   useEffect(() => {
     if (!containerRef.current) return;
     const obs = new ResizeObserver(() => {
@@ -82,8 +83,8 @@ export default function LiveGraphCard() {
     const radius = isHub ? 13 : 7;
 
     const COLORS = {
-      hub: "#f59e0b",
-      paper: "#2563eb",
+      hub: "#f59e0b", // amber
+      paper: "#2563eb", // indigo blue
       text: "#1e293b",
     };
 
@@ -92,9 +93,8 @@ export default function LiveGraphCard() {
     ctx.fillStyle = isHub ? COLORS.hub : COLORS.paper;
     ctx.fill();
 
-    // Label
     if (node.label) {
-      const fontSize = (isHub ? 16 : 11) / scale;
+      const fontSize = (isHub ? 15 : 11) / scale;
       ctx.font = `${fontSize}px Inter, sans-serif`;
       ctx.textAlign = "left";
       ctx.textBaseline = "middle";
@@ -111,39 +111,30 @@ export default function LiveGraphCard() {
 
       <div
         ref={containerRef}
-        className="w-full h-[380px] rounded-lg overflow-hidden border"
+        className="w-full h-[380px] rounded-lg overflow-hidden border border-gray-100"
       >
         {size.w > 0 && size.h > 0 && (
           <ForceGraph2D
             width={size.w}
             height={size.h}
             graphData={data}
-            backgroundColor="#ffffff"
-            nodeRelSize={3}
+            nodeRelSize={4}
             linkColor={() => "#CBD5E1"}
-            linkOpacity={0.55}
-            linkWidth={() => 1}
-            cooldownTicks={120}
-            d3VelocityDecay={0.2}
-            d3AlphaDecay={0.015}
+            linkWidth={() => 1.2}
+            linkOpacity={0.7}
+            backgroundColor="#ffffff"
+            cooldownTicks={80}
+            d3VelocityDecay={0.45}
             nodeCanvasObject={(node, ctx, scale) =>
               drawNode(node as Node & { x: number; y: number }, ctx, scale)
             }
-            onEngineTick={() => {}}
-            onNodeHover={(n) => {
+            onNodeHover={(n: Node | null) => {
               document.body.style.cursor = n ? "pointer" : "default";
             }}
-            onNodeClick={(n) => {
-              const node = n as Node;
-              if (node.type === "paper") {
-                window.open(`/papers/${node.id}`, "_blank");
+            onNodeClick={(n: Node) => {
+              if (n.type === "paper") {
+                window.open(`/papers/${n.id}`, "_blank");
               }
-            }}
-            // ✅ Global repulsion force
-            d3Force={(fg) => {
-              fg.d3Force("charge")?.strength((n: any) =>
-                n.type === "hub" ? -250 : -30
-              );
             }}
           />
         )}
