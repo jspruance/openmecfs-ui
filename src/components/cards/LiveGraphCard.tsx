@@ -33,7 +33,7 @@ export default function LiveGraphCard() {
     links: [],
   });
 
-  // ✅ DEBUG MODE: show EVERYTHING (no filtering)
+  // ✅ Debug mode: show all nodes (will add toggle later)
   useEffect(() => {
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/graph/global`)
       .then((r) => r.json())
@@ -41,7 +41,6 @@ export default function LiveGraphCard() {
         const nodes: Node[] = res.nodes || [];
         const links: Link[] = res.links || [];
 
-        // Give hubs higher mass
         const finalNodes = nodes.map((n: Node) => ({
           ...n,
           val: n.type === "hub" ? 4 : 1.2,
@@ -57,15 +56,16 @@ export default function LiveGraphCard() {
       });
   }, []);
 
-  // Track container size
   useEffect(() => {
     if (!containerRef.current) return;
+
     const obs = new ResizeObserver(() => {
       setSize({
         w: containerRef.current!.clientWidth,
         h: containerRef.current!.clientHeight,
       });
     });
+
     obs.observe(containerRef.current);
     return () => obs.disconnect();
   }, []);
@@ -102,7 +102,10 @@ export default function LiveGraphCard() {
   return (
     <div className="rounded-xl border border-gray-200 bg-white shadow-sm p-4">
       <div className="text-sm font-semibold mb-2 flex items-center gap-2">
-        🧠 Live Mechanism Network (Debug Mode)
+        🧠 Live Mechanism Network
+        <span className="text-xs font-normal text-gray-500">
+          (debug mode — showing all papers)
+        </span>
       </div>
 
       <div
@@ -122,16 +125,16 @@ export default function LiveGraphCard() {
             linkWidth={() => 1.2}
             cooldownTicks={120}
             d3VelocityDecay={0.35}
-            nodeCanvasObject={(node, ctx, scale) =>
-              drawNode(node as Node & { x: number; y: number }, ctx, scale)
-            }
-            onNodeHover={(n: any) => {
+            nodeCanvasObject={(
+              node: Node & { x: number; y: number },
+              ctx: CanvasRenderingContext2D,
+              scale: number
+            ) => drawNode(node, ctx, scale)}
+            onNodeHover={(n: Node | null) => {
               document.body.style.cursor = n ? "pointer" : "default";
             }}
-            onNodeClick={(n: any) => {
-              if (n.type === "paper") {
-                window.open(`/papers/${n.id}`, "_blank");
-              }
+            onNodeClick={(n: Node) => {
+              if (n.type === "paper") window.open(`/papers/${n.id}`, "_blank");
             }}
           />
         )}
