@@ -2,8 +2,8 @@
 
 import { useEffect, useState, useRef } from "react";
 import dynamic from "next/dynamic";
-import type { ForceGraphInstance } from "force-graph"; // ✅ correct type source
 
+// ✅ Load force-graph only in browser
 const ForceGraph2D = dynamic(() => import("react-force-graph-2d"), {
   ssr: false,
 });
@@ -27,7 +27,11 @@ interface Link {
 
 export default function LiveGraphCard() {
   const containerRef = useRef<HTMLDivElement>(null);
-  const fgRef = useRef<ForceGraphInstance | null>(null);
+
+  // ✅ We don't have official TS types for the instance → use generic type
+  const fgRef = useRef<{
+    zoomToFit: (ms?: number, padding?: number) => void;
+  } | null>(null);
 
   const [size, setSize] = useState({ w: 0, h: 0 });
   const [data, setData] = useState<{ nodes: Node[]; links: Link[] }>({
@@ -55,11 +59,12 @@ export default function LiveGraphCard() {
 
         setData({ nodes: filteredNodes, links });
 
-        // ✅ auto center/focus
+        // ✅ Auto center when graph loads
         setTimeout(() => fgRef.current?.zoomToFit(400, 50), 400);
       });
   }, []);
 
+  // ✅ Resize observer for canvas
   useEffect(() => {
     if (!containerRef.current) return;
 
