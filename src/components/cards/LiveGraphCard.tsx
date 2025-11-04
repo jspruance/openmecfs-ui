@@ -49,7 +49,7 @@ export default function LiveGraphCard() {
         );
 
         setData({
-          nodes: filteredNodes.map((n) => ({
+          nodes: filteredNodes.map((n: Node) => ({
             ...n,
             val: n.type === "hub" ? 3 : 1,
           })),
