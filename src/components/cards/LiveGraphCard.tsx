@@ -26,6 +26,8 @@ interface Link {
 
 export default function LiveGraphCard() {
   const containerRef = useRef<HTMLDivElement>(null);
+  const fgRef = useRef<any>(null);
+
   const [size, setSize] = useState({ w: 0, h: 0 });
   const [data, setData] = useState<{ nodes: Node[]; links: Link[] }>({
     nodes: [],
@@ -39,10 +41,10 @@ export default function LiveGraphCard() {
         const nodes = Array.isArray(res.nodes) ? res.nodes : [];
         const links = Array.isArray(res.links) ? res.links : [];
 
-        // ✅ Only keep papers that connect to hubs
+        // ✅ detect papers connected to mechanisms (correct edge name)
         const connectedPapers = new Set(
           links
-            .filter((l: Link) => l.type === "paper-mechanism")
+            .filter((l: Link) => l.type === "paper→mechanism")
             .map((l: Link) => l.source)
         );
 
@@ -55,8 +57,19 @@ export default function LiveGraphCard() {
             ...n,
             val: n.type === "hub" ? 3 : 1,
           })),
-          links,
+          links: links.filter(
+            (l: Link) =>
+              l.type === "paper→mechanism" || l.type === "mechanism→biomarker"
+          ),
         });
+
+        // ✅ Force graph to settle AFTER DOM paints
+        setTimeout(() => {
+          if (fgRef.current) {
+            fgRef.current.zoomToFit(400);
+            fgRef.current.d3ReheatSimulation();
+          }
+        }, 200);
       });
   }, []);
 
@@ -114,16 +127,19 @@ export default function LiveGraphCard() {
       >
         {size.w > 0 && size.h > 0 && (
           <ForceGraph2D
+            ref={fgRef}
             width={size.w}
             height={size.h}
             graphData={data}
             nodeRelSize={4}
             linkColor={() => "#CBD5E1"}
-            linkOpacity={0.7}
-            linkWidth={() => 1.2}
+            linkOpacity={0.8}
+            linkWidth={() => 1.3}
             backgroundColor="#ffffff"
+            d3VelocityDecay={0.35}
+            d3Force="charge"
+            d3ForceCharge={() => -180} // ✅ repel so hubs spread
             cooldownTicks={80}
-            d3VelocityDecay={0.45}
             nodeCanvasObject={(node, ctx, scale) =>
               drawNode(node as Node & { x: number; y: number }, ctx, scale)
             }
