@@ -15,7 +15,12 @@ export default function LatestInsightsCard() {
   useEffect(() => {
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/papers/summaries/recent?limit=5`)
       .then((r) => r.json())
-      .then(setItems)
+      .then((res) => {
+        // Safely extract array whether backend returns [] or {data: []}
+        const rows = Array.isArray(res) ? res : res.data ?? [];
+        setItems(rows);
+      })
+      .catch(() => setItems([]))
       .finally(() => setLoading(false));
   }, []);
 
