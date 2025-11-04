@@ -3,10 +3,10 @@
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 
-const ForceGraph2D = dynamic(
-  () => import("react-force-graph").then((m) => m.ForceGraph2D),
-  { ssr: false }
-);
+// ✅ Use pure 2D bundle — avoids rogue WebGL / icon weirdness
+const ForceGraph2D = dynamic(() => import("react-force-graph-2d"), {
+  ssr: false,
+});
 
 interface GraphNode {
   id: string;
@@ -59,7 +59,7 @@ export default function GraphPage() {
     ctx.arc(node.x ?? 0, node.y ?? 0, size, 0, 2 * Math.PI);
     ctx.fill();
 
-    // text label
+    // Label
     if (!node.label) return;
     const fontSize = 12 / globalScale;
     ctx.font = `${fontSize}px Inter, sans-serif`;
