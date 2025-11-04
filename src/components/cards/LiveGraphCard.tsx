@@ -122,9 +122,8 @@ export default function LiveGraphCard() {
             width={size.w}
             height={size.h}
             nodeRelSize={6}
-            linkColor={() => "#94a3b8"}
             backgroundColor={"#ffffff"}
-            cooldownTime={2000}
+            cooldownTicks={60}
             nodeCanvasObject={(node, ctx, scale) =>
               drawNode(node as Node, ctx, scale)
             }
