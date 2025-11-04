@@ -3,17 +3,14 @@
 
 import { useEffect, useState, useRef } from "react";
 import dynamic from "next/dynamic";
-import * as d3 from "d3-force";
 
-// Dynamic import of force-graph (client only)
 const ForceGraph2D: any = dynamic(() => import("react-force-graph-2d"), {
   ssr: false,
 });
 
 interface Node {
   id: string;
-  label?: string; // ✅ human label (mechanism or paper summary)
-  fullLabel?: string; // ✅ full title for tooltip
+  label?: string; // ✅ human-readable label from backend
   type: "hub" | "paper";
   x?: number;
   y?: number;
@@ -36,43 +33,31 @@ export default function LiveGraphCard() {
     links: [],
   });
 
-  // ✅ Load graph data
+  // ✅ Debug mode: show ALL nodes, all links
   useEffect(() => {
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/graph/global`)
       .then((r) => r.json())
       .then((res) => {
-        const nodes: Node[] = res.nodes || [];
-        const links: Link[] = res.links || [];
+        const nodes: Node[] =
+          res.nodes?.map((n: any) => ({
+            ...n,
+            // ✅ Bigger hubs
+            val: n.type === "hub" ? 6 : 2.2,
+          })) || [];
 
-        // ✅ enhance paper nodes with one-sentence mechanism summary
-        const enhancedNodes = nodes.map((n: Node) => ({
-          ...n,
-          // Hub label stays; paper label becomes one-sentence summary
-          label:
-            n.type === "hub"
-              ? n.label
-              : res.paperSummaries?.[n.id]?.one_sentence ?? "(summary pending)",
-          fullLabel: res.paperSummaries?.[n.id]?.title ?? "Unknown title",
-          val: n.type === "hub" ? 8 : 2, // mass
-        }));
+        const links = res.links || [];
+        setData({ nodes, links });
 
-        // ✅ Filter: hubs + papers linked to hubs
-        const connectedPapers = new Set(
-          links.filter((l) => l.type === "paper-mechanism").map((l) => l.source)
-        );
-
-        const filteredNodes = enhancedNodes.filter(
-          (n) => n.type === "hub" || connectedPapers.has(n.id)
-        );
-
-        setData({ nodes: filteredNodes, links });
-
-        // ✅ auto-fit view
-        setTimeout(() => fgRef.current?.zoomToFit?.(800, 120), 800);
+        // ✅ Zoom out so nodes don’t overlap
+        setTimeout(() => {
+          try {
+            fgRef.current?.zoomToFit?.(800, 80);
+          } catch {}
+        }, 500);
       });
   }, []);
 
-  // ✅ Track container resize
+  // ✅ Resize observer
   useEffect(() => {
     if (!containerRef.current) return;
     const obs = new ResizeObserver(() => {
@@ -85,50 +70,48 @@ export default function LiveGraphCard() {
     return () => obs.disconnect();
   }, []);
 
-  // ✅ Space out papers around hubs
-  useEffect(() => {
-    if (!fgRef.current) return;
-    fgRef.current.d3Force(
-      "collision",
-      d3.forceCollide((n: Node) => (n.type === "hub" ? 32 : 18))
-    );
-    fgRef.current.d3Force("charge", d3.forceManyBody().strength(-90));
-  }, [data]);
-
-  // ✅ Draw Node
+  // ✅ Custom draw for clear labeling
   const drawNode = (
     node: Node & { x: number; y: number },
     ctx: CanvasRenderingContext2D,
     scale: number
   ) => {
     const isHub = node.type === "hub";
-    const radius = isHub ? 16 : 8;
+    const radius = isHub ? 22 : 10;
+
+    const COLORS = {
+      hub: "#f59e0b",
+      paper: "#2563eb",
+      text: "#1e293b",
+    };
 
     ctx.beginPath();
     ctx.arc(node.x, node.y, radius, 0, 2 * Math.PI);
-    ctx.fillStyle = isHub ? "#f59e0b" : "#2563eb";
+    ctx.fillStyle = isHub ? COLORS.hub : COLORS.paper;
     ctx.fill();
 
-    if (node.label) {
-      const fontSize = (isHub ? 15 : 11) / scale;
-      ctx.font = `${fontSize}px Inter, sans-serif`;
-      ctx.textAlign = "left";
-      ctx.textBaseline = "middle";
-      ctx.fillStyle = "#1e293b";
+    const label = node.label || node.id;
+    const fontSize = (isHub ? 18 : 12) / scale;
+    ctx.font = `${fontSize}px Inter, sans-serif`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillStyle = Colors.text;
 
-      ctx.fillText(node.label, node.x + radius + 4, node.y);
-    }
+    // ✅ Truncate long paper titles
+    const truncated = label.length > 22 ? label.slice(0, 22) + "…" : label;
+    ctx.fillText(truncated, node.x, node.y + radius + fontSize);
   };
 
   return (
     <div className="rounded-xl border border-gray-200 bg-white shadow-sm p-4">
       <div className="text-sm font-semibold mb-2 flex items-center gap-2">
-        🧠 Live Mechanism Network
+        🧠 Live Mechanism Network{" "}
+        <span className="text-xs text-gray-500">(debug mode — all papers)</span>
       </div>
 
       <div
         ref={containerRef}
-        className="w-full h-[380px] rounded-lg overflow-hidden border border-gray-100"
+        className="w-full h-[420px] rounded-lg overflow-hidden border border-gray-100"
       >
         {size.w > 0 && size.h > 0 && (
           <ForceGraph2D
@@ -139,24 +122,16 @@ export default function LiveGraphCard() {
             nodeRelSize={4}
             backgroundColor="#ffffff"
             linkColor={() => "#CBD5E1"}
-            linkOpacity={0.7}
+            linkOpacity={0.8}
             linkWidth={() => 1.2}
-            cooldownTicks={120}
+            cooldownTicks={150}
             d3VelocityDecay={0.35}
+            onNodeHover={(n: any) =>
+              (document.body.style.cursor = n ? "pointer" : "default")
+            }
             nodeCanvasObject={(node, ctx, scale) =>
               drawNode(node as Node & { x: number; y: number }, ctx, scale)
             }
-            onNodeHover={(n: any) => {
-              document.body.style.cursor = n ? "pointer" : "default";
-              if (n && n.fullLabel) {
-                // tooltip
-                const tip = document.getElementById("fg-tip");
-                if (tip) {
-                  tip.style.display = "block";
-                  tip.innerHTML = n.fullLabel;
-                }
-              }
-            }}
             onNodeClick={(n: any) => {
               if (n.type === "paper") {
                 window.open(`/papers/${n.id}`, "_blank");
@@ -164,11 +139,6 @@ export default function LiveGraphCard() {
             }}
           />
         )}
-        <div
-          id="fg-tip"
-          className="absolute bg-white text-xs border rounded px-2 py-1 shadow"
-          style={{ display: "none", pointerEvents: "none" }}
-        />
       </div>
     </div>
   );
