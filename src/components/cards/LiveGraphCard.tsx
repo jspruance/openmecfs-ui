@@ -3,8 +3,8 @@
 import { useEffect, useState, useRef } from "react";
 import dynamic from "next/dynamic";
 
-// ✅ dynamically import ForceGraph2D (no SSR)
-const ForceGraph2D = dynamic(() => import("react-force-graph-2d"), {
+// ✅ Dynamic import, SSR disabled
+const ForceGraph2D: any = dynamic(() => import("react-force-graph-2d"), {
   ssr: false,
 });
 
@@ -27,20 +27,13 @@ interface Link {
 
 export default function LiveGraphCard() {
   const containerRef = useRef<HTMLDivElement>(null);
-
-  // ✅ ref accepts unknown FG instance
-  const fgRef = useRef<unknown>(null);
+  const fgRef = useRef<any>(null); // ✅ nuke ForceGraph types
 
   const [size, setSize] = useState({ w: 0, h: 0 });
   const [data, setData] = useState<{ nodes: Node[]; links: Link[] }>({
     nodes: [],
     links: [],
   });
-
-  // ✅ safe helper to call FG methods
-  const safeFG = fgRef.current as {
-    zoomToFit?: (ms?: number, padding?: number) => void;
-  } | null;
 
   useEffect(() => {
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/graph/global`)
@@ -63,7 +56,9 @@ export default function LiveGraphCard() {
         setData({ nodes: filteredNodes, links });
 
         setTimeout(() => {
-          if (safeFG?.zoomToFit) safeFG.zoomToFit(500, 60);
+          try {
+            fgRef.current?.zoomToFit?.(500, 60);
+          } catch {}
         }, 400);
       });
   }, []);
@@ -123,7 +118,7 @@ export default function LiveGraphCard() {
       >
         {size.w > 0 && size.h > 0 && (
           <ForceGraph2D
-            ref={fgRef as any}
+            ref={fgRef}
             width={size.w}
             height={size.h}
             graphData={data}
@@ -137,7 +132,7 @@ export default function LiveGraphCard() {
             nodeCanvasObject={(node, ctx, scale) =>
               drawNode(node as Node & { x: number; y: number }, ctx, scale)
             }
-            onNodeHover={(n) => {
+            onNodeHover={(n: any) => {
               document.body.style.cursor = n ? "pointer" : "default";
             }}
             onNodeClick={(n: any) => {
