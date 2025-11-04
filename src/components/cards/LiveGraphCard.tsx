@@ -10,123 +10,128 @@ const ForceGraph2D = dynamic(() => import("react-force-graph-2d"), {
 interface Node {
   id: string;
   label?: string;
-  type?: "paper" | "mechanism" | "biomarker";
+  title?: string;
+  confidence?: number;
+  type: "hub" | "paper";
   x?: number;
   y?: number;
 }
+
 interface Link {
   source: string;
   target: string;
+  type: string;
 }
 
 export default function LiveGraphCard() {
-  const ref = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState({ w: 0, h: 0 });
   const [data, setData] = useState<{ nodes: Node[]; links: Link[] }>({
     nodes: [],
     links: [],
   });
-  const [loading, setLoading] = useState(true);
 
-  // ✅ Auto-resize
-  useEffect(() => {
-    if (!ref.current) return;
-    const obs = new ResizeObserver(() => {
-      setSize({
-        w: ref.current!.clientWidth,
-        h: ref.current!.clientHeight,
-      });
-    });
-    obs.observe(ref.current);
-    return () => obs.disconnect();
-  }, []);
-
-  // ✅ Fetch live graph
   useEffect(() => {
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/graph/global`)
       .then((r) => r.json())
       .then((res) => {
-        const graph = res?.data ?? res ?? {};
-        const nodes = Array.isArray(graph.nodes) ? graph.nodes : [];
-        const links = Array.isArray(graph.links) ? graph.links : [];
-
-        // fallback demo if empty
-        if (!nodes.length) {
-          setData({
-            nodes: [
-              { id: "ME/CFS", type: "mechanism" },
-              { id: "Immune dysfunction", type: "mechanism" },
-              { id: "Mitochondria", type: "mechanism" },
-              { id: "Study123", type: "paper" },
-            ],
-            links: [
-              { source: "Study123", target: "Immune dysfunction" },
-              { source: "Study123", target: "Mitochondria" },
-            ],
-          });
-        } else {
-          setData({ nodes, links });
-        }
-      })
-      .finally(() => setLoading(false));
+        setData({
+          nodes: Array.isArray(res.nodes) ? res.nodes : [],
+          links: Array.isArray(res.links) ? res.links : [],
+        });
+      });
   }, []);
 
-  // ✅ Better node colors
-  const nodeColors: Record<string, string> = {
-    paper: "#2563eb",
-    mechanism: "#f59e0b",
-    biomarker: "#10b981",
-  };
+  // track container size
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const obs = new ResizeObserver(() => {
+      setSize({
+        w: containerRef.current!.clientWidth,
+        h: containerRef.current!.clientHeight,
+      });
+    });
+    obs.observe(containerRef.current);
+    return () => obs.disconnect();
+  }, []);
 
   const drawNode = (
-    node: Node,
+    node: Node & { x: number; y: number },
     ctx: CanvasRenderingContext2D,
     scale: number
   ) => {
-    const color = nodeColors[node.type ?? "paper"] ?? "#64748b";
-    const size = 6;
-    ctx.fillStyle = color;
+    const isHub = node.type === "hub";
+    const radius = isHub ? 12 : 6;
+
+    // soft neuro-colors
+    const COLORS = {
+      hub: "#f59e0b", // amber hub
+      paper: "#2563eb", // blue papers
+      text: "#1e293b",
+    };
+
     ctx.beginPath();
-    ctx.arc(node.x ?? 0, node.y ?? 0, size, 0, 2 * Math.PI);
+    ctx.arc(node.x, node.y, radius, 0, 2 * Math.PI);
+    ctx.fillStyle = isHub ? COLORS.hub : COLORS.paper;
     ctx.fill();
 
-    const label = node.label ?? node.id;
-    if (!label) return;
-    const fontSize = 10 / scale;
-    ctx.font = `${fontSize}px Inter, sans-serif`;
-    ctx.textAlign = "left";
-    ctx.textBaseline = "middle";
-    ctx.fillStyle = "#111827";
-    ctx.fillText(label, (node.x ?? 0) + size + 3, node.y ?? 0);
+    // label
+    const label = isHub ? node.label : node.label;
+    if (label) {
+      const fontSize = (isHub ? 16 : 11) / scale;
+      ctx.font = `${fontSize}px Inter, sans-serif`;
+      ctx.textAlign = "left";
+      ctx.textBaseline = "middle";
+      ctx.fillStyle = COLORS.text;
+      ctx.fillText(label, node.x + radius + 4, node.y);
+    }
   };
 
   return (
-    <div className="rounded-xl border border-gray-200 shadow-sm p-4 bg-white dark:bg-slate-900 flex flex-col h-[360px]">
-      <div className="text-sm font-semibold mb-2 flex items-center gap-1">
-        📡 Live Mechanism Graph
+    <div className="rounded-xl border border-gray-200 bg-white shadow-sm p-4">
+      <div className="text-sm font-semibold mb-2 flex items-center gap-2">
+        🧠 Live Mechanism Network
       </div>
 
-      {loading && (
-        <div className="text-xs text-gray-500 mb-2">
-          Building knowledge graph…
-        </div>
-      )}
-
       <div
-        ref={ref}
-        className="flex-1 rounded-lg bg-gray-50 dark:bg-slate-800 overflow-hidden"
+        ref={containerRef}
+        className="w-full h-[380px] rounded-lg overflow-hidden border"
       >
         {size.w > 0 && size.h > 0 && (
           <ForceGraph2D
-            graphData={data}
             width={size.w}
             height={size.h}
-            nodeRelSize={6}
-            backgroundColor={"#ffffff"}
+            graphData={data}
+            nodeRelSize={4}
+            linkColor={() => "#CBD5E1"} // soft slate-300
+            linkOpacity={0.7}
+            linkWidth={() => 1.2}
+            backgroundColor="#ffffff"
             cooldownTicks={60}
             nodeCanvasObject={(node, ctx, scale) =>
-              drawNode(node as Node, ctx, scale)
+              drawNode(node as Node & { x: number; y: number }, ctx, scale)
             }
+            onNodeHover={(n) => {
+              if (!n) return;
+              const node = n as Node;
+              if (node.title) {
+                const preview = `${node.title}`;
+                const hint = node.confidence
+                  ? `Confidence: ${(node.confidence * 100).toFixed(0)}%`
+                  : ``;
+                // tooltip via title attr fallback (lightweight)
+                document.body.style.cursor = "pointer";
+                (
+                  document.querySelector("canvas") as any
+                ).title = `${preview}\n${hint}`;
+              }
+            }}
+            onNodeClick={(n) => {
+              const node = n as Node;
+              if (node.type === "paper") {
+                window.open(`/papers/${node.id}`, "_blank");
+              }
+            }}
           />
         )}
       </div>
