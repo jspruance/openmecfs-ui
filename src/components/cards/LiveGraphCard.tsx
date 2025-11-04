@@ -4,7 +4,6 @@
 import { useEffect, useState, useRef } from "react";
 import dynamic from "next/dynamic";
 
-// ✅ Dynamic import, SSR disabled
 const ForceGraph2D: any = dynamic(() => import("react-force-graph-2d"), {
   ssr: false,
 });
@@ -12,8 +11,6 @@ const ForceGraph2D: any = dynamic(() => import("react-force-graph-2d"), {
 interface Node {
   id: string;
   label?: string;
-  title?: string;
-  confidence?: number;
   type: "hub" | "paper";
   x?: number;
   y?: number;
@@ -36,6 +33,7 @@ export default function LiveGraphCard() {
     links: [],
   });
 
+  // ✅ DEBUG MODE: show EVERYTHING (no filtering)
   useEffect(() => {
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/graph/global`)
       .then((r) => r.json())
@@ -43,37 +41,31 @@ export default function LiveGraphCard() {
         const nodes: Node[] = res.nodes || [];
         const links: Link[] = res.links || [];
 
-        const connectedPapers = new Set(
-          links.filter((l) => l.type === "paper-mechanism").map((l) => l.source)
-        );
+        // Give hubs higher mass
+        const finalNodes = nodes.map((n: Node) => ({
+          ...n,
+          val: n.type === "hub" ? 4 : 1.2,
+        }));
 
-        const filteredNodes = nodes
-          .filter((n) => n.type === "hub" || connectedPapers.has(n.id))
-          .map((n) => ({
-            ...n,
-            val: n.type === "hub" ? 4 : 1.2,
-          }));
-
-        setData({ nodes: filteredNodes, links });
+        setData({ nodes: finalNodes, links });
 
         setTimeout(() => {
           try {
-            fgRef.current?.zoomToFit?.(500, 60);
+            fgRef.current?.zoomToFit?.(600, 80);
           } catch {}
-        }, 400);
+        }, 800);
       });
   }, []);
 
+  // Track container size
   useEffect(() => {
     if (!containerRef.current) return;
-
     const obs = new ResizeObserver(() => {
       setSize({
         w: containerRef.current!.clientWidth,
         h: containerRef.current!.clientHeight,
       });
     });
-
     obs.observe(containerRef.current);
     return () => obs.disconnect();
   }, []);
@@ -110,7 +102,7 @@ export default function LiveGraphCard() {
   return (
     <div className="rounded-xl border border-gray-200 bg-white shadow-sm p-4">
       <div className="text-sm font-semibold mb-2 flex items-center gap-2">
-        🧠 Live Mechanism Network
+        🧠 Live Mechanism Network (Debug Mode)
       </div>
 
       <div
@@ -128,18 +120,18 @@ export default function LiveGraphCard() {
             linkColor={() => "#CBD5E1"}
             linkOpacity={0.7}
             linkWidth={() => 1.2}
-            cooldownTicks={80}
-            d3VelocityDecay={0.4}
-            nodeCanvasObject={(
-              node: any,
-              ctx: CanvasRenderingContext2D,
-              scale: number
-            ) => drawNode(node as Node & { x: number; y: number }, ctx, scale)}
-            onNodeHover={(n: Node | null) => {
+            cooldownTicks={120}
+            d3VelocityDecay={0.35}
+            nodeCanvasObject={(node, ctx, scale) =>
+              drawNode(node as Node & { x: number; y: number }, ctx, scale)
+            }
+            onNodeHover={(n: any) => {
               document.body.style.cursor = n ? "pointer" : "default";
             }}
-            onNodeClick={(n: Node) => {
-              if (n.type === "paper") window.open(`/papers/${n.id}`, "_blank");
+            onNodeClick={(n: any) => {
+              if (n.type === "paper") {
+                window.open(`/papers/${n.id}`, "_blank");
+              }
             }}
           />
         )}
