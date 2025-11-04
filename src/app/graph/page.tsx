@@ -94,7 +94,7 @@ export default function GraphPage() {
             graphData={data}
             nodeRelSize={4}
             cooldownTicks={60}
-            linkColor={(l) => linkColor(l as GraphLink)}
+            // linkColor={(l) => linkColor(l as GraphLink)}
             nodeCanvasObject={(node, ctx, scale) =>
               drawNode(node as GraphNode, ctx, scale)
             }
