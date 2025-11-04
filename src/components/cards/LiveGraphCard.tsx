@@ -15,6 +15,7 @@ interface Node {
   type: "hub" | "paper";
   x?: number;
   y?: number;
+  val?: number; // force strength
 }
 
 interface Link {
@@ -35,14 +36,29 @@ export default function LiveGraphCard() {
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/graph/global`)
       .then((r) => r.json())
       .then((res) => {
+        const nodes = Array.isArray(res.nodes) ? res.nodes : [];
+        const links = Array.isArray(res.links) ? res.links : [];
+
+        // ✅ FILTER orphan papers (only show papers connected to hubs)
+        const connectedPapers = new Set(
+          links.filter((l) => l.type === "paper-mechanism").map((l) => l.source)
+        );
+
+        const filteredNodes = nodes.filter(
+          (n) => n.type === "hub" || connectedPapers.has(n.id)
+        );
+
         setData({
-          nodes: Array.isArray(res.nodes) ? res.nodes : [],
-          links: Array.isArray(res.links) ? res.links : [],
+          nodes: filteredNodes.map((n) => ({
+            ...n,
+            val: n.type === "hub" ? 3 : 1,
+          })),
+          links,
         });
       });
   }, []);
 
-  // track container size
+  // Track container size
   useEffect(() => {
     if (!containerRef.current) return;
     const obs = new ResizeObserver(() => {
@@ -61,12 +77,11 @@ export default function LiveGraphCard() {
     scale: number
   ) => {
     const isHub = node.type === "hub";
-    const radius = isHub ? 12 : 6;
+    const radius = isHub ? 13 : 7;
 
-    // soft neuro-colors
     const COLORS = {
-      hub: "#f59e0b", // amber hub
-      paper: "#2563eb", // blue papers
+      hub: "#f59e0b",
+      paper: "#2563eb",
       text: "#1e293b",
     };
 
@@ -75,10 +90,10 @@ export default function LiveGraphCard() {
     ctx.fillStyle = isHub ? COLORS.hub : COLORS.paper;
     ctx.fill();
 
-    // label
-    const label = isHub ? node.label : node.label;
+    // ✅ Draw label
+    const label = node.label;
     if (label) {
-      const fontSize = (isHub ? 16 : 11) / scale;
+      const fontSize = (isHub ? 15 : 11) / scale;
       ctx.font = `${fontSize}px Inter, sans-serif`;
       ctx.textAlign = "left";
       ctx.textBaseline = "middle";
@@ -103,28 +118,23 @@ export default function LiveGraphCard() {
             height={size.h}
             graphData={data}
             nodeRelSize={4}
-            linkColor={() => "#CBD5E1"} // soft slate-300
+            linkColor={() => "#CBD5E1"}
             linkOpacity={0.7}
             linkWidth={() => 1.2}
             backgroundColor="#ffffff"
-            cooldownTicks={60}
+            cooldownTicks={80}
+            d3Force="charge"
+            d3AlphaDecay={0.02}
+            d3VelocityDecay={0.4}
             nodeCanvasObject={(node, ctx, scale) =>
               drawNode(node as Node & { x: number; y: number }, ctx, scale)
             }
             onNodeHover={(n) => {
-              if (!n) return;
-              const node = n as Node;
-              if (node.title) {
-                const preview = `${node.title}`;
-                const hint = node.confidence
-                  ? `Confidence: ${(node.confidence * 100).toFixed(0)}%`
-                  : ``;
-                // tooltip via title attr fallback (lightweight)
-                document.body.style.cursor = "pointer";
-                (
-                  document.querySelector("canvas") as any
-                ).title = `${preview}\n${hint}`;
+              if (!n) {
+                document.body.style.cursor = "default";
+                return;
               }
+              document.body.style.cursor = "pointer";
             }}
             onNodeClick={(n) => {
               const node = n as Node;
