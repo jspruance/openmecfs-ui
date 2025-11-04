@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import dynamic from "next/dynamic";
-import type { ForceGraphInstance } from "react-force-graph";
+import type { ForceGraphInstance } from "force-graph"; // ✅ correct type source
 
 const ForceGraph2D = dynamic(() => import("react-force-graph-2d"), {
   ssr: false,
@@ -55,18 +55,21 @@ export default function LiveGraphCard() {
 
         setData({ nodes: filteredNodes, links });
 
+        // ✅ auto center/focus
         setTimeout(() => fgRef.current?.zoomToFit(400, 50), 400);
       });
   }, []);
 
   useEffect(() => {
     if (!containerRef.current) return;
+
     const obs = new ResizeObserver(() => {
       setSize({
         w: containerRef.current!.clientWidth,
         h: containerRef.current!.clientHeight,
       });
     });
+
     obs.observe(containerRef.current);
     return () => obs.disconnect();
   }, []);
