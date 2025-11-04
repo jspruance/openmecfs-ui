@@ -43,6 +43,27 @@ export default function LiveGraphCard() {
       .finally(() => setLoading(false));
   }, []);
 
+  const drawNode = (
+    node: Node & { x?: number; y?: number },
+    ctx: CanvasRenderingContext2D,
+    scale: number
+  ) => {
+    const size = 6;
+    ctx.fillStyle = "#2563eb";
+    ctx.beginPath();
+    ctx.arc(node.x ?? 0, node.y ?? 0, size, 0, 2 * Math.PI);
+    ctx.fill();
+
+    if (node.label || node.id) {
+      const fontSize = 10 / scale;
+      ctx.font = `${fontSize}px Inter, sans-serif`;
+      ctx.textAlign = "left";
+      ctx.textBaseline = "middle";
+      ctx.fillStyle = "#111827";
+      ctx.fillText(node.label || node.id, (node.x ?? 0) + size + 3, node.y ?? 0);
+    }
+  };
+
   return (
     <div className="border rounded-xl p-4 bg-white dark:bg-slate-900 h-[360px] flex flex-col">
       <div className="text-sm font-semibold mb-2">📡 Live Mechanism Graph</div>
@@ -58,7 +79,9 @@ export default function LiveGraphCard() {
           height={280}
           nodeRelSize={6}
           backgroundColor={"#ffffff"}
-          nodeLabel={(n: Node) => n.label || n.id}
+          nodeCanvasObject={(node, ctx, scale) =>
+            drawNode(node as Node & { x?: number; y?: number }, ctx, scale)
+          }
         />
       </div>
     </div>
