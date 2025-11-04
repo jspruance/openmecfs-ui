@@ -19,6 +19,7 @@ declare module "react-force-graph-2d" {
     linkOpacity?: number;
     linkWidth?: number | ((link: any) => number);
     d3Force?: string;
+    d3ForceCharge?: number | ((node: any) => number);
     d3AlphaDecay?: number;
     d3VelocityDecay?: number;
     nodeCanvasObject?: (

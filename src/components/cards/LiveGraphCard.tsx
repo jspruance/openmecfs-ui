@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import dynamic from "next/dynamic";
+import type { ForceGraphMethods } from "react-force-graph-2d";
 
 const ForceGraph2D = dynamic(() => import("react-force-graph-2d"), {
   ssr: false,
@@ -26,7 +27,7 @@ interface Link {
 
 export default function LiveGraphCard() {
   const containerRef = useRef<HTMLDivElement>(null);
-  const fgRef = useRef<{ zoomToFit: (duration?: number) => void; d3ReheatSimulation: () => void } | null>(null);
+  const fgRef = useRef<ForceGraphMethods<Node, Link> | null>(null);
 
   const [size, setSize] = useState({ w: 0, h: 0 });
   const [data, setData] = useState<{ nodes: Node[]; links: Link[] }>({
@@ -34,46 +35,41 @@ export default function LiveGraphCard() {
     links: [],
   });
 
+  // ✅ load graph data
   useEffect(() => {
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/graph/global`)
       .then((r) => r.json())
       .then((res) => {
-        const nodes = Array.isArray(res.nodes) ? res.nodes : [];
-        const links = Array.isArray(res.links) ? res.links : [];
+        const nodes: Node[] = res.nodes || [];
+        const links: Link[] = res.links || [];
 
-        // ✅ detect papers connected to mechanisms (correct edge name)
+        // ✅ Keep ONLY:
+        // hubs
+        // papers that have edges
         const connectedPapers = new Set(
-          links
-            .filter((l: Link) => l.type === "paper→mechanism")
-            .map((l: Link) => l.source)
+          links.filter((l) => l.type === "paper-mechanism").map((l) => l.source)
         );
 
         const filteredNodes = nodes.filter(
-          (n: Node) => n.type === "hub" || connectedPapers.has(n.id)
+          (n) => n.type === "hub" || connectedPapers.has(n.id)
         );
 
-        setData({
-          nodes: filteredNodes.map((n: Node) => ({
-            ...n,
-            val: n.type === "hub" ? 3 : 1,
-          })),
-          links: links.filter(
-            (l: Link) =>
-              l.type === "paper→mechanism" || l.type === "mechanism→biomarker"
-          ),
-        });
+        // ✅ Assign visual weights
+        const finalNodes = filteredNodes.map((n) => ({
+          ...n,
+          val: n.type === "hub" ? 4 : 1.2,
+        }));
 
-        // ✅ Force graph to settle AFTER DOM paints
+        setData({ nodes: finalNodes, links });
+
+        // ✅ Wait a tick then center graph
         setTimeout(() => {
-          if (fgRef.current) {
-            fgRef.current.zoomToFit(400);
-            fgRef.current.d3ReheatSimulation();
-          }
-        }, 200);
+          fgRef.current?.zoomToFit(400, 50);
+        }, 400);
       });
   }, []);
 
-  // Track container size
+  // ✅ resizing observer
   useEffect(() => {
     if (!containerRef.current) return;
     const obs = new ResizeObserver(() => {
@@ -86,17 +82,18 @@ export default function LiveGraphCard() {
     return () => obs.disconnect();
   }, []);
 
+  // 🎨 node draw
   const drawNode = (
     node: Node & { x: number; y: number },
     ctx: CanvasRenderingContext2D,
     scale: number
   ) => {
     const isHub = node.type === "hub";
-    const radius = isHub ? 13 : 7;
+    const radius = isHub ? 14 : 6;
 
     const COLORS = {
-      hub: "#f59e0b", // amber
-      paper: "#2563eb", // blue
+      hub: "#f59e0b",
+      paper: "#2563eb",
       text: "#1e293b",
     };
 
@@ -132,23 +129,21 @@ export default function LiveGraphCard() {
             height={size.h}
             graphData={data}
             nodeRelSize={4}
-            linkColor={() => "#CBD5E1"}
-            linkOpacity={0.8}
-            linkWidth={() => 1.3}
             backgroundColor="#ffffff"
-            d3VelocityDecay={0.35}
-            d3Force="charge"
-            d3ForceCharge={() => -180} // ✅ repel so hubs spread
+            linkColor={() => "#CBD5E1"}
+            linkOpacity={0.7}
+            linkWidth={() => 1.2}
             cooldownTicks={80}
+            d3VelocityDecay={0.4}
             nodeCanvasObject={(node, ctx, scale) =>
               drawNode(node as Node & { x: number; y: number }, ctx, scale)
             }
-            onNodeHover={(n: Node | null) => {
+            onNodeHover={(n) => {
               document.body.style.cursor = n ? "pointer" : "default";
             }}
-            onNodeClick={(n: Node) => {
-              if (n.type === "paper") {
-                window.open(`/papers/${n.id}`, "_blank");
+            onNodeClick={(n) => {
+              if ((n as Node).type === "paper") {
+                window.open(`/papers/${(n as Node).id}`, "_blank");
               }
             }}
           />
