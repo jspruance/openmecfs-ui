@@ -1,13 +1,31 @@
 import Link from "next/link";
 import ResearchHero from "./ResearchHero";
+import LiveGraphCard from "@/components/cards/LiveGraphCard";
+import LatestInsightsCard from "@/components/cards/LatestInsightsCard";
+import BiomarkerRibbon from "@/components/cards/BiomarkerRibbon";
 
 export default function ResearchIndexPage() {
   return (
-    <div className="space-y-8">
+    <div className="space-y-10">
+      {/* Hero */}
       <ResearchHero />
 
-      {/* Summary cards matching patient hub style */}
-      <section className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {/* Live Engine Tiles */}
+      <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2">
+          <LiveGraphCard />
+        </div>
+        <div>
+          <LatestInsightsCard />
+        </div>
+      </section>
+
+      <section>
+        <BiomarkerRibbon />
+      </section>
+
+      {/* Keep brochure cards but push them below so the page feels "alive first" */}
+      <section className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 pt-2 border-t">
         <Link
           href="/research/papers"
           className="cursor-pointer block rounded-xl border border-gray-200 p-5 hover:shadow-md transition"
