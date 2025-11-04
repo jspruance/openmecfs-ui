@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 
+// ✅ Load ONLY the 2D bundle
 const ForceGraph2D = dynamic(() => import("react-force-graph-2d"), {
   ssr: false,
 });
@@ -55,14 +56,15 @@ export default function PaperMiniGraph({ pmid }: { pmid: string }) {
   }
 
   const drawNode = (node: GraphNode, ctx: CanvasRenderingContext2D) => {
-    const size = node.type === "paper" ? 9 : 5;
-    const colors = {
-      paper: "#2563eb",
-      mechanism: "#f59e0b",
-      biomarker: "#10b981",
-    };
+    const size = node.type === "paper" ? 10 : 6;
+    const color =
+      node.type === "paper"
+        ? "#2563eb"
+        : node.type === "mechanism"
+        ? "#f59e0b"
+        : "#10b981";
 
-    ctx.fillStyle = colors[node.type] || "#64748b";
+    ctx.fillStyle = color;
     ctx.beginPath();
     ctx.arc(node.x ?? 0, node.y ?? 0, size, 0, 2 * Math.PI);
     ctx.fill();
@@ -78,10 +80,10 @@ export default function PaperMiniGraph({ pmid }: { pmid: string }) {
           graphData={data}
           nodeRelSize={4}
           cooldownTicks={30}
-          //linkColor={() => "rgba(148,163,184,0.4)"} // ✅ restore links
-          //linkWidth={() => 1}
-          //enablePanInteraction={false} // ✅ stop dragging screen
-          // enableZoomInteraction={false} // ✅ stop rogue zoom nodes
+          // linkColor={() => "rgba(148,163,184,0.4)"}
+          // linkWidth={() => 1}
+          // enablePanInteraction={false}
+          // enableZoomInteraction={false}
           nodeCanvasObject={(node, ctx) => drawNode(node as GraphNode, ctx)}
         />
       </div>
