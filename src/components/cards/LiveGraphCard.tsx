@@ -15,28 +15,36 @@ interface Node {
   type: "hub" | "paper";
   fx?: number;
   fy?: number;
-  val?: number;
+  x?: number;
+  y?: number;
 }
 
 interface Link {
   source: string;
   target: string;
+  type: string;
 }
+
+const HUB_ORDER = [
+  "hub:neuroinflammation",
+  "hub:viral",
+  "hub:immune",
+  "hub:mitochondrial",
+  "hub:vascular",
+  "hub:autonomic",
+];
 
 export default function LiveGraphCard() {
   const containerRef = useRef<HTMLDivElement>(null);
-  const fgRef = useRef<any>(null);
-
   const [size, setSize] = useState({ w: 0, h: 0 });
   const [data, setData] = useState<{ nodes: Node[]; links: Link[] }>({
     nodes: [],
     links: [],
   });
 
-  // scale settings
-  const HUB_RADIUS = 300;
-  const PAPER_RADIUS = 130;
-
+  // --------------------------
+  // Load & prepare data
+  // --------------------------
   useEffect(() => {
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/graph/global`)
       .then((r) => r.json())
@@ -44,65 +52,82 @@ export default function LiveGraphCard() {
         const hubs = res.nodes.filter((n: Node) => n.type === "hub");
         const papers = res.nodes.filter((n: Node) => n.type === "paper");
 
-        hubs.forEach((h: Node) => (h.val = 10));
-        papers.forEach((p: Node) => (p.val = 2));
+        // Keep only our known hubs, in fixed order
+        const orderedHubs = HUB_ORDER.map((id) =>
+          hubs.find((h: Node) => h.id === id)
+        ).filter(Boolean) as Node[];
+
+        // Only include papers that have a valid hub link
+        const filteredPapers = papers.filter((p: Node) =>
+          res.links.some(
+            (l: Link) => l.source === p.id && HUB_ORDER.includes(l.target)
+          )
+        );
+
+        const filteredLinks = res.links.filter(
+          (l: Link) =>
+            HUB_ORDER.includes(l.target) &&
+            filteredPapers.some((p) => p.id === l.source)
+        );
 
         setData({
-          nodes: [...hubs, ...papers],
-          links: res.links || [],
+          nodes: [...orderedHubs, ...filteredPapers],
+          links: filteredLinks,
         });
       });
   }, []);
 
-  // handle resize
+  // --------------------------
+  // Fix node positions (radial)
+  // --------------------------
+  useEffect(() => {
+    if (!data.nodes.length) return;
+
+    const hubs = data.nodes.filter((n) => n.type === "hub");
+    const papers = data.nodes.filter((n) => n.type === "paper");
+
+    const hubRadius = 200;
+    const paperRadius = 90;
+
+    hubs.forEach((hub, i) => {
+      const angle = (i / hubs.length) * Math.PI * 2;
+      hub.fx = Math.cos(angle) * hubRadius;
+      hub.fy = Math.sin(angle) * hubRadius;
+
+      const hubPapers = papers.filter((p) =>
+        data.links.some((l) => l.source === p.id && l.target === hub.id)
+      );
+
+      hubPapers.forEach((p, j) => {
+        const pa = (j / hubPapers.length) * Math.PI * 2;
+        p.fx = hub.fx! + Math.cos(pa) * paperRadius;
+        p.fy = hub.fy! + Math.sin(pa) * paperRadius;
+      });
+    });
+  }, [data]);
+
+  // --------------------------
+  // Resize container
+  // --------------------------
   useEffect(() => {
     if (!containerRef.current) return;
-
     const obs = new ResizeObserver(() => {
       setSize({
         w: containerRef.current!.clientWidth,
         h: containerRef.current!.clientHeight,
       });
     });
-
     obs.observe(containerRef.current);
     return () => obs.disconnect();
   }, []);
 
-  // fixed radial positions
-  const positionNodes = () => {
-    const hubs = data.nodes.filter((n) => n.type === "hub");
-    const papers = data.nodes.filter((n) => n.type === "paper");
-
-    hubs.forEach((hub, i) => {
-      const angle = (i / hubs.length) * Math.PI * 2;
-      hub.fx = Math.cos(angle) * HUB_RADIUS;
-      hub.fy = Math.sin(angle) * HUB_RADIUS;
-
-      const linked = papers.filter((p) =>
-        data.links.some((l) => l.source === p.id && l.target === hub.id)
-      );
-
-      linked.forEach((p, j) => {
-        const pa = (j / linked.length) * Math.PI * 2;
-        p.fx = (hub.fx ?? 0) + Math.cos(pa) * PAPER_RADIUS;
-        p.fy = (hub.fy ?? 0) + Math.sin(pa) * PAPER_RADIUS;
-      });
-    });
-  };
-
-  useEffect(() => {
-    if (data.nodes.length > 0) {
-      positionNodes();
-      setTimeout(() => fgRef.current?.zoomToFit?.(400, 50), 400);
-    }
-  }, [data]);
-
-  // draw nodes + labels
+  // --------------------------
+  // Draw nodes + labels
+  // --------------------------
   const drawNode = (
     node: Node & { x: number; y: number },
     ctx: CanvasRenderingContext2D,
-    globalScale: number
+    scale: number
   ) => {
     const isHub = node.type === "hub";
     const radius = isHub ? 18 : 6;
@@ -112,48 +137,45 @@ export default function LiveGraphCard() {
     ctx.fillStyle = isHub ? "#f59e0b" : "#2563eb";
     ctx.fill();
 
-    const fadeZoom = 0.8; // paper labels fade below this zoom
-    const showPaperLabel = globalScale < fadeZoom && !isHub;
+    // Labels
+    let label = node.label || "";
 
-    if (node.label && (isHub || showPaperLabel)) {
-      const label =
-        node.label.length > 26 ? node.label.slice(0, 26) + "…" : node.label;
-
-      ctx.font = `${(isHub ? 16 : 11) / globalScale}px Inter, sans-serif`;
-      ctx.fillStyle = "#1e293b";
-      ctx.textAlign = "center";
-
-      ctx.fillText(label, node.x, node.y - radius - 5);
+    if (node.type === "paper") {
+      label = node.title
+        ? node.title.slice(0, 32) + (node.title.length > 32 ? "…" : "")
+        : node.label!;
     }
+
+    const fontSize = (isHub ? 18 : 11) / scale;
+    ctx.font = `${fontSize}px Inter, sans-serif`;
+    ctx.fillStyle = "#1e293b";
+    ctx.textAlign = "center";
+    ctx.fillText(label, node.x, node.y - radius - 4);
   };
 
   return (
-    <div className="w-full rounded-xl border border-gray-200 bg-white shadow-sm p-4">
+    <div className="rounded-xl border border-gray-200 bg-white shadow-sm p-4">
       <div className="text-sm font-semibold mb-2 flex items-center gap-2">
-        🧠 Live Mechanism Network
-        <span className="text-xs text-gray-500">
-          (radial, zoom intelligence)
-        </span>
+        🧠 Live Mechanism Network{" "}
+        <span className="text-xs text-gray-500">(stable radial layout)</span>
       </div>
 
       <div
         ref={containerRef}
-        className="w-full h-[650px] rounded-lg overflow-hidden border border-gray-100"
+        className="w-full h-[620px] rounded-lg overflow-hidden border border-gray-100"
       >
         {size.w > 0 && size.h > 0 && (
           <ForceGraph2D
-            ref={fgRef}
             width={size.w}
             height={size.h}
             graphData={data}
             backgroundColor="#ffffff"
             nodeCanvasObject={drawNode}
-            linkColor={() => "#CBD5E1"}
-            linkWidth={() => 1.1}
+            linkColor={() => "#cbd5e1"}
+            linkWidth={() => 1.2}
             linkOpacity={0.9}
             enableNodeDrag={false}
-            minZoom={0.2}
-            maxZoom={4}
+            zoomToFit={false}
             onNodeClick={(n: any) => {
               if (n.type === "paper") window.open(`/papers/${n.id}`, "_blank");
             }}
