@@ -67,7 +67,6 @@ export default function LiveGraphCard() {
     return () => obs.disconnect();
   }, []);
 
-  // ✅ Radial hub → paper layout
   const positionNodes = () => {
     const hubs = data.nodes.filter((n) => n.type === "hub");
     const papers = data.nodes.filter((n) => n.type === "paper");
@@ -86,8 +85,12 @@ export default function LiveGraphCard() {
 
       hubPapers.forEach((p, j) => {
         const pa = (j / hubPapers.length) * Math.PI * 2;
-        p.fx = hub.fx + Math.cos(pa) * paperRadius;
-        p.fy = hub.fy + Math.sin(pa) * paperRadius;
+
+        const hubX = hub.fx ?? 0;
+        const hubY = hub.fy ?? 0;
+
+        p.fx = hubX + Math.cos(pa) * paperRadius;
+        p.fy = hubY + Math.sin(pa) * paperRadius;
       });
     });
   };
@@ -96,7 +99,6 @@ export default function LiveGraphCard() {
     if (data.nodes.length > 0) positionNodes();
   }, [data]);
 
-  // ✅ Draw nodes
   const drawNode = (
     node: Node & { x: number; y: number },
     ctx: CanvasRenderingContext2D,
@@ -104,6 +106,7 @@ export default function LiveGraphCard() {
   ) => {
     const isHub = node.type === "hub";
     const radius = isHub ? 18 : 7;
+
     const COLORS = {
       hub: "#f59e0b",
       paper: "#2563eb",
