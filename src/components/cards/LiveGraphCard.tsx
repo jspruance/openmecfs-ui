@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 
 const ForceGraph2D: any = dynamic(() => import("react-force-graph-2d"), {
@@ -18,6 +18,7 @@ interface Node {
   val?: number;
   fx?: number;
   fy?: number;
+  confidence?: number;
 }
 
 interface Link {
@@ -26,44 +27,28 @@ interface Link {
   type: string;
 }
 
+type GraphPayload = {
+  nodes: Node[];
+  links: Link[];
+  awaiting?: string[];
+};
+
+function truncate(s: string, n: number) {
+  if (!s) return s;
+  return s.length > n ? s.slice(0, n - 1) + "…" : s;
+}
+
 export default function LiveGraphCard() {
   const containerRef = useRef<HTMLDivElement>(null);
   const fgRef = useRef<any>(null);
 
   const [size, setSize] = useState({ w: 0, h: 0 });
-  const [data, setData] = useState<{ nodes: Node[]; links: Link[] }>({
+  const [graph, setGraph] = useState<{ nodes: Node[]; links: Link[] }>({
     nodes: [],
     links: [],
   });
 
-  // ✅ Fetch & prepare graph
-  useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/graph/global`)
-      .then((r) => r.json())
-      .then((res) => {
-        const hubs: Node[] = res.nodes.filter((n: Node) => n.type === "hub");
-        const papers: Node[] = res.nodes.filter(
-          (n: Node) => n.type === "paper"
-        );
-
-        hubs.forEach((h: Node) => (h.val = 8));
-        papers.forEach((p: Node) => (p.val = 2));
-
-        // ✅ Make sure humans see readable text — not PMID
-        res.nodes.forEach((n: Node) => {
-          if (n.type === "hub") n.label = n.label || n.title || n.id;
-          if (n.type === "paper") n.label = n.title || n.label || n.id;
-        });
-
-        // Keep all links - don't filter
-        setData({
-          nodes: [...hubs, ...papers],
-          links: res.links || [],
-        });
-      });
-  }, []);
-
-  // ✅ Resize observer
+  // Observe container size
   useEffect(() => {
     if (!containerRef.current) return;
     const obs = new ResizeObserver(() => {
@@ -76,104 +61,114 @@ export default function LiveGraphCard() {
     return () => obs.disconnect();
   }, []);
 
-  // ✅ Position hubs in a circle, papers around their hubs
+  // Fetch + normalize API
   useEffect(() => {
-    if (data.nodes.length === 0 || size.w === 0 || size.h === 0) return;
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/graph/global`)
+      .then((r) => r.json())
+      .then((res: GraphPayload) => {
+        // Separate hubs and papers
+        const hubs = res.nodes.filter((n) => n.type === "hub");
+        const hubIds = new Set(hubs.map((h) => h.id));
+        const awaiting = new Set(res.awaiting || []);
 
-    const newNodes = data.nodes.map((n: Node) => ({ ...n }));
-    const hubs = newNodes.filter((n: Node) => n.type === "hub");
-    const papers = newNodes.filter((n: Node) => n.type === "paper");
+        // Papers with titles preferred for labels
+        const papersAll = res.nodes.filter((n) => n.type === "paper");
 
-    // Position hubs in a circle around center
-    const centerX = size.w / 2;
-    const centerY = size.h / 2;
-    const hubRadius = Math.min(size.w, size.h) * 0.3;
+        // Keep only links that go to a known hub
+        // Your API is paper -> mechanism (paper is source)
+        const rawLinks = (res.links || []).filter(
+          (l) => hubIds.has(l.target) && !awaiting.has(l.source)
+        );
 
-    hubs.forEach((hub: Node, i: number) => {
-      const angle = (i / hubs.length) * Math.PI * 2 - Math.PI / 2;
-      hub.fx = centerX + Math.cos(angle) * hubRadius;
-      hub.fy = centerY + Math.sin(angle) * hubRadius;
-    });
-
-    // Position papers around their connected hubs
-    papers.forEach((paper: Node) => {
-      const connectedLinks = data.links.filter(
-        (l: Link) => l.source === paper.id || l.target === paper.id
-      );
-
-      if (connectedLinks.length > 0) {
-        const link = connectedLinks[0];
-        const hubId = link.source === paper.id ? link.target : link.source;
-        const hub = hubs.find((h: Node) => h.id === hubId);
-
-        if (hub && hub.fx !== undefined && hub.fy !== undefined) {
-          // Find all papers connected to this hub
-          const hubPapers = papers.filter((p: Node) =>
-            data.links.some(
-              (l: Link) =>
-                (l.source === p.id && l.target === hubId) ||
-                (l.target === p.id && l.source === hubId)
-            )
-          );
-
-          const paperIndex = hubPapers.findIndex((p: Node) => p.id === paper.id);
-          const totalPapers = Math.max(hubPapers.length, 1);
-          const paperAngle = (paperIndex / totalPapers) * Math.PI * 2 - Math.PI / 2;
-          const paperDistance = 85;
-
-          // Set fixed position around hub
-          paper.fx = hub.fx! + Math.cos(paperAngle) * paperDistance;
-          paper.fy = hub.fy! + Math.sin(paperAngle) * paperDistance;
+        // Deduplicate links
+        const seen = new Set<string>();
+        const links: Link[] = [];
+        for (const l of rawLinks) {
+          const k = `${l.source}->${l.target}`;
+          if (!seen.has(k)) {
+            seen.add(k);
+            links.push({ source: l.source, target: l.target, type: l.type });
+          }
         }
+
+        // Assign each paper to its first valid hub
+        const paperToHub = new Map<string, string>();
+        for (const l of links) {
+          if (!paperToHub.has(l.source)) paperToHub.set(l.source, l.target);
+        }
+
+        // Only keep papers that have a valid assignment
+        const assignedPapers = papersAll
+          .filter((p) => paperToHub.has(p.id))
+          .map((p) => ({
+            ...p,
+            label: p.title ? truncate(p.title, 48) : p.label,
+            val: 2,
+          }));
+
+        // Hubs styling
+        const hubsStyled = hubs.map((h) => ({ ...h, val: 12 }));
+
+        // Build edges strictly hub<->paper for the assigned set
+        const edges: Link[] = assignedPapers.map((p) => ({
+          source: p.id,
+          target: paperToHub.get(p.id)!,
+          type: "paper→mechanism",
+        }));
+
+        // Deterministic positions (radial)
+        const allNodes: Node[] = [...hubsStyled, ...assignedPapers];
+        applyStablePositions(allNodes, edges);
+
+        setGraph({ nodes: allNodes, links: edges });
+
+        // Zoom to fit after render
+        setTimeout(() => {
+          try {
+            fgRef.current?.zoomToFit?.(600, 60);
+          } catch {}
+        }, 0);
+      })
+      .catch((err) => {
+        console.error("Graph fetch failed", err);
+        setGraph({ nodes: [], links: [] });
+      });
+  }, []);
+
+  // Draw nodes
+  const drawNode = useMemo(() => {
+    return (
+      node: Node & { x: number; y: number },
+      ctx: CanvasRenderingContext2D,
+      scale: number
+    ) => {
+      const isHub = node.type === "hub";
+      const r = isHub ? 16 : 6;
+
+      const COLORS = {
+        hub: "#f59e0b",
+        paper: "#2563eb",
+        text: "#1f2937",
+      };
+
+      // Circle
+      ctx.beginPath();
+      ctx.arc(node.x, node.y, r, 0, 2 * Math.PI);
+      ctx.fillStyle = isHub ? COLORS.hub : COLORS.paper;
+      ctx.fill();
+
+      // Label
+      const label = node.label || node.title || node.id;
+      if (label) {
+        const fontSize = (isHub ? 18 : 11) / Math.max(1, scale);
+        ctx.font = `${fontSize}px Inter, system-ui, -apple-system`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "top";
+        ctx.fillStyle = COLORS.text;
+        ctx.fillText(label, node.x, node.y + r + 3);
       }
-    });
-
-    // Update data with positioned nodes
-    setData({ ...data, nodes: newNodes });
-    
-    // Zoom to fit after positioning
-    setTimeout(() => {
-      fgRef.current?.zoomToFit(400, 50);
-    }, 500);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data.nodes.length, size.w, size.h]);
-
-  // ✅ Draw nodes
-  const drawNode = (
-    node: Node & { x: number; y: number },
-    ctx: CanvasRenderingContext2D,
-    scale: number
-  ) => {
-    const isHub = node.type === "hub";
-    const radius = isHub ? 18 : 7;
-
-    const COLORS = {
-      hub: "#f59e0b",
-      paper: "#2563eb",
-      text: "#1e293b",
     };
-
-    ctx.beginPath();
-    ctx.arc(node.x, node.y, radius, 0, 2 * Math.PI);
-    ctx.fillStyle = isHub ? COLORS.hub : COLORS.paper;
-    ctx.fill();
-
-    if (node.label) {
-      const label =
-        node.type === "hub"
-          ? node.label
-          : node.label.length > 26
-          ? node.label.slice(0, 24) + "…"
-          : node.label;
-
-      const fontSize = (isHub ? 18 : 11) / scale;
-      ctx.font = `${fontSize}px Inter, sans-serif`;
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.fillStyle = COLORS.text;
-      ctx.fillText(label, node.x, node.y - radius - 5);
-    }
-  };
+  }, []);
 
   return (
     <div className="w-full rounded-xl border border-gray-200 bg-white shadow-sm p-4">
@@ -184,38 +179,84 @@ export default function LiveGraphCard() {
 
       <div
         ref={containerRef}
-        className="w-full h-[450px] rounded-lg overflow-hidden border border-gray-100"
+        className="w-full h-[600px] rounded-lg overflow-hidden border border-gray-100"
       >
         {size.w > 0 && size.h > 0 && (
           <ForceGraph2D
             ref={fgRef}
             width={size.w}
             height={size.h}
-            graphData={data}
+            graphData={graph}
             backgroundColor="#ffffff"
             nodeCanvasObject={drawNode}
-            linkColor={() => "#64748b"}
-            linkWidth={() => 2}
-            linkOpacity={0.8}
+            linkColor={() => "#CBD5E1"}
+            linkWidth={() => 1.3}
+            linkOpacity={0.9}
             enableNodeDrag={false}
-            cooldownTicks={200}
-            d3Force="charge"
-            d3ForceCharge={(node: any) => {
-              // Very weak forces since we're using fixed positions
-              return node.type === "hub" ? -200 : -30;
+            onNodeHover={(n: any) => {
+              document.body.style.cursor =
+                n && n.type === "paper" ? "pointer" : "default";
             }}
-            d3ForceLinkDistance={(link: any) => {
-              return 85;
-            }}
-            d3ForceLinkStrength={0.5}
-            d3AlphaDecay={0.022}
-            d3VelocityDecay={0.6}
             onNodeClick={(n: any) => {
-              if (n.type === "paper") window.open(`/papers/${n.id}`, "_blank");
+              if (n?.type === "paper") {
+                window.open(`/papers/${n.id}`, "_blank");
+              }
             }}
           />
         )}
       </div>
     </div>
   );
+}
+
+/**
+ * Deterministic radial positions, no physics.
+ * - Hubs on a ring
+ * - Papers evenly orbit their assigned hub
+ */
+function applyStablePositions(nodes: Node[], links: Link[]) {
+  const hubs = nodes.filter((n) => n.type === "hub");
+  const papers = nodes.filter((n) => n.type === "paper");
+
+  // Centered at 0,0 — ForceGraph will zoomToFit
+  const HUB_RADIUS = 240;
+  const PAPER_RADIUS = 130;
+
+  // Place hubs
+  hubs.forEach((h, i) => {
+    const ang = (i / Math.max(1, hubs.length)) * Math.PI * 2;
+    h.fx = Math.cos(ang) * HUB_RADIUS;
+    h.fy = Math.sin(ang) * HUB_RADIUS;
+  });
+
+  // Group papers by their hub (from links)
+  const papersByHub = new Map<string, Node[]>();
+  hubs.forEach((h) => papersByHub.set(h.id, []));
+  const hubOfPaper = new Map<string, string>();
+
+  for (const l of links) {
+    // source = paper, target = hub (normalized above)
+    hubOfPaper.set(l.source, l.target);
+  }
+
+  for (const p of papers) {
+    const hid = hubOfPaper.get(p.id);
+    if (hid && papersByHub.has(hid)) {
+      papersByHub.get(hid)!.push(p);
+    }
+  }
+
+  // Place papers around their hub
+  hubs.forEach((h) => {
+    const group = papersByHub.get(h.id) || [];
+    if (group.length === 0) return;
+
+    group.forEach((p, j) => {
+      const pa = (j / group.length) * Math.PI * 2;
+      const hx = h.fx ?? 0;
+      const hy = h.fy ?? 0;
+      p.fx = hx + Math.cos(pa) * PAPER_RADIUS;
+      p.fy = hy + Math.sin(pa) * PAPER_RADIUS;
+    });
+  });
 }
