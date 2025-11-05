@@ -1,12 +1,10 @@
-/* eslint-disable prefer-const */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-unused-vars */
-
 "use client";
 
 import { useEffect, useState, useRef } from "react";
 import dynamic from "next/dynamic";
 
+// ✅ Dynamic import (client only)
 const ForceGraph2D: any = dynamic(() => import("react-force-graph-2d"), {
   ssr: false,
 });
@@ -36,47 +34,51 @@ export default function LiveGraphCard() {
     links: [],
   });
 
+  // ✅ Load graph data
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/graph/global`)
-      .then((r) => r.json())
-      .then((res) => {
-        const nodes: Node[] = res.nodes || [];
-        const links: Link[] = res.links || [];
+    const load = async () => {
+      try {
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/graph/global`
+        );
+        const json = await res.json();
 
-        const finalNodes = nodes.map((n: Node) => ({
+        const finalNodes = (json.nodes || []).map((n: Node) => ({
           ...n,
-          // Hubs large, papers smaller
           val: n.type === "hub" ? 4 : 1.2,
         }));
 
-        setData({ nodes: finalNodes, links });
+        setData({ nodes: finalNodes, links: json.links || [] });
 
         setTimeout(() => {
           try {
             fgRef.current?.zoomToFit?.(600, 80);
-          } catch {}
+          } catch (e) {}
         }, 800);
-      });
+      } catch (e) {
+        console.error("Graph fetch error", e);
+      }
+    };
+
+    load();
   }, []);
 
+  // ✅ Track container size
   useEffect(() => {
     if (!containerRef.current) return;
+
     const obs = new ResizeObserver(() => {
       setSize({
         w: containerRef.current!.clientWidth,
         h: containerRef.current!.clientHeight,
       });
     });
+
     obs.observe(containerRef.current);
     return () => obs.disconnect();
   }, []);
 
-  const COLORS = {
-    hub: "#f59e0b",
-    paper: "#2563eb",
-    text: "#1e293b",
-  };
-
+  // ✅ Draw node (hub vs paper)
   const drawNode = (
     node: Node & { x: number; y: number },
     ctx: CanvasRenderingContext2D,
@@ -84,6 +86,12 @@ export default function LiveGraphCard() {
   ) => {
     const isHub = node.type === "hub";
     const radius = isHub ? 14 : 7;
+
+    const COLORS = {
+      hub: "#f59e0b", // amber
+      paper: "#2563eb", // blue
+      text: "#1e293b", // slate
+    };
 
     ctx.beginPath();
     ctx.arc(node.x, node.y, radius, 0, 2 * Math.PI);
@@ -93,15 +101,14 @@ export default function LiveGraphCard() {
     if (node.label) {
       const fontSize = (isHub ? 15 : 11) / scale;
       ctx.font = `${fontSize}px Inter, sans-serif`;
-      ctx.textAlign = isHub ? "center" : "left";
+      ctx.textAlign = "left";
       ctx.textBaseline = "middle";
       ctx.fillStyle = COLORS.text;
 
-      // Truncate long titles
-      const label =
-        node.label.length > 24 ? node.label.slice(0, 24) + "…" : node.label;
+      const truncated =
+        node.label.length > 22 ? `${node.label.slice(0, 22)}…` : node.label;
 
-      ctx.fillText(label, node.x + (isHub ? 0 : radius + 4), node.y);
+      ctx.fillText(truncated, node.x + radius + 4, node.y);
     }
   };
 
@@ -109,7 +116,9 @@ export default function LiveGraphCard() {
     <div className="rounded-xl border border-gray-200 bg-white shadow-sm p-4">
       <div className="text-sm font-semibold mb-2 flex items-center gap-2">
         🧠 Live Mechanism Network{" "}
-        <span className="text-xs text-gray-500">(debug mode — all papers)</span>
+        <span className="text-xs text-gray-500">
+          (debug mode — showing all papers)
+        </span>
       </div>
 
       <div
@@ -126,16 +135,18 @@ export default function LiveGraphCard() {
             backgroundColor="#ffffff"
             linkColor={() => "#CBD5E1"}
             linkOpacity={0.7}
-            linkWidth={() => 1.1}
+            linkWidth={() => 1.2}
             cooldownTicks={120}
             d3VelocityDecay={0.35}
-            nodeCanvasObject={(node, ctx, scale) =>
-              drawNode(node as Node & { x: number; y: number }, ctx, scale)
-            }
-            onNodeHover={(n: any) => {
+            nodeCanvasObject={(
+              node: Node & { x: number; y: number },
+              ctx: CanvasRenderingContext2D,
+              scale: number
+            ) => drawNode(node, ctx, scale)}
+            onNodeHover={(n: Node | null) => {
               document.body.style.cursor = n ? "pointer" : "default";
             }}
-            onNodeClick={(n: any) => {
+            onNodeClick={(n: Node) => {
               if (n.type === "paper") {
                 window.open(`/papers/${n.id}`, "_blank");
               }
