@@ -1,4 +1,7 @@
+/* eslint-disable prefer-const */
 /* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+
 "use client";
 
 import { useEffect, useState, useRef } from "react";
@@ -23,9 +26,6 @@ interface Link {
   type: string;
 }
 
-// ✅ DEBUG MODE — show all papers or only connected ones
-const DEBUG_MODE = true;
-
 export default function LiveGraphCard() {
   const containerRef = useRef<HTMLDivElement>(null);
   const fgRef = useRef<any>(null);
@@ -40,29 +40,22 @@ export default function LiveGraphCard() {
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/graph/global`)
       .then((r) => r.json())
       .then((res) => {
-        let nodes: Node[] = res.nodes || [];
-        let links: Link[] = res.links || [];
+        const nodes: Node[] = res.nodes || [];
+        const links: Link[] = res.links || [];
 
-        if (!DEBUG_MODE) {
-          const connectedPapers = new Set(
-            links
-              .filter((l) => l.type === "paper-mechanism")
-              .map((l) => l.source)
-          );
-
-          nodes = nodes.filter(
-            (n) => n.type === "hub" || connectedPapers.has(n.id)
-          );
-        }
-
-        const finalNodes = nodes.map((n) => ({
+        const finalNodes = nodes.map((n: Node) => ({
           ...n,
-          val: n.type === "hub" ? 6 : 1.4, // 🧠 emphasize hubs
+          // Hubs large, papers smaller
+          val: n.type === "hub" ? 4 : 1.2,
         }));
 
         setData({ nodes: finalNodes, links });
 
-        setTimeout(() => fgRef.current?.zoomToFit?.(800, 80), 800);
+        setTimeout(() => {
+          try {
+            fgRef.current?.zoomToFit?.(600, 80);
+          } catch {}
+        }, 800);
       });
   }, []);
 
@@ -90,7 +83,7 @@ export default function LiveGraphCard() {
     scale: number
   ) => {
     const isHub = node.type === "hub";
-    const radius = isHub ? 20 : 8;
+    const radius = isHub ? 14 : 7;
 
     ctx.beginPath();
     ctx.arc(node.x, node.y, radius, 0, 2 * Math.PI);
@@ -98,15 +91,17 @@ export default function LiveGraphCard() {
     ctx.fill();
 
     if (node.label) {
-      const fontSize = (isHub ? 18 : 12) / scale;
-      const truncated =
-        node.label.length > 22 ? node.label.slice(0, 22) + "…" : node.label;
-
+      const fontSize = (isHub ? 15 : 11) / scale;
       ctx.font = `${fontSize}px Inter, sans-serif`;
-      ctx.textAlign = "center";
+      ctx.textAlign = isHub ? "center" : "left";
       ctx.textBaseline = "middle";
       ctx.fillStyle = COLORS.text;
-      ctx.fillText(truncated, node.x, node.y + radius + 10);
+
+      // Truncate long titles
+      const label =
+        node.label.length > 24 ? node.label.slice(0, 24) + "…" : node.label;
+
+      ctx.fillText(label, node.x + (isHub ? 0 : radius + 4), node.y);
     }
   };
 
@@ -114,9 +109,7 @@ export default function LiveGraphCard() {
     <div className="rounded-xl border border-gray-200 bg-white shadow-sm p-4">
       <div className="text-sm font-semibold mb-2 flex items-center gap-2">
         🧠 Live Mechanism Network{" "}
-        {DEBUG_MODE && (
-          <span className="text-xs text-gray-500">(debug — all papers)</span>
-        )}
+        <span className="text-xs text-gray-500">(debug mode — all papers)</span>
       </div>
 
       <div
@@ -129,21 +122,19 @@ export default function LiveGraphCard() {
             width={size.w}
             height={size.h}
             graphData={data}
-            nodeRelSize={6}
+            nodeRelSize={4}
             backgroundColor="#ffffff"
             linkColor={() => "#CBD5E1"}
-            linkOpacity={0.6}
-            linkWidth={() => 1.2}
-            cooldownTicks={160}
-            d3VelocityDecay={0.33}
-            d3Force="charge"
-            d3AlphaDecay={0.015}
+            linkOpacity={0.7}
+            linkWidth={() => 1.1}
+            cooldownTicks={120}
+            d3VelocityDecay={0.35}
             nodeCanvasObject={(node, ctx, scale) =>
               drawNode(node as Node & { x: number; y: number }, ctx, scale)
             }
-            onNodeHover={(n: any) =>
-              (document.body.style.cursor = n ? "pointer" : "default")
-            }
+            onNodeHover={(n: any) => {
+              document.body.style.cursor = n ? "pointer" : "default";
+            }}
             onNodeClick={(n: any) => {
               if (n.type === "paper") {
                 window.open(`/papers/${n.id}`, "_blank");
