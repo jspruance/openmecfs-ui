@@ -20,8 +20,11 @@ declare module "react-force-graph-2d" {
     linkWidth?: number | ((link: any) => number);
     d3Force?: string;
     d3ForceCharge?: number | ((node: any) => number);
+    d3ForceLinkDistance?: number | ((link: any) => number);
+    d3ForceLinkStrength?: number;
     d3AlphaDecay?: number;
     d3VelocityDecay?: number;
+    enableNodeDrag?: boolean;
     nodeCanvasObject?: (
       node: any,
       ctx: CanvasRenderingContext2D,
@@ -29,6 +32,7 @@ declare module "react-force-graph-2d" {
     ) => void;
     onNodeClick?: (node: any) => void;
     onNodeHover?: (node: any | null) => void;
+    onEngineStop?: () => void;
   }
 
   const ForceGraph2D: ComponentType<ForceGraphProps>;

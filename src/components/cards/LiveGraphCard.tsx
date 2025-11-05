@@ -80,42 +80,65 @@ export default function LiveGraphCard() {
     return () => obs.disconnect();
   }, []);
 
-  // ✅ Radial hub + orbiting papers layout
-  const positionNodes = () => {
-    const hubs = data.nodes.filter((n) => n.type === "hub");
-    const papers = data.nodes.filter((n) => n.type === "paper");
+  // ✅ Position hubs in a circle, papers around their hubs
+  useEffect(() => {
+    if (data.nodes.length === 0 || size.w === 0 || size.h === 0) return;
 
-    const hubRadius = 180;
-    const paperRadius = 100;
+    const newNodes = [...data.nodes];
+    const hubs = newNodes.filter((n: Node) => n.type === "hub");
+    const papers = newNodes.filter((n: Node) => n.type === "paper");
 
-    hubs.forEach((hub, i) => {
-      const angle = (i / hubs.length) * Math.PI * 2;
-      hub.fx = Math.cos(angle) * hubRadius;
-      hub.fy = Math.sin(angle) * hubRadius;
+    // Position hubs in a circle
+    const centerX = size.w / 2;
+    const centerY = size.h / 2;
+    const hubRadius = Math.min(size.w, size.h) * 0.25;
 
-      // ✅ Match papers to hub (both link directions)
-      const hubPapers = papers.filter((p) =>
-        data.links.some(
-          (l) =>
-            (l.source === hub.id && l.target === p.id) ||
-            (l.target === hub.id && l.source === p.id)
-        )
+    hubs.forEach((hub: Node, i: number) => {
+      const angle = (i / hubs.length) * Math.PI * 2 - Math.PI / 2; // Start at top
+      hub.fx = centerX + Math.cos(angle) * hubRadius;
+      hub.fy = centerY + Math.sin(angle) * hubRadius;
+    });
+
+    // Position papers around their connected hubs
+    papers.forEach((paper: Node) => {
+      const connectedLinks = data.links.filter(
+        (l: Link) => l.source === paper.id || l.target === paper.id
       );
 
-      hubPapers.forEach((p, j) => {
-        const pa = (j / hubPapers.length) * Math.PI * 2;
-        const hx = hub.fx ?? 0;
-        const hy = hub.fy ?? 0;
+      if (connectedLinks.length > 0) {
+        const link = connectedLinks[0];
+        const hubId = link.source === paper.id ? link.target : link.source;
+        const hub = hubs.find((h: Node) => h.id === hubId);
 
-        p.fx = hx + Math.cos(pa) * paperRadius;
-        p.fy = hy + Math.sin(pa) * paperRadius;
-      });
+        if (hub && hub.fx !== undefined && hub.fy !== undefined) {
+          // Find all papers connected to this hub
+          const hubPapers = papers.filter((p: Node) =>
+            data.links.some(
+              (l: Link) =>
+                (l.source === p.id && l.target === hubId) ||
+                (l.target === p.id && l.source === hubId)
+            )
+          );
+
+          const paperIndex = hubPapers.findIndex((p: Node) => p.id === paper.id);
+          const totalPapers = hubPapers.length;
+          const paperAngle =
+            totalPapers > 0
+              ? (paperIndex / totalPapers) * Math.PI * 2 - Math.PI / 2
+              : 0;
+          const paperDistance = 80;
+
+          // Set initial position around hub
+          paper.fx = hub.fx + Math.cos(paperAngle) * paperDistance;
+          paper.fy = hub.fy + Math.sin(paperAngle) * paperDistance;
+        }
+      }
     });
-  };
 
-  useEffect(() => {
-    if (data.nodes.length > 0) positionNodes();
-  }, [data]);
+    // Update data to trigger re-render
+    setData({ ...data, nodes: newNodes });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data.nodes.length, size.w, size.h]);
 
   // ✅ Draw nodes
   const drawNode = (
@@ -163,7 +186,7 @@ export default function LiveGraphCard() {
 
       <div
         ref={containerRef}
-        className="w-full h-[600px] rounded-lg overflow-hidden border border-gray-100"
+        className="w-full h-[450px] rounded-lg overflow-hidden border border-gray-100"
       >
         {size.w > 0 && size.h > 0 && (
           <ForceGraph2D
@@ -173,13 +196,31 @@ export default function LiveGraphCard() {
             graphData={data}
             backgroundColor="#ffffff"
             nodeCanvasObject={drawNode}
-            linkColor={() => "#CBD5E1"}
-            linkWidth={() => 1.4}
-            linkOpacity={0.9}
+            linkColor={() => "#94a3b8"}
+            linkWidth={() => 1.5}
+            linkOpacity={0.6}
             enableNodeDrag={false}
-            cooldownTicks={0}
+            cooldownTicks={100}
+            d3Force="charge"
+            d3ForceCharge={(node: any) => {
+              // Strong repulsion between hubs, weaker for papers
+              return node.type === "hub" ? -300 : -50;
+            }}
+            d3ForceLinkDistance={(link: any) => {
+              // Shorter links between papers and hubs
+              return 60;
+            }}
+            d3ForceLinkStrength={0.8}
+            d3AlphaDecay={0.02}
+            d3VelocityDecay={0.4}
             onNodeClick={(n: any) => {
               if (n.type === "paper") window.open(`/papers/${n.id}`, "_blank");
+            }}
+            onEngineStop={() => {
+              // Zoom to fit after simulation settles
+              setTimeout(() => {
+                fgRef.current?.zoomToFit(400, 50);
+              }, 100);
             }}
           />
         )}
