@@ -55,25 +55,11 @@ export default function LiveGraphCard() {
           if (n.type === "paper") n.label = n.title || n.label || n.id;
         });
 
-        // Ensure links connect papers to hubs properly
-        const validLinks = (res.links || []).filter((link: Link) => {
-          const sourceIsHub = hubs.some((h: Node) => h.id === link.source);
-          const targetIsHub = hubs.some((h: Node) => h.id === link.target);
-          const sourceIsPaper = papers.some((p: Node) => p.id === link.source);
-          const targetIsPaper = papers.some((p: Node) => p.id === link.target);
-          // Keep links that connect hub-to-paper or paper-to-hub
-          return (sourceIsHub && targetIsPaper) || (sourceIsPaper && targetIsHub);
-        });
-
+        // Keep all links - don't filter
         setData({
           nodes: [...hubs, ...papers],
-          links: validLinks,
+          links: res.links || [],
         });
-
-        // ✅ After data loads, zoom to fit
-        setTimeout(() => {
-          fgRef.current?.zoomToFit(800, 100);
-        }, 300);
       });
   }, []);
 
@@ -94,17 +80,17 @@ export default function LiveGraphCard() {
   useEffect(() => {
     if (data.nodes.length === 0 || size.w === 0 || size.h === 0) return;
 
-    const newNodes = [...data.nodes];
+    const newNodes = data.nodes.map((n: Node) => ({ ...n }));
     const hubs = newNodes.filter((n: Node) => n.type === "hub");
     const papers = newNodes.filter((n: Node) => n.type === "paper");
 
-    // Position hubs in a circle
+    // Position hubs in a circle around center
     const centerX = size.w / 2;
     const centerY = size.h / 2;
-    const hubRadius = Math.min(size.w, size.h) * 0.25;
+    const hubRadius = Math.min(size.w, size.h) * 0.3;
 
     hubs.forEach((hub: Node, i: number) => {
-      const angle = (i / hubs.length) * Math.PI * 2 - Math.PI / 2; // Start at top
+      const angle = (i / hubs.length) * Math.PI * 2 - Math.PI / 2;
       hub.fx = centerX + Math.cos(angle) * hubRadius;
       hub.fy = centerY + Math.sin(angle) * hubRadius;
     });
@@ -131,22 +117,24 @@ export default function LiveGraphCard() {
           );
 
           const paperIndex = hubPapers.findIndex((p: Node) => p.id === paper.id);
-          const totalPapers = hubPapers.length;
-          const paperAngle =
-            totalPapers > 0
-              ? (paperIndex / totalPapers) * Math.PI * 2 - Math.PI / 2
-              : 0;
-          const paperDistance = 100; // Slightly further to avoid overlap
+          const totalPapers = Math.max(hubPapers.length, 1);
+          const paperAngle = (paperIndex / totalPapers) * Math.PI * 2 - Math.PI / 2;
+          const paperDistance = 85;
 
-          // Set fixed position around hub - keep papers fixed to maintain hub-and-spoke layout
-          paper.fx = hub.fx + Math.cos(paperAngle) * paperDistance;
-          paper.fy = hub.fy + Math.sin(paperAngle) * paperDistance;
+          // Set fixed position around hub
+          paper.fx = hub.fx! + Math.cos(paperAngle) * paperDistance;
+          paper.fy = hub.fy! + Math.sin(paperAngle) * paperDistance;
         }
       }
     });
 
-    // Update data to trigger re-render
+    // Update data with positioned nodes
     setData({ ...data, nodes: newNodes });
+    
+    // Zoom to fit after positioning
+    setTimeout(() => {
+      fgRef.current?.zoomToFit(400, 50);
+    }, 500);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data.nodes.length, size.w, size.h]);
 
@@ -210,27 +198,20 @@ export default function LiveGraphCard() {
             linkWidth={() => 2}
             linkOpacity={0.8}
             enableNodeDrag={false}
-            cooldownTicks={100}
+            cooldownTicks={200}
             d3Force="charge"
             d3ForceCharge={(node: any) => {
-              // Strong repulsion between hubs, weaker for papers
-              return node.type === "hub" ? -400 : -80;
+              // Very weak forces since we're using fixed positions
+              return node.type === "hub" ? -200 : -30;
             }}
             d3ForceLinkDistance={(link: any) => {
-              // Keep papers close to their hubs
-              return 90;
+              return 85;
             }}
-            d3ForceLinkStrength={1.0}
-            d3AlphaDecay={0.02}
-            d3VelocityDecay={0.5}
+            d3ForceLinkStrength={0.5}
+            d3AlphaDecay={0.022}
+            d3VelocityDecay={0.6}
             onNodeClick={(n: any) => {
               if (n.type === "paper") window.open(`/papers/${n.id}`, "_blank");
-            }}
-            onEngineStop={() => {
-              // Zoom to fit after simulation settles
-              setTimeout(() => {
-                fgRef.current?.zoomToFit(400, 50);
-              }, 100);
             }}
           />
         )}
