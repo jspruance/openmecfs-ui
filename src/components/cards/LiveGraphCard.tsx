@@ -10,7 +10,7 @@ const ForceGraph2D: any = dynamic(() => import("react-force-graph-2d"), {
 
 interface Node {
   id: string;
-  label?: string; // ✅ human-readable label from backend
+  label?: string;
   type: "hub" | "paper";
   x?: number;
   y?: number;
@@ -23,6 +23,9 @@ interface Link {
   type: string;
 }
 
+// ✅ DEBUG MODE — show all papers or only connected ones
+const DEBUG_MODE = true;
+
 export default function LiveGraphCard() {
   const containerRef = useRef<HTMLDivElement>(null);
   const fgRef = useRef<any>(null);
@@ -33,31 +36,36 @@ export default function LiveGraphCard() {
     links: [],
   });
 
-  // ✅ Debug mode: show ALL nodes, all links
   useEffect(() => {
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/graph/global`)
       .then((r) => r.json())
       .then((res) => {
-        const nodes: Node[] =
-          res.nodes?.map((n: any) => ({
-            ...n,
-            // ✅ Bigger hubs
-            val: n.type === "hub" ? 6 : 2.2,
-          })) || [];
+        let nodes: Node[] = res.nodes || [];
+        let links: Link[] = res.links || [];
 
-        const links = res.links || [];
-        setData({ nodes, links });
+        if (!DEBUG_MODE) {
+          const connectedPapers = new Set(
+            links
+              .filter((l) => l.type === "paper-mechanism")
+              .map((l) => l.source)
+          );
 
-        // ✅ Zoom out so nodes don’t overlap
-        setTimeout(() => {
-          try {
-            fgRef.current?.zoomToFit?.(800, 80);
-          } catch {}
-        }, 500);
+          nodes = nodes.filter(
+            (n) => n.type === "hub" || connectedPapers.has(n.id)
+          );
+        }
+
+        const finalNodes = nodes.map((n) => ({
+          ...n,
+          val: n.type === "hub" ? 6 : 1.4, // 🧠 emphasize hubs
+        }));
+
+        setData({ nodes: finalNodes, links });
+
+        setTimeout(() => fgRef.current?.zoomToFit?.(800, 80), 800);
       });
   }, []);
 
-  // ✅ Resize observer
   useEffect(() => {
     if (!containerRef.current) return;
     const obs = new ResizeObserver(() => {
@@ -70,48 +78,50 @@ export default function LiveGraphCard() {
     return () => obs.disconnect();
   }, []);
 
-  // ✅ Custom draw for clear labeling
+  const COLORS = {
+    hub: "#f59e0b",
+    paper: "#2563eb",
+    text: "#1e293b",
+  };
+
   const drawNode = (
     node: Node & { x: number; y: number },
     ctx: CanvasRenderingContext2D,
     scale: number
   ) => {
     const isHub = node.type === "hub";
-    const radius = isHub ? 22 : 10;
-
-    const COLORS = {
-      hub: "#f59e0b",
-      paper: "#2563eb",
-      text: "#1e293b",
-    };
+    const radius = isHub ? 20 : 8;
 
     ctx.beginPath();
     ctx.arc(node.x, node.y, radius, 0, 2 * Math.PI);
     ctx.fillStyle = isHub ? COLORS.hub : COLORS.paper;
     ctx.fill();
 
-    const label = node.label || node.id;
-    const fontSize = (isHub ? 18 : 12) / scale;
-    ctx.font = `${fontSize}px Inter, sans-serif`;
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillStyle = Colors.text;
+    if (node.label) {
+      const fontSize = (isHub ? 18 : 12) / scale;
+      const truncated =
+        node.label.length > 22 ? node.label.slice(0, 22) + "…" : node.label;
 
-    // ✅ Truncate long paper titles
-    const truncated = label.length > 22 ? label.slice(0, 22) + "…" : label;
-    ctx.fillText(truncated, node.x, node.y + radius + fontSize);
+      ctx.font = `${fontSize}px Inter, sans-serif`;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillStyle = COLORS.text;
+      ctx.fillText(truncated, node.x, node.y + radius + 10);
+    }
   };
 
   return (
     <div className="rounded-xl border border-gray-200 bg-white shadow-sm p-4">
       <div className="text-sm font-semibold mb-2 flex items-center gap-2">
         🧠 Live Mechanism Network{" "}
-        <span className="text-xs text-gray-500">(debug mode — all papers)</span>
+        {DEBUG_MODE && (
+          <span className="text-xs text-gray-500">(debug — all papers)</span>
+        )}
       </div>
 
       <div
         ref={containerRef}
-        className="w-full h-[420px] rounded-lg overflow-hidden border border-gray-100"
+        className="w-full h-[380px] rounded-lg overflow-hidden border border-gray-100"
       >
         {size.w > 0 && size.h > 0 && (
           <ForceGraph2D
@@ -119,18 +129,20 @@ export default function LiveGraphCard() {
             width={size.w}
             height={size.h}
             graphData={data}
-            nodeRelSize={4}
+            nodeRelSize={6}
             backgroundColor="#ffffff"
             linkColor={() => "#CBD5E1"}
-            linkOpacity={0.8}
+            linkOpacity={0.6}
             linkWidth={() => 1.2}
-            cooldownTicks={150}
-            d3VelocityDecay={0.35}
-            onNodeHover={(n: any) =>
-              (document.body.style.cursor = n ? "pointer" : "default")
-            }
+            cooldownTicks={160}
+            d3VelocityDecay={0.33}
+            d3Force="charge"
+            d3AlphaDecay={0.015}
             nodeCanvasObject={(node, ctx, scale) =>
               drawNode(node as Node & { x: number; y: number }, ctx, scale)
+            }
+            onNodeHover={(n: any) =>
+              (document.body.style.cursor = n ? "pointer" : "default")
             }
             onNodeClick={(n: any) => {
               if (n.type === "paper") {
