@@ -67,7 +67,7 @@ export default function LiveGraphCard() {
         const filteredLinks = res.links.filter(
           (l: Link) =>
             HUB_ORDER.includes(l.target) &&
-            filteredPapers.some((p) => p.id === l.source)
+            filteredPapers.some((p: Node) => p.id === l.source)
         );
 
         setData({
