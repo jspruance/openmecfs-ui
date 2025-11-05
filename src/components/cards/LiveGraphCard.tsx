@@ -35,7 +35,7 @@ export default function LiveGraphCard() {
     links: [],
   });
 
-  // ✅ Debug mode — show all nodes
+  // ✅ Fetch + label fix
   useEffect(() => {
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/graph/global`)
       .then((r) => r.json())
@@ -43,11 +43,19 @@ export default function LiveGraphCard() {
         const hubs = res.nodes.filter((n: Node) => n.type === "hub");
         const papers = res.nodes.filter((n: Node) => n.type === "paper");
 
-        // ✅ Give hubs size
-        hubs.forEach((h: Node) => (h.val = 8));
+        hubs.forEach((h: Node) => {
+          h.val = 10;
+          h.label = h.label || h.id;
+        });
 
-        // ✅ Give papers smaller size
-        papers.forEach((p: Node) => (p.val = 2));
+        papers.forEach((p: Node) => {
+          p.val = 2;
+          p.label = p.title
+            ? p.title.length > 40
+              ? p.title.slice(0, 38) + "…"
+              : p.title
+            : `PMID: ${p.id}`;
+        });
 
         setData({
           nodes: [...hubs, ...papers],
@@ -55,9 +63,7 @@ export default function LiveGraphCard() {
         });
 
         setTimeout(() => {
-          try {
-            fgRef.current?.zoomToFit?.(800, 80);
-          } catch {}
+          fgRef.current?.zoomToFit?.(800, 80);
         }, 600);
       });
   }, []);
@@ -75,14 +81,14 @@ export default function LiveGraphCard() {
     return () => obs.disconnect();
   }, []);
 
-  // ✅ Draw nodes (custom styling)
+  // ✅ Custom draw
   const drawNode = (
     node: Node & { x: number; y: number },
     ctx: CanvasRenderingContext2D,
     scale: number
   ) => {
     const isHub = node.type === "hub";
-    const radius = isHub ? 20 : 7;
+    const radius = isHub ? 22 : 8;
 
     const COLORS = {
       hub: "#f59e0b",
@@ -95,22 +101,14 @@ export default function LiveGraphCard() {
     ctx.fillStyle = isHub ? COLORS.hub : COLORS.paper;
     ctx.fill();
 
-    // ✅ Label hubs fully, papers truncated
-    if (node.label) {
-      const label =
-        node.type === "hub"
-          ? node.label
-          : node.label.length > 20
-          ? node.label.slice(0, 18) + "…"
-          : node.label;
-
-      const fontSize = (isHub ? 18 : 12) / scale;
-      ctx.font = `${fontSize}px Inter, sans-serif`;
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.fillStyle = COLORS.text;
-      ctx.fillText(label, node.x, node.y - radius - 4);
-    }
+    // ✅ Label
+    const label = node.label || "";
+    const fontSize = (isHub ? 18 : 10) / scale;
+    ctx.font = `${fontSize}px Inter, sans-serif`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillStyle = COLORS.text;
+    ctx.fillText(label, node.x, node.y - radius - 4);
   };
 
   return (
@@ -139,19 +137,17 @@ export default function LiveGraphCard() {
             linkOpacity={0.8}
             nodeRelSize={4}
             warmupTicks={60}
-            cooldownTicks={800}
-            d3VelocityDecay={0.3}
+            cooldownTicks={300}
+            d3VelocityDecay={0.25}
             d3AlphaDecay={0.02}
-            d3Force="charge"
-            // ✅ Push hubs apart, cluster papers around hubs
-            onEngineTick={() => {
-              data.nodes.forEach((n: any) => {
-                if (n.type === "hub") {
-                  // push hubs outward slightly
-                  n.fx = undefined;
-                  n.fy = undefined;
-                }
-              });
+            // ✅ Spread nodes apart — fix overlapping blob
+            d3Force={(forceName: string, force: any) => {
+              if (forceName === "charge") {
+                force.strength(-300);
+              }
+              if (forceName === "collision") {
+                force.radius((n: any) => (n.type === "hub" ? 60 : 20));
+              }
             }}
             onNodeHover={(node: any) => {
               document.body.style.cursor = node ? "pointer" : "default";
