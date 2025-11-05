@@ -13,12 +13,9 @@ interface Node {
   label?: string;
   title?: string;
   type: "hub" | "paper";
-  x?: number;
-  y?: number;
   val?: number;
   fx?: number;
   fy?: number;
-  confidence?: number;
 }
 
 interface Link {
@@ -33,8 +30,11 @@ type GraphPayload = {
   awaiting?: string[];
 };
 
-function truncate(s: string, n: number) {
-  if (!s) return s;
+const HUB_RADIUS = 260;
+const PAPER_RADIUS = 140;
+
+function truncate(s?: string, n = 48) {
+  if (!s) return "";
   return s.length > n ? s.slice(0, n - 1) + "…" : s;
 }
 
@@ -48,7 +48,19 @@ export default function LiveGraphCard() {
     links: [],
   });
 
-  // Observe container size
+  // Keep zoom-to-fit stable & predictable
+  const zoomToFit = () => {
+    // Defer a couple frames so ForceGraph has painted
+    requestAnimationFrame(() =>
+      requestAnimationFrame(() => {
+        try {
+          fgRef.current?.zoomToFit?.(600, 60);
+        } catch {}
+      })
+    );
+  };
+
+  // Size observer
   useEffect(() => {
     if (!containerRef.current) return;
     const obs = new ResizeObserver(() => {
@@ -56,86 +68,74 @@ export default function LiveGraphCard() {
         w: containerRef.current!.clientWidth,
         h: containerRef.current!.clientHeight,
       });
+      zoomToFit();
     });
     obs.observe(containerRef.current);
     return () => obs.disconnect();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Fetch + normalize API
+  // Fetch and normalize
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/graph/global`)
-      .then((r) => r.json())
-      .then((res: GraphPayload) => {
-        // Separate hubs and papers
-        const hubs = res.nodes.filter((n) => n.type === "hub");
-        const hubIds = new Set(hubs.map((h) => h.id));
-        const awaiting = new Set(res.awaiting || []);
+    (async () => {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/graph/global`
+      );
+      const raw: GraphPayload = await res.json();
 
-        // Papers with titles preferred for labels
-        const papersAll = res.nodes.filter((n) => n.type === "paper");
+      const hubs = raw.nodes.filter((n) => n.type === "hub");
+      const hubIds = new Set(hubs.map((h) => h.id));
+      const awaiting = new Set(raw.awaiting || []);
 
-        // Keep only links that go to a known hub
-        // Your API is paper -> mechanism (paper is source)
-        const rawLinks = (res.links || []).filter(
-          (l) => hubIds.has(l.target) && !awaiting.has(l.source)
-        );
-
-        // Deduplicate links
-        const seen = new Set<string>();
-        const links: Link[] = [];
-        for (const l of rawLinks) {
-          const k = `${l.source}->${l.target}`;
-          if (!seen.has(k)) {
-            seen.add(k);
-            links.push({ source: l.source, target: l.target, type: l.type });
-          }
+      // Only links paper -> known hub; drop awaiting papers
+      const dedup = new Set<string>();
+      const links: Link[] = [];
+      for (const l of raw.links || []) {
+        if (!hubIds.has(l.target)) continue;
+        if (awaiting.has(l.source)) continue;
+        const key = `${l.source}->${l.target}`;
+        if (!dedup.has(key)) {
+          dedup.add(key);
+          links.push({ source: l.source, target: l.target, type: l.type });
         }
+      }
 
-        // Assign each paper to its first valid hub
-        const paperToHub = new Map<string, string>();
-        for (const l of links) {
-          if (!paperToHub.has(l.source)) paperToHub.set(l.source, l.target);
-        }
+      // Assign each paper to first hub it links to
+      const firstHub = new Map<string, string>();
+      for (const l of links) {
+        if (!firstHub.has(l.source)) firstHub.set(l.source, l.target);
+      }
 
-        // Only keep papers that have a valid assignment
-        const assignedPapers = papersAll
-          .filter((p) => paperToHub.has(p.id))
-          .map((p) => ({
-            ...p,
-            label: p.title ? truncate(p.title, 48) : p.label,
-            val: 2,
-          }));
-
-        // Hubs styling
-        const hubsStyled = hubs.map((h) => ({ ...h, val: 12 }));
-
-        // Build edges strictly hub<->paper for the assigned set
-        const edges: Link[] = assignedPapers.map((p) => ({
-          source: p.id,
-          target: paperToHub.get(p.id)!,
-          type: "paper→mechanism",
+      // Keep only assigned papers
+      const papers = raw.nodes
+        .filter((n) => n.type === "paper" && firstHub.has(n.id))
+        .map((p) => ({
+          ...p,
+          label: truncate(p.title || p.label, 56),
+          val: 2,
         }));
 
-        // Deterministic positions (radial)
-        const allNodes: Node[] = [...hubsStyled, ...assignedPapers];
-        applyStablePositions(allNodes, edges);
+      // Style hubs
+      const hubsStyled = hubs.map((h) => ({ ...h, val: 12 }));
 
-        setGraph({ nodes: allNodes, links: edges });
+      // Build edges as paper -> hub
+      const edges: Link[] = papers.map((p) => ({
+        source: p.id,
+        target: firstHub.get(p.id)!,
+        type: "paper→mechanism",
+      }));
 
-        // Zoom to fit after render
-        setTimeout(() => {
-          try {
-            fgRef.current?.zoomToFit?.(600, 60);
-          } catch {}
-        }, 0);
-      })
-      .catch((err) => {
-        console.error("Graph fetch failed", err);
-        setGraph({ nodes: [], links: [] });
-      });
+      // Deterministic positions (radial, centered at 0,0)
+      const allNodes: Node[] = [...hubsStyled, ...papers];
+      applyRadialPositions(allNodes, edges);
+
+      setGraph({ nodes: allNodes, links: edges });
+      zoomToFit();
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Draw nodes
+  // Drawing
   const drawNode = useMemo(() => {
     return (
       node: Node & { x: number; y: number },
@@ -151,13 +151,11 @@ export default function LiveGraphCard() {
         text: "#1f2937",
       };
 
-      // Circle
       ctx.beginPath();
       ctx.arc(node.x, node.y, r, 0, 2 * Math.PI);
       ctx.fillStyle = isHub ? COLORS.hub : COLORS.paper;
       ctx.fill();
 
-      // Label
       const label = node.label || node.title || node.id;
       if (label) {
         const fontSize = (isHub ? 18 : 11) / Math.max(1, scale);
@@ -190,17 +188,22 @@ export default function LiveGraphCard() {
             backgroundColor="#ffffff"
             nodeCanvasObject={drawNode}
             linkColor={() => "#CBD5E1"}
-            linkWidth={() => 1.3}
+            linkWidth={() => 1.25}
             linkOpacity={0.9}
+            // ✅ keep zoom & pan
+            enableZoomPanInteraction={true}
+            // ✅ no physics jitter
+            cooldownTicks={0}
+            d3AlphaDecay={1}
+            d3VelocityDecay={1}
             enableNodeDrag={false}
+            onEngineStop={zoomToFit}
             onNodeHover={(n: any) => {
               document.body.style.cursor =
                 n && n.type === "paper" ? "pointer" : "default";
             }}
             onNodeClick={(n: any) => {
-              if (n?.type === "paper") {
-                window.open(`/papers/${n.id}`, "_blank");
-              }
+              if (n?.type === "paper") window.open(`/papers/${n.id}`, "_blank");
             }}
           />
         )}
@@ -209,54 +212,39 @@ export default function LiveGraphCard() {
   );
 }
 
-/**
- * Deterministic radial positions, no physics.
- * - Hubs on a ring
- * - Papers evenly orbit their assigned hub
- */
-function applyStablePositions(nodes: Node[], links: Link[]) {
+/** Radial layout: hubs on a ring; papers evenly around their hub. */
+function applyRadialPositions(nodes: Node[], links: Link[]) {
   const hubs = nodes.filter((n) => n.type === "hub");
   const papers = nodes.filter((n) => n.type === "paper");
 
-  // Centered at 0,0 — ForceGraph will zoomToFit
-  const HUB_RADIUS = 240;
-  const PAPER_RADIUS = 130;
-
   // Place hubs
   hubs.forEach((h, i) => {
-    const ang = (i / Math.max(1, hubs.length)) * Math.PI * 2;
-    h.fx = Math.cos(ang) * HUB_RADIUS;
-    h.fy = Math.sin(ang) * HUB_RADIUS;
+    const a = (i / Math.max(1, hubs.length)) * Math.PI * 2;
+    h.fx = Math.cos(a) * HUB_RADIUS;
+    h.fy = Math.sin(a) * HUB_RADIUS;
   });
 
-  // Group papers by their hub (from links)
-  const papersByHub = new Map<string, Node[]>();
-  hubs.forEach((h) => papersByHub.set(h.id, []));
-  const hubOfPaper = new Map<string, string>();
+  // Map paper -> hub and group by hub
+  const paperHub = new Map<string, string>();
+  links.forEach((l) => paperHub.set(l.source, l.target));
 
-  for (const l of links) {
-    // source = paper, target = hub (normalized above)
-    hubOfPaper.set(l.source, l.target);
-  }
-
-  for (const p of papers) {
-    const hid = hubOfPaper.get(p.id);
-    if (hid && papersByHub.has(hid)) {
-      papersByHub.get(hid)!.push(p);
-    }
-  }
+  const grouped = new Map<string, Node[]>();
+  hubs.forEach((h) => grouped.set(h.id, []));
+  papers.forEach((p) => {
+    const hid = paperHub.get(p.id);
+    if (hid && grouped.has(hid)) grouped.get(hid)!.push(p);
+  });
 
   // Place papers around their hub
   hubs.forEach((h) => {
-    const group = papersByHub.get(h.id) || [];
-    if (group.length === 0) return;
-
-    group.forEach((p, j) => {
-      const pa = (j / group.length) * Math.PI * 2;
+    const group = grouped.get(h.id) || [];
+    if (!group.length) return;
+    group.forEach((p, idx) => {
+      const a = (idx / group.length) * Math.PI * 2;
       const hx = h.fx ?? 0;
       const hy = h.fy ?? 0;
-      p.fx = hx + Math.cos(pa) * PAPER_RADIUS;
-      p.fy = hy + Math.sin(pa) * PAPER_RADIUS;
+      p.fx = hx + Math.cos(a) * PAPER_RADIUS;
+      p.fy = hy + Math.sin(a) * PAPER_RADIUS;
     });
   });
 }
