@@ -16,6 +16,8 @@ interface Node {
   x?: number;
   y?: number;
   val?: number;
+  fx?: number;
+  fy?: number;
 }
 
 interface Link {
@@ -34,16 +36,17 @@ export default function LiveGraphCard() {
     links: [],
   });
 
-  // ✅ load graph data
   useEffect(() => {
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/graph/global`)
       .then((r) => r.json())
       .then((res) => {
-        const hubs = res.nodes.filter((n: Node) => n.type === "hub");
-        const papers = res.nodes.filter((n: Node) => n.type === "paper");
+        const hubs: Node[] = res.nodes.filter((n: Node) => n.type === "hub");
+        const papers: Node[] = res.nodes.filter(
+          (n: Node) => n.type === "paper"
+        );
 
-        hubs.forEach((h) => (h.val = 8));
-        papers.forEach((p) => (p.val = 2));
+        hubs.forEach((h: Node) => (h.val = 8));
+        papers.forEach((p: Node) => (p.val = 2));
 
         setData({
           nodes: [...hubs, ...papers],
@@ -52,7 +55,6 @@ export default function LiveGraphCard() {
       });
   }, []);
 
-  // ✅ Resize observer
   useEffect(() => {
     if (!containerRef.current) return;
     const obs = new ResizeObserver(() => {
@@ -65,27 +67,27 @@ export default function LiveGraphCard() {
     return () => obs.disconnect();
   }, []);
 
-  // ✅ Radial static layout
+  // ✅ Radial hub → paper layout
   const positionNodes = () => {
     const hubs = data.nodes.filter((n) => n.type === "hub");
     const papers = data.nodes.filter((n) => n.type === "paper");
 
-    const radius = 160;
+    const hubRadius = 160;
     const paperRadius = 90;
 
     hubs.forEach((hub, i) => {
       const angle = (i / hubs.length) * Math.PI * 2;
-      hub.fx = Math.cos(angle) * radius;
-      hub.fy = Math.sin(angle) * radius;
+      hub.fx = Math.cos(angle) * hubRadius;
+      hub.fy = Math.sin(angle) * hubRadius;
 
       const hubPapers = papers.filter((p) =>
         data.links.some((l) => l.source === hub.id && l.target === p.id)
       );
 
       hubPapers.forEach((p, j) => {
-        const a2 = (j / hubPapers.length) * Math.PI * 2;
-        p.fx = hub.fx! + Math.cos(a2) * paperRadius;
-        p.fy = hub.fy! + Math.sin(a2) * paperRadius;
+        const pa = (j / hubPapers.length) * Math.PI * 2;
+        p.fx = hub.fx + Math.cos(pa) * paperRadius;
+        p.fy = hub.fy + Math.sin(pa) * paperRadius;
       });
     });
   };
@@ -152,7 +154,6 @@ export default function LiveGraphCard() {
             linkColor={() => "#CBD5E1"}
             linkWidth={() => 1.4}
             linkOpacity={0.9}
-            nodeRelSize={4}
             enableNodeDrag={false}
             onNodeClick={(n: any) => {
               if (n.type === "paper") window.open(`/papers/${n.id}`, "_blank");
