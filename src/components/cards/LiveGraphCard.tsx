@@ -4,7 +4,7 @@
 import { useEffect, useState, useRef } from "react";
 import dynamic from "next/dynamic";
 
-// ✅ Dynamic import (client only)
+// Dynamic import for force graph
 const ForceGraph2D: any = dynamic(() => import("react-force-graph-2d"), {
   ssr: false,
 });
@@ -12,6 +12,7 @@ const ForceGraph2D: any = dynamic(() => import("react-force-graph-2d"), {
 interface Node {
   id: string;
   label?: string;
+  title?: string;
   type: "hub" | "paper";
   x?: number;
   y?: number;
@@ -34,63 +35,59 @@ export default function LiveGraphCard() {
     links: [],
   });
 
-  // ✅ Load graph data
+  // ✅ Debug mode — show all nodes
   useEffect(() => {
-    const load = async () => {
-      try {
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/graph/global`
-        );
-        const json = await res.json();
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/graph/global`)
+      .then((r) => r.json())
+      .then((res) => {
+        const hubs = res.nodes.filter((n: Node) => n.type === "hub");
+        const papers = res.nodes.filter((n: Node) => n.type === "paper");
 
-        const finalNodes = (json.nodes || []).map((n: Node) => ({
-          ...n,
-          val: n.type === "hub" ? 4 : 1.2,
-        }));
+        // ✅ Give hubs size
+        hubs.forEach((h: Node) => (h.val = 8));
 
-        setData({ nodes: finalNodes, links: json.links || [] });
+        // ✅ Give papers smaller size
+        papers.forEach((p: Node) => (p.val = 2));
+
+        setData({
+          nodes: [...hubs, ...papers],
+          links: res.links || [],
+        });
 
         setTimeout(() => {
           try {
-            fgRef.current?.zoomToFit?.(600, 80);
-          } catch (e) {}
-        }, 800);
-      } catch (e) {
-        console.error("Graph fetch error", e);
-      }
-    };
-
-    load();
+            fgRef.current?.zoomToFit?.(800, 80);
+          } catch {}
+        }, 600);
+      });
   }, []);
 
-  // ✅ Track container size
+  // ✅ Resize observer
   useEffect(() => {
     if (!containerRef.current) return;
-
     const obs = new ResizeObserver(() => {
       setSize({
         w: containerRef.current!.clientWidth,
         h: containerRef.current!.clientHeight,
       });
     });
-
     obs.observe(containerRef.current);
     return () => obs.disconnect();
   }, []);
 
-  // ✅ Draw node (hub vs paper)
+  // ✅ Draw nodes (custom styling)
   const drawNode = (
     node: Node & { x: number; y: number },
     ctx: CanvasRenderingContext2D,
     scale: number
   ) => {
     const isHub = node.type === "hub";
-    const radius = isHub ? 14 : 7;
+    const radius = isHub ? 20 : 7;
 
     const COLORS = {
-      hub: "#f59e0b", // amber
-      paper: "#2563eb", // blue
-      text: "#1e293b", // slate
+      hub: "#f59e0b",
+      paper: "#2563eb",
+      text: "#1e293b",
     };
 
     ctx.beginPath();
@@ -98,17 +95,21 @@ export default function LiveGraphCard() {
     ctx.fillStyle = isHub ? COLORS.hub : COLORS.paper;
     ctx.fill();
 
+    // ✅ Label hubs fully, papers truncated
     if (node.label) {
-      const fontSize = (isHub ? 15 : 11) / scale;
+      const label =
+        node.type === "hub"
+          ? node.label
+          : node.label.length > 20
+          ? node.label.slice(0, 18) + "…"
+          : node.label;
+
+      const fontSize = (isHub ? 18 : 12) / scale;
       ctx.font = `${fontSize}px Inter, sans-serif`;
-      ctx.textAlign = "left";
+      ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.fillStyle = COLORS.text;
-
-      const truncated =
-        node.label.length > 22 ? `${node.label.slice(0, 22)}…` : node.label;
-
-      ctx.fillText(truncated, node.x + radius + 4, node.y);
+      ctx.fillText(label, node.x, node.y - radius - 4);
     }
   };
 
@@ -123,7 +124,7 @@ export default function LiveGraphCard() {
 
       <div
         ref={containerRef}
-        className="w-full h-[380px] rounded-lg overflow-hidden border border-gray-100"
+        className="w-full h-[420px] rounded-lg overflow-hidden border border-gray-100"
       >
         {size.w > 0 && size.h > 0 && (
           <ForceGraph2D
@@ -131,25 +132,32 @@ export default function LiveGraphCard() {
             width={size.w}
             height={size.h}
             graphData={data}
-            nodeRelSize={4}
             backgroundColor="#ffffff"
+            nodeCanvasObject={drawNode}
             linkColor={() => "#CBD5E1"}
-            linkOpacity={0.7}
             linkWidth={() => 1.2}
-            cooldownTicks={120}
-            d3VelocityDecay={0.35}
-            nodeCanvasObject={(
-              node: Node & { x: number; y: number },
-              ctx: CanvasRenderingContext2D,
-              scale: number
-            ) => drawNode(node, ctx, scale)}
-            onNodeHover={(n: Node | null) => {
-              document.body.style.cursor = n ? "pointer" : "default";
+            linkOpacity={0.8}
+            nodeRelSize={4}
+            warmupTicks={60}
+            cooldownTicks={800}
+            d3VelocityDecay={0.3}
+            d3AlphaDecay={0.02}
+            d3Force="charge"
+            // ✅ Push hubs apart, cluster papers around hubs
+            onEngineTick={() => {
+              data.nodes.forEach((n: any) => {
+                if (n.type === "hub") {
+                  // push hubs outward slightly
+                  n.fx = undefined;
+                  n.fy = undefined;
+                }
+              });
             }}
-            onNodeClick={(n: Node) => {
-              if (n.type === "paper") {
-                window.open(`/papers/${n.id}`, "_blank");
-              }
+            onNodeHover={(node: any) => {
+              document.body.style.cursor = node ? "pointer" : "default";
+            }}
+            onNodeClick={(n: any) => {
+              if (n.type === "paper") window.open(`/papers/${n.id}`, "_blank");
             }}
           />
         )}
