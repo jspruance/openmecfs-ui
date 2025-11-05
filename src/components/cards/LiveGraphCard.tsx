@@ -55,9 +55,19 @@ export default function LiveGraphCard() {
           if (n.type === "paper") n.label = n.title || n.label || n.id;
         });
 
+        // Ensure links connect papers to hubs properly
+        const validLinks = (res.links || []).filter((link: Link) => {
+          const sourceIsHub = hubs.some((h: Node) => h.id === link.source);
+          const targetIsHub = hubs.some((h: Node) => h.id === link.target);
+          const sourceIsPaper = papers.some((p: Node) => p.id === link.source);
+          const targetIsPaper = papers.some((p: Node) => p.id === link.target);
+          // Keep links that connect hub-to-paper or paper-to-hub
+          return (sourceIsHub && targetIsPaper) || (sourceIsPaper && targetIsHub);
+        });
+
         setData({
           nodes: [...hubs, ...papers],
-          links: res.links || [],
+          links: validLinks,
         });
 
         // ✅ After data loads, zoom to fit
@@ -126,9 +136,9 @@ export default function LiveGraphCard() {
             totalPapers > 0
               ? (paperIndex / totalPapers) * Math.PI * 2 - Math.PI / 2
               : 0;
-          const paperDistance = 80;
+          const paperDistance = 100; // Slightly further to avoid overlap
 
-          // Set initial position around hub
+          // Set fixed position around hub - keep papers fixed to maintain hub-and-spoke layout
           paper.fx = hub.fx + Math.cos(paperAngle) * paperDistance;
           paper.fy = hub.fy + Math.sin(paperAngle) * paperDistance;
         }
@@ -196,23 +206,23 @@ export default function LiveGraphCard() {
             graphData={data}
             backgroundColor="#ffffff"
             nodeCanvasObject={drawNode}
-            linkColor={() => "#94a3b8"}
-            linkWidth={() => 1.5}
-            linkOpacity={0.6}
+            linkColor={() => "#64748b"}
+            linkWidth={() => 2}
+            linkOpacity={0.8}
             enableNodeDrag={false}
             cooldownTicks={100}
             d3Force="charge"
             d3ForceCharge={(node: any) => {
               // Strong repulsion between hubs, weaker for papers
-              return node.type === "hub" ? -300 : -50;
+              return node.type === "hub" ? -400 : -80;
             }}
             d3ForceLinkDistance={(link: any) => {
-              // Shorter links between papers and hubs
-              return 60;
+              // Keep papers close to their hubs
+              return 90;
             }}
-            d3ForceLinkStrength={0.8}
+            d3ForceLinkStrength={1.0}
             d3AlphaDecay={0.02}
-            d3VelocityDecay={0.4}
+            d3VelocityDecay={0.5}
             onNodeClick={(n: any) => {
               if (n.type === "paper") window.open(`/papers/${n.id}`, "_blank");
             }}
