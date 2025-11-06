@@ -8,8 +8,8 @@ export default function TreatmentsPage() {
         "Multiple small open-label and retrospective studies suggest LDN may reduce pain, fatigue, and neuroinflammatory signaling in ME/CFS and fibromyalgia. Mechanistically, it may calm microglial activation and normalize immune function.",
       status: "Investigational / Off-label",
       references: [
-        "https://pubmed.ncbi.nlm.nih.gov/35752706/",
-        "https://pubmed.ncbi.nlm.nih.gov/31203646/",
+        "https://pubmed.ncbi.nlm.nih.gov/23359310/",
+        "https://pubmed.ncbi.nlm.nih.gov/34177527/",
       ],
     },
     {
@@ -26,56 +26,68 @@ export default function TreatmentsPage() {
       mechanism:
         "Acetylcholinesterase inhibitor; enhances parasympathetic tone and reduces orthostatic intolerance.",
       evidence:
-        "Small open-label studies and case series show improved orthostatic tolerance and reduced post-exertional symptoms in ME/CFS and POTS. Being studied in controlled trials.",
+        "Randomized placebo-controlled trials and open-label studies show improved orthostatic tolerance, exercise capacity, and reduced post-exertional symptoms in ME/CFS and POTS subsets.",
       status: "Off-label",
-      references: ["https://pubmed.ncbi.nlm.nih.gov/35027354/"],
+      references: [
+        "https://pubmed.ncbi.nlm.nih.gov/35526605/",
+        "https://pubmed.ncbi.nlm.nih.gov/15911703/",
+      ],
     },
     {
       name: "Midodrine",
       mechanism:
         "Peripheral α-adrenergic agonist; increases venous return and cerebral perfusion in orthostatic intolerance.",
       evidence:
-        "Used clinically for POTS; several ME/CFS cohorts report symptom relief in subsets with orthostatic intolerance. Requires blood pressure monitoring.",
+        "Used clinically for POTS and orthostatic hypotension; randomized controlled trials demonstrate improved orthostatic tolerance and symptom reduction.",
       status: "Off-label",
-      references: ["https://pubmed.ncbi.nlm.nih.gov/12145121/"],
+      references: [
+        "https://pubmed.ncbi.nlm.nih.gov/9467561/",
+        "https://pubmed.ncbi.nlm.nih.gov/19761935/",
+      ],
     },
     {
       name: "Fludrocortisone (Florinef)",
       mechanism:
         "Synthetic mineralocorticoid; expands plasma volume and improves cerebral blood flow.",
       evidence:
-        "Common first-line therapy for orthostatic intolerance; limited formal ME/CFS trials but positive observational data. Often combined with salt and fluids.",
+        "Common first-line therapy for orthostatic intolerance; a controlled trial in ME/CFS showed modest benefit but high interindividual variability. Often used with salt and fluids.",
       status: "Off-label",
-      references: ["https://pubmed.ncbi.nlm.nih.gov/16080723/"],
+      references: ["https://pubmed.ncbi.nlm.nih.gov/11150108/"],
     },
     {
       name: "Antivirals (Valganciclovir, Famciclovir)",
       mechanism:
         "Target viral reactivation (EBV, HHV-6, CMV) implicated in post-infectious ME/CFS.",
       evidence:
-        "Mixed results: one placebo-controlled trial of valganciclovir (Montoya et al.) showed benefit in a subset with high viral titers; others found minimal change. Still under investigation.",
+        "Controlled trials show mixed results: Montoya et al. reported improvement in patients with high herpesvirus titers; others found minimal change. Still under investigation.",
       status: "Investigational",
-      references: ["https://pubmed.ncbi.nlm.nih.gov/20350463/"],
+      references: [
+        "https://pubmed.ncbi.nlm.nih.gov/24020588/",
+        "https://pubmed.ncbi.nlm.nih.gov/20074860/",
+      ],
     },
     {
       name: "Ampligen (Rintatolimod)",
       mechanism:
         "Toll-like receptor 3 (TLR3) agonist; modulates innate immunity and RNA antiviral pathways.",
       evidence:
-        "Multiple Phase III trials demonstrated modest improvement in exercise tolerance in a subset of patients. Approved for ME/CFS in Argentina; not approved in US/EU.",
+        "Multiple Phase III trials demonstrated modest improvement in exercise tolerance in subsets of ME/CFS patients. Approved for ME/CFS in Argentina; not approved in US/EU.",
       status: "Investigational",
-      references: ["https://pubmed.ncbi.nlm.nih.gov/23273713/"],
+      references: [
+        "https://pubmed.ncbi.nlm.nih.gov/22427991/",
+        "https://pubmed.ncbi.nlm.nih.gov/29511709/",
+      ],
     },
     {
       name: "Mitochondrial Supplements (CoQ10, NADH, Carnitine, Riboflavin, etc.)",
       mechanism:
         "Support oxidative phosphorylation and reduce oxidative stress; improve cellular energy metabolism.",
       evidence:
-        "Several small studies and meta-analyses show mild improvements in fatigue and quality of life with low risk. Widely used as supportive therapy.",
+        "Randomized trials and meta-analyses show mild improvements in fatigue and quality of life with low risk. Widely used as supportive therapy.",
       status: "Supportive / Over-the-counter",
       references: [
-        "https://pubmed.ncbi.nlm.nih.gov/33223084/",
-        "https://pubmed.ncbi.nlm.nih.gov/26775865/",
+        "https://pubmed.ncbi.nlm.nih.gov/25255384/",
+        "https://pubmed.ncbi.nlm.nih.gov/22466036/",
       ],
     },
 
@@ -84,10 +96,13 @@ export default function TreatmentsPage() {
       name: "Rituximab",
       mechanism: "B-cell depletion (anti-CD20 monoclonal antibody).",
       evidence:
-        "Initial open-label studies suggested benefit, but two large randomized controlled trials failed to show efficacy. Research program discontinued.",
+        "Initial open-label studies suggested benefit, but large randomized controlled trials failed to show efficacy. The research program was discontinued after the negative phase III trial.",
       status: "Deprecated",
       deprecated: true,
-      references: ["https://pubmed.ncbi.nlm.nih.gov/30901423/"],
+      references: [
+        "https://pubmed.ncbi.nlm.nih.gov/30901423/",
+        "https://pubmed.ncbi.nlm.nih.gov/22039471/",
+      ],
     },
     {
       name: "Cognitive Behavioral Therapy (CBT) & Graded Exercise Therapy (GET)",
@@ -96,7 +111,10 @@ export default function TreatmentsPage() {
         "Previously recommended by older guidelines; subsequent re-analyses and patient surveys revealed minimal efficacy and potential harm. Removed from NICE guidelines (UK, 2021).",
       status: "Deprecated",
       deprecated: true,
-      references: ["https://www.nice.org.uk/guidance/ng206"],
+      references: [
+        "https://pubmed.ncbi.nlm.nih.gov/29087232/",
+        "https://www.nice.org.uk/guidance/ng206",
+      ],
     },
   ];
 
