@@ -50,13 +50,14 @@ export default function BiomarkerGraph() {
         reported in ME/CFS research.
       </p>
       <div className="w-full h-[600px]">
+        {/* @ts-expect-error — react-force-graph types missing nodeAutoColorBy prop */}
         <ForceGraph2D
-          graphData={graphData}
+          graphData={graph}
           nodeAutoColorBy="type"
           linkColor={() => "rgba(0,0,0,0.2)"}
           backgroundColor="#fafafa"
-          nodeCanvasObject={(node: Partial<GraphNode>, ctx, globalScale) => {
-            const label = node.id || "";
+          nodeCanvasObject={(node: any, ctx, globalScale) => {
+            const label = node.id;
             const fontSize = 12 / globalScale;
             ctx.font = `${fontSize}px Sans-Serif`;
             ctx.fillStyle = node.type === "mechanism" ? "#2563eb" : "#16a34a";
