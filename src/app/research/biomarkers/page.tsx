@@ -51,6 +51,14 @@ export default function BiomarkersPage() {
   // -------------------- JSX --------------------
   return (
     <div className="mx-auto max-w-6xl px-6 py-8">
+      {/* ------------------- Biomarker Cards ------------------- */}
+      <h1 className="text-2xl font-semibold mb-4">Biomarkers</h1>
+      <p className="text-slate-600 mb-6 max-w-3xl">
+        Key biological markers reported in ME/CFS studies, grouped by underlying
+        mechanisms. Data are aggregated automatically from AI evidence and
+        manually curated research sources.
+      </p>
+
       {/* ------------------- Graph Section ------------------- */}
       <div className="border border-slate-200 rounded-lg shadow-sm bg-white p-5 mb-10 overflow-hidden">
         <h2 className="text-xl font-semibold mb-2">
@@ -94,14 +102,6 @@ export default function BiomarkersPage() {
           />
         </div>
       </div>
-
-      {/* ------------------- Biomarker Cards ------------------- */}
-      <h1 className="text-2xl font-semibold mb-4">Biomarkers</h1>
-      <p className="text-slate-600 mb-6 max-w-3xl">
-        Key biological markers reported in ME/CFS studies, grouped by underlying
-        mechanisms. Data are aggregated automatically from AI evidence and
-        manually curated research sources.
-      </p>
 
       {error && <p className="text-red-600">{error}</p>}
       {data.length === 0 && !error && (
