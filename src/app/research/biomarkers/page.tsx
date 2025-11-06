@@ -50,7 +50,7 @@ export default function BiomarkersPage() {
 
   // -------------------- JSX --------------------
   return (
-    <div className="mx-auto max-w-6xl px-6 py-8">
+    <div className="mx-auto max-w-6xl px-6 py-0">
       {/* ------------------- Biomarker Cards ------------------- */}
       <h1 className="text-2xl font-semibold mb-4">Biomarkers</h1>
       <p className="text-slate-600 mb-6 max-w-3xl">
