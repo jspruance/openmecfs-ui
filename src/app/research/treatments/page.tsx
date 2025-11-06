@@ -9,7 +9,7 @@ export default function TreatmentsPage() {
       status: "Investigational / Off-label",
       references: [
         "https://pubmed.ncbi.nlm.nih.gov/32590234/", // Anderson 2020 – LDN for ME/CFS
-        "https://pubmed.ncbi.nlm.nih.gov/34177527/", // Ng et al 2021 – TRPM3 restoration with LDN
+        "https://pubmed.ncbi.nlm.nih.gov/34177527/", // Ng et al. 2021 – TRPM3 restoration with LDN (ME/CFS)
       ],
     },
     {
@@ -20,7 +20,7 @@ export default function TreatmentsPage() {
         "A 2021 Stanford retrospective series (n=101) reported functional improvements in ~70% of ME/CFS patients at doses 0.25–2 mg/day, with fatigue and cognitive symptoms most responsive. Controlled trials are planned.",
       status: "Investigational / Off-label",
       references: [
-        "https://pubmed.ncbi.nlm.nih.gov/33640105/", // Kogelnik et al 2021 – Stanford study
+        "https://pubmed.ncbi.nlm.nih.gov/33640105/", // 2021 Stanford cohort in ME/CFS
         "https://clinicaltrials.gov/study/NCT06043280", // Planned aripiprazole ME/CFS trial
       ],
     },
@@ -33,7 +33,7 @@ export default function TreatmentsPage() {
       status: "Off-label",
       references: [
         "https://pubmed.ncbi.nlm.nih.gov/35526605/", // Systrom 2022 – ME/CFS RCT
-        "https://pubmed.ncbi.nlm.nih.gov/33931211/", // Vernino 2021 – autonomic context
+        "https://pubmed.ncbi.nlm.nih.gov/33931211/", // Vernino 2021 – autonomic/POTS context
       ],
     },
     {
@@ -55,7 +55,9 @@ export default function TreatmentsPage() {
       evidence:
         "Common first-line therapy for orthostatic intolerance; a controlled trial in ME/CFS showed modest benefit but high interindividual variability. Often used with salt and fluids.",
       status: "Off-label",
-      references: ["https://pubmed.ncbi.nlm.nih.gov/11150108/"], // Rowe 2001 – JAMA trial
+      references: [
+        "https://pubmed.ncbi.nlm.nih.gov/11150108/", // Rowe 2001 – JAMA trial in CFS
+      ],
     },
     {
       name: "Antivirals (Valganciclovir, Famciclovir)",
@@ -65,8 +67,8 @@ export default function TreatmentsPage() {
         "Controlled trials show mixed results: Montoya et al. reported improvement in patients with high herpesvirus titers; others found minimal change. Still under investigation.",
       status: "Investigational",
       references: [
-        "https://pubmed.ncbi.nlm.nih.gov/24020588/", // Montoya 2013 – RCT
-        "https://pubmed.ncbi.nlm.nih.gov/20074860/", // Kogelnik 2010 – Stanford antiviral study
+        "https://pubmed.ncbi.nlm.nih.gov/24020588/", // Montoya 2013 – valganciclovir RCT
+        "https://pubmed.ncbi.nlm.nih.gov/20074860/", // Kogelnik 2010 – Stanford antiviral cohort
       ],
     },
     {
@@ -77,7 +79,7 @@ export default function TreatmentsPage() {
         "Multiple Phase III trials demonstrated modest improvement in exercise tolerance in subsets of ME/CFS patients. Approved for ME/CFS in Argentina; not approved in US/EU.",
       status: "Investigational",
       references: [
-        "https://pubmed.ncbi.nlm.nih.gov/22427991/", // Strayer 2012 – PLoS One trial
+        "https://pubmed.ncbi.nlm.nih.gov/22427991/", // Strayer 2012 – PLoS One
         "https://pubmed.ncbi.nlm.nih.gov/29511709/", // Carter 2018 – review
       ],
     },
@@ -89,8 +91,8 @@ export default function TreatmentsPage() {
         "Randomized trials and meta-analyses show mild improvements in fatigue and quality of life with low risk. Widely used as supportive therapy.",
       status: "Supportive / Over-the-counter",
       references: [
-        "https://pubmed.ncbi.nlm.nih.gov/25255384/", // Castro-Marrero 2015 – CoQ10 + NADH RCT
-        "https://pubmed.ncbi.nlm.nih.gov/22466036/", // Booth & Myhill 2012 – mito dysfunction
+        "https://pubmed.ncbi.nlm.nih.gov/25255384/", // CoQ10 + NADH RCT in ME/CFS
+        "https://pubmed.ncbi.nlm.nih.gov/22466036/", // Booth & Myhill 2012 – mito dysfunction context
       ],
     },
 
@@ -115,7 +117,7 @@ export default function TreatmentsPage() {
       status: "Deprecated",
       deprecated: true,
       references: [
-        "https://pubmed.ncbi.nlm.nih.gov/29087232/", // Wilshire 2017 – PACE reanalysis
+        "https://pubmed.ncbi.nlm.nih.gov/29087232/", // PACE reanalysis
         "https://www.nice.org.uk/guidance/ng206", // NICE 2021 guideline
       ],
     },
