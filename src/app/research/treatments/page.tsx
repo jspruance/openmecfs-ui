@@ -8,7 +8,7 @@ export default function TreatmentsPage() {
         "Multiple small open-label and retrospective studies suggest LDN may reduce pain, fatigue, and neuroinflammatory signaling in ME/CFS and fibromyalgia. Mechanistically, it may calm microglial activation and normalize immune function.",
       status: "Investigational / Off-label",
       references: [
-        "https://pubmed.ncbi.nlm.nih.gov/23359310/",
+        "https://pubmed.ncbi.nlm.nih.gov/32590234/",
         "https://pubmed.ncbi.nlm.nih.gov/34177527/",
       ],
     },
