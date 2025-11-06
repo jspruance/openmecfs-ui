@@ -14,6 +14,7 @@ declare module "react-force-graph-2d" {
     height?: number;
     backgroundColor?: string;
     nodeRelSize?: number;
+    nodeAutoColorBy?: string;
     cooldownTicks?: number;
     linkColor?: string | ((link: any) => string);
     linkOpacity?: number;

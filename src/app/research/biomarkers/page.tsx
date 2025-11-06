@@ -94,7 +94,6 @@ export default function BiomarkersPage() {
         </p>
 
         <div className="w-full h-[600px]">
-          {/* @ts-expect-error react-force-graph types missing nodeAutoColorBy prop */}
           <ForceGraph2D
             graphData={graph}
             nodeAutoColorBy="type"
