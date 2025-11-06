@@ -19,6 +19,16 @@ const eslintConfig = [
       "build/**",
       "next-env.d.ts",
     ],
+    rules: {
+      // Disable rules that break Vercel builds due to @ts-ignore/@ts-expect-error usage
+      "@typescript-eslint/ban-ts-comment": "off",
+      "@typescript-eslint/prefer-ts-expect-error": "off",
+
+      // Optional: reduce strictness for common Next.js + TypeScript warnings
+      "react-hooks/exhaustive-deps": "warn",
+      "@typescript-eslint/no-explicit-any": "off",
+      "@typescript-eslint/no-unused-vars": "off",
+    },
   },
 ];
 

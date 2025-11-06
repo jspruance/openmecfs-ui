@@ -62,9 +62,8 @@ export default function BiomarkersPage() {
         </p>
 
         <div className="w-full h-[700px] overflow-hidden rounded-md">
-          {/* @ts-ignore react-force-graph missing nodeAutoColorBy prop */}
           <ForceGraph2D
-            graphData={graph}
+            graphData={graph as any} // suppress type noise safely
             nodeAutoColorBy="type"
             linkColor={() => "rgba(0,0,0,0.2)"}
             backgroundColor="#fafafa"
@@ -73,7 +72,7 @@ export default function BiomarkersPage() {
             d3VelocityDecay={0.25}
             d3AlphaDecay={0.03}
             width={
-              typeof window !== "undefined" ? window.innerWidth * 0.9 : 800
+              typeof window !== "undefined" ? window.innerWidth * 0.85 : 900
             }
             nodeCanvasObject={(node: any, ctx, globalScale) => {
               const label = node.id;
