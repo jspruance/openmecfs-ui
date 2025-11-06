@@ -1,17 +1,25 @@
 "use client";
 import { useEffect, useState } from "react";
 
+interface Biomarker {
+  biomarker: string;
+  count: number;
+  mechanisms: string[];
+}
+
 export default function BiomarkersPage() {
-  const [data, setData] = useState<any[]>([]);
+  const [data, setData] = useState<Biomarker[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/biomarkers/`)
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+    fetch(`${apiUrl}/biomarkers/`)
       .then((res) => {
-        if (!res.ok) throw new Error("Failed to load biomarkers");
+        if (!res.ok)
+          throw new Error(`Failed to load biomarkers (${res.status})`);
         return res.json();
       })
-      .then(setData)
+      .then((json: Biomarker[]) => setData(json))
       .catch((err) => setError(err.message));
   }, []);
 
@@ -27,7 +35,7 @@ export default function BiomarkersPage() {
       {error && <p className="text-red-600">{error}</p>}
       {data.length === 0 && !error && (
         <p className="text-slate-500 italic">
-          Loading or no biomarkers found...
+          Loading biomarkers or no data found...
         </p>
       )}
 
