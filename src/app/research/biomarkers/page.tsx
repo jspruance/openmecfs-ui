@@ -94,16 +94,13 @@ export default function BiomarkersPage() {
         </p>
 
         <div className="w-full h-[600px]">
-          {/* @ts-ignore - react-force-graph types missing nodeAutoColorBy prop */}
-          {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
-          {/* @ts-expect-error react-force-graph types missing nodeAutoColorBy
-          prop*/}
+          {/* @ts-expect-error react-force-graph types missing nodeAutoColorBy prop */}
           <ForceGraph2D
             graphData={graph}
             nodeAutoColorBy="type"
             linkColor={() => "rgba(0,0,0,0.2)"}
             backgroundColor="#fafafa"
-            // @ts-ignore
+            // @ts-expect-error react-force-graph types missing nodeCanvasObject signature
             nodeCanvasObject={(node: any, ctx, globalScale) => {
               const label = node.id;
               const fontSize = 12 / globalScale;
