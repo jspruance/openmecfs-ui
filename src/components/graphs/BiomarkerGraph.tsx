@@ -34,7 +34,6 @@ export default function BiomarkerGraph() {
         reported in ME/CFS research.
       </p>
       <div className="w-full h-[600px]">
-        {/* @ts-expect-error – nodeAutoColorBy type missing in react-force-graph */}
         <ForceGraph2D
           graphData={graph}
           nodeAutoColorBy="type"
