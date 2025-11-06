@@ -269,6 +269,7 @@ export default function LiveGraphCard() {
           <input
             type="checkbox"
             checked={fullMode}
+            defaultChecked={true}
             onChange={(e) => setFullMode(e.target.checked)}
             className="accent-blue-500 w-4 h-4 cursor-pointer"
           />
