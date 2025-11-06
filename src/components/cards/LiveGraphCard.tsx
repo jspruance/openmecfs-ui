@@ -136,8 +136,10 @@ export default function LiveGraphCard() {
 
       hubPapers.forEach((p, j) => {
         const a = (j / hubPapers.length) * Math.PI * 2;
-        p.fx = hub.fx + Math.cos(a) * perHubRadius;
-        p.fy = hub.fy + Math.sin(a) * perHubRadius;
+        const hubX = hub.fx ?? 0;
+        const hubY = hub.fy ?? 0;
+        p.fx = hubX + Math.cos(a) * perHubRadius;
+        p.fy = hubY + Math.sin(a) * perHubRadius;
       });
     });
 
