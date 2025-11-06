@@ -97,11 +97,11 @@ export default function LiveGraphCard() {
     return () => obs.disconnect();
   }, []);
 
-  // Size-aware radial layout, re-run on data or size change
+  // Size-aware radial layout
   useEffect(() => {
     if (!data.nodes.length || !size.w || !size.h) return;
 
-    // Clear any previous pins
+    // Clear fixed positions first
     data.nodes.forEach((n) => {
       n.fx = undefined;
       n.fy = undefined;
@@ -110,10 +110,10 @@ export default function LiveGraphCard() {
     const hubs = data.nodes.filter((n) => n.type === "hub");
     const papers = data.nodes.filter((n) => n.type === "paper");
 
-    // Place hubs in a radial ring centered in the canvas
-    const cx = 0; // graph coords; we’ll zoomToFit afterward
+    // Place hubs in a circular layout
+    const cx = 0;
     const cy = 0;
-    const ringRadius = Math.min(size.w, size.h) * 0.28; // ring size relative to canvas
+    const ringRadius = Math.min(size.w, size.h) * 0.28;
 
     const orderedHubs = HUB_ORDER.map((hid) =>
       hubs.find((h) => h.id === hid)
@@ -125,25 +125,31 @@ export default function LiveGraphCard() {
       hub.fy = cy + Math.sin(angle) * ringRadius;
     });
 
-    // For each hub, arrange its papers in a small arc around that hub
+    // Arrange papers around their hub
     const perHubRadius = Math.min(size.w, size.h) * 0.12;
 
     orderedHubs.forEach((hub) => {
       const hubPapers = papers.filter((p) =>
         data.links.some((l) => l.source === p.id && l.target === hub.id)
       );
-      if (!hub.fx || !hub.fy || hubPapers.length === 0) return;
+      if (
+        hub.fx === undefined ||
+        hub.fy === undefined ||
+        hubPapers.length === 0
+      )
+        return;
+
+      const hubX = hub.fx ?? 0;
+      const hubY = hub.fy ?? 0;
 
       hubPapers.forEach((p, j) => {
         const a = (j / hubPapers.length) * Math.PI * 2;
-        const hubX = hub.fx ?? 0;
-        const hubY = hub.fy ?? 0;
         p.fx = hubX + Math.cos(a) * perHubRadius;
         p.fy = hubY + Math.sin(a) * perHubRadius;
       });
     });
 
-    // Trigger a zoomToFit after the frame so coordinates are honored
+    // Fit graph nicely
     requestAnimationFrame(() => {
       try {
         fgRef.current?.zoomToFit?.(600, 40);
@@ -154,7 +160,7 @@ export default function LiveGraphCard() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data.nodes.length, size.w, size.h]);
 
-  // Custom draw
+  // Draw nodes
   const drawNode = (
     node: Node & { x: number; y: number },
     ctx: CanvasRenderingContext2D,
@@ -174,7 +180,6 @@ export default function LiveGraphCard() {
     ctx.fillStyle = isHub ? COLORS.hub : COLORS.paper;
     ctx.fill();
 
-    // Use title for papers, fallback to label; show label for hubs
     const base =
       node.type === "paper"
         ? node.title || node.label || node.id
@@ -215,11 +220,9 @@ export default function LiveGraphCard() {
             linkColor={() => "#CBD5E1"}
             linkWidth={() => 1.4}
             linkOpacity={0.9}
-            // Interactions
             enableNodeDrag={false}
             enableZoomInteraction={true}
             enablePanInteraction={true}
-            // Keep physics idle (we’re using fixed positions)
             cooldownTicks={0}
             d3VelocityDecay={0.35}
             d3AlphaDecay={0.05}
