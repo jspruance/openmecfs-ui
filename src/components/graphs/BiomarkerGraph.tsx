@@ -6,16 +6,37 @@ const ForceGraph2D = dynamic(() => import("react-force-graph-2d"), {
   ssr: false,
 });
 
+interface GraphNode {
+  id: string;
+  type: "mechanism" | "biomarker";
+  val: number;
+  x?: number;
+  y?: number;
+  color?: string;
+}
+
+interface GraphLink {
+  source: string;
+  target: string;
+  type: string;
+}
+
+interface GraphData {
+  nodes: GraphNode[];
+  links: GraphLink[];
+}
+
 export default function BiomarkerGraph() {
-  const [graphData, setGraphData] = useState<{ nodes: any[]; links: any[] }>({
+  const [graphData, setGraphData] = useState<GraphData>({
     nodes: [],
     links: [],
   });
 
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/biomarkers/graph`)
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+    fetch(`${apiUrl}/biomarkers/graph`)
       .then((res) => res.json())
-      .then(setGraphData)
+      .then((json: GraphData) => setGraphData(json))
       .catch((err) => console.error("Failed to load biomarker graph:", err));
   }, []);
 
@@ -32,22 +53,28 @@ export default function BiomarkerGraph() {
         <ForceGraph2D
           graphData={graphData}
           nodeAutoColorBy="type"
-          nodeCanvasObject={(node, ctx, globalScale) => {
-            const label = node.id;
+          linkColor={() => "rgba(0,0,0,0.2)"}
+          backgroundColor="#fafafa"
+          nodeCanvasObject={(node: Partial<GraphNode>, ctx, globalScale) => {
+            const label = node.id || "";
             const fontSize = 12 / globalScale;
             ctx.font = `${fontSize}px Sans-Serif`;
-            ctx.fillStyle =
-              node.color || (node.type === "mechanism" ? "#2563eb" : "#16a34a");
+            ctx.fillStyle = node.type === "mechanism" ? "#2563eb" : "#16a34a";
             ctx.beginPath();
-            ctx.arc(node.x!, node.y!, node.val || 3, 0, 2 * Math.PI, false);
+            ctx.arc(
+              node.x ?? 0,
+              node.y ?? 0,
+              node.val ?? 3,
+              0,
+              2 * Math.PI,
+              false
+            );
             ctx.fill();
             ctx.fillStyle = "black";
-            ctx.fillText(label, node.x! + 8, node.y! + 3);
+            ctx.fillText(label, (node.x ?? 0) + 8, (node.y ?? 0) + 3);
           }}
           linkDirectionalParticles={2}
           linkDirectionalParticleSpeed={0.004}
-          linkColor={() => "rgba(0,0,0,0.2)"}
-          backgroundColor="#fafafa"
         />
       </div>
     </div>
