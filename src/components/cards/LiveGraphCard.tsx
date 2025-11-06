@@ -3,7 +3,6 @@
 
 import { useEffect, useState, useRef } from "react";
 import dynamic from "next/dynamic";
-import { Switch } from "@/components/ui/switch"; // shadcn switch (or replace with simple checkbox if needed)
 
 const ForceGraph2D: any = dynamic(() => import("react-force-graph-2d"), {
   ssr: false,
@@ -57,9 +56,9 @@ export default function LiveGraphCard() {
   const [raw, setRaw] = useState<any>(null);
   const [fullMode, setFullMode] = useState(false);
 
-  // ----------------------------------------------
-  // 🧠 Fetch data once
-  // ----------------------------------------------
+  // ------------------------------------------------------
+  // 🧠 Fetch graph data once
+  // ------------------------------------------------------
   useEffect(() => {
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/graph/global`)
       .then((r) => r.json())
@@ -67,18 +66,19 @@ export default function LiveGraphCard() {
       .catch(() => {});
   }, []);
 
-  // ----------------------------------------------
-  // 🧩 Process data based on mode
-  // ----------------------------------------------
+  // ------------------------------------------------------
+  // 🔁 Process and layout graph depending on mode
+  // ------------------------------------------------------
   useEffect(() => {
     if (!raw) return;
+
     const hubs: Node[] = (raw.nodes as Node[]).filter((n) => n.type === "hub");
     const allPapers: Node[] = (raw.nodes as Node[]).filter(
       (n) => n.type === "paper"
     );
     const allLinks: Link[] = raw.links || [];
 
-    // Clean titles
+    // Clean up titles
     allPapers.forEach((p) => {
       const rawTitle = p.title || p.label || p.id;
       const clean = rawTitle.replace(/\s+/g, " ").trim();
@@ -91,7 +91,7 @@ export default function LiveGraphCard() {
     let links: Link[] = [];
 
     if (fullMode) {
-      // ✅ FULL MODE: duplicate papers per hub
+      // ✅ FULL MODE — duplicate papers per hub
       HUB_ORDER.forEach((hubId) => {
         const hubLinks = allLinks.filter((l) => l.target === hubId);
         hubLinks.forEach((l) => {
@@ -113,7 +113,7 @@ export default function LiveGraphCard() {
       });
       nodes.push(...hubs);
     } else {
-      // ✅ SIMPLIFIED MODE: one paper per primary hub
+      // ✅ SIMPLIFIED MODE — only one paper per primary hub
       function getPrimaryHub(paperId: string): string | null {
         const hubsForPaper = allLinks
           .filter((l) => l.source === paperId)
@@ -147,13 +147,15 @@ export default function LiveGraphCard() {
     }, 300);
   }, [raw, fullMode]);
 
-  // ----------------------------------------------
-  // 📐 Layout and drawing
-  // ----------------------------------------------
+  // ------------------------------------------------------
+  // 📐 Layout effect
+  // ------------------------------------------------------
   useEffect(() => {
     if (!data.nodes.length || !size.w || !size.h) return;
+
     const hubs = data.nodes.filter((n) => n.type === "hub");
     const papers = data.nodes.filter((n) => n.type === "paper");
+
     const cx = 0;
     const cy = 0;
     const ringRadius = Math.min(size.w, size.h) * 0.32;
@@ -163,23 +165,28 @@ export default function LiveGraphCard() {
       hubs.find((h) => h.id === hid)
     ).filter(Boolean) as Node[];
 
-    // hubs in a ring
+    // Position hubs in a ring
     orderedHubs.forEach((hub, i) => {
       const angle = (i / orderedHubs.length) * Math.PI * 2 - Math.PI / 2;
       hub.fx = cx + Math.cos(angle) * ringRadius;
       hub.fy = cy + Math.sin(angle) * ringRadius;
     });
 
-    // papers around hubs
+    // Position papers around each hub
     orderedHubs.forEach((hub) => {
       const hubPapers = papers.filter((p) =>
         data.links.some((l) => l.source === p.id && l.target === hub.id)
       );
-      if (!hub.fx || !hub.fy) return;
+
+      if (hub.fx == null || hub.fy == null || hubPapers.length === 0) return;
+
+      const hubX = hub.fx;
+      const hubY = hub.fy;
+
       hubPapers.forEach((p, j) => {
         const angle = (j / hubPapers.length) * Math.PI * 2;
-        p.fx = hub.fx + Math.cos(angle) * perHubRadius;
-        p.fy = hub.fy + Math.sin(angle) * perHubRadius;
+        p.fx = hubX + Math.cos(angle) * perHubRadius;
+        p.fy = hubY + Math.sin(angle) * perHubRadius;
       });
     });
 
@@ -190,6 +197,9 @@ export default function LiveGraphCard() {
     });
   }, [data.nodes.length, size.w, size.h]);
 
+  // ------------------------------------------------------
+  // 🪟 Track container resize
+  // ------------------------------------------------------
   useEffect(() => {
     if (!containerRef.current) return;
     const obs = new ResizeObserver(() => {
@@ -202,6 +212,9 @@ export default function LiveGraphCard() {
     return () => obs.disconnect();
   }, []);
 
+  // ------------------------------------------------------
+  // 🎨 Draw nodes
+  // ------------------------------------------------------
   const drawNode = (
     node: Node & { x: number; y: number },
     ctx: CanvasRenderingContext2D,
@@ -209,11 +222,13 @@ export default function LiveGraphCard() {
   ) => {
     const isHub = node.type === "hub";
     const radius = isHub ? 18 : 6;
+
     const COLORS = {
       hub: "#f59e0b",
       paper: "#2563eb",
       text: "#1e293b",
     };
+
     ctx.beginPath();
     ctx.arc(node.x, node.y, radius, 0, 2 * Math.PI);
     ctx.fillStyle = isHub ? COLORS.hub : COLORS.paper;
@@ -237,9 +252,9 @@ export default function LiveGraphCard() {
     }
   };
 
-  // ----------------------------------------------
+  // ------------------------------------------------------
   // 🧩 Render
-  // ----------------------------------------------
+  // ------------------------------------------------------
   return (
     <div className="w-full rounded-xl border border-gray-200 bg-white shadow-sm p-4">
       <div className="flex items-center justify-between mb-3">
@@ -251,7 +266,12 @@ export default function LiveGraphCard() {
         </div>
         <div className="flex items-center gap-2 text-xs text-gray-600">
           Simplified
-          <Switch checked={fullMode} onCheckedChange={setFullMode} />
+          <input
+            type="checkbox"
+            checked={fullMode}
+            onChange={(e) => setFullMode(e.target.checked)}
+            className="accent-blue-500 w-4 h-4 cursor-pointer"
+          />
           Full
         </div>
       </div>
