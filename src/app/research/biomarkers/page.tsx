@@ -63,27 +63,28 @@ export default function BiomarkersPage() {
   }, []);
 
   return (
-    <div className="mx-auto max-w-6xl px-6 py-0 overflow-hidden">
-      {/* ------------------- Biomarker Cards ------------------- */}
-      <h1 className="text-2xl font-semibold mb-4">Biomarkers</h1>
-      <p className="text-slate-600 mb-6 max-w-3xl">
+    <div className="mx-auto max-w-6xl px-6 py-2 overflow-hidden">
+      {/* ------------------- Page Header ------------------- */}
+      <h1 className="text-2xl font-semibold mb-2">Biomarkers</h1>
+      <p className="text-slate-600 mb-4 max-w-3xl leading-relaxed">
         Key biological markers reported in ME/CFS studies, grouped by underlying
         mechanisms. Data are aggregated automatically from AI evidence and
         manually curated research sources.
       </p>
+
       {/* ------------------- Graph Section ------------------- */}
-      <div className="border border-slate-200 rounded-lg shadow-sm bg-white p-5 mb-10 overflow-hidden">
-        <h2 className="text-xl font-semibold mb-2">
+      <div className="border border-slate-200 rounded-lg shadow-sm bg-white p-5 mb-8 overflow-hidden">
+        <h2 className="text-xl font-semibold mb-1">
           Biomarker–Mechanism Network
         </h2>
-        <p className="text-sm text-slate-600 mb-4">
+        <p className="text-sm text-slate-600 mb-3">
           Visualizing relationships between biomarkers and biological mechanisms
           reported in ME/CFS research.
         </p>
 
         <div
           ref={containerRef}
-          className="w-full h-[650px] overflow-hidden rounded-md"
+          className="w-full h-[600px] overflow-hidden rounded-md"
         >
           <ForceGraph2D
             graphData={graph as any}
@@ -113,7 +114,7 @@ export default function BiomarkersPage() {
             linkDirectionalParticles={2}
             linkDirectionalParticleSpeed={0.004}
             onEngineStop={() => {
-              // Spread out layout slightly after settling
+              // Slightly spread out layout
               const scaleFactor = 1.4;
               graph.nodes.forEach((n: any) => {
                 n.x *= scaleFactor;
@@ -124,6 +125,7 @@ export default function BiomarkersPage() {
         </div>
       </div>
 
+      {/* ------------------- Biomarker Cards ------------------- */}
       {error && <p className="text-red-600">{error}</p>}
       {data.length === 0 && !error && (
         <p className="text-slate-500 italic">
@@ -131,7 +133,7 @@ export default function BiomarkersPage() {
         </p>
       )}
 
-      <div className="grid gap-4 mb-10">
+      <div className="grid gap-3 mb-8">
         {data.map((b) => (
           <div
             key={b.biomarker}
