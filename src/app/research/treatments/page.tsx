@@ -44,8 +44,8 @@ export default function TreatmentsPage() {
         "Used clinically for POTS and orthostatic hypotension; controlled studies demonstrate improved orthostatic tolerance and symptom reduction in subsets relevant to ME/CFS.",
       status: "Off-label",
       references: [
-        "https://pubmed.ncbi.nlm.nih.gov/19761935/", // Raj 2009 – POTS RCT
-        "https://pubmed.ncbi.nlm.nih.gov/10812393/", // Low 2000 – midodrine for chronic fatigue / orthostatic intolerance
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC3896075/", // JAHA 2014 – Midodrine physiological effects in POTS (placebo-controlled crossover)
+        "https://pubmed.ncbi.nlm.nih.gov/15082846/", // Naschitz 2004 – Midodrine in CFS (pilot/letter)
       ],
     },
     {
@@ -56,7 +56,7 @@ export default function TreatmentsPage() {
         "Common first-line therapy for orthostatic intolerance; a controlled trial in ME/CFS showed modest benefit but high interindividual variability. Often used with salt and fluids.",
       status: "Off-label",
       references: [
-        "https://pubmed.ncbi.nlm.nih.gov/11150108/", // Rowe 2001 – JAMA trial in CFS
+        "https://pubmed.ncbi.nlm.nih.gov/11150109/", // Rowe 2001 – JAMA trial in CFS
       ],
     },
     {
@@ -67,8 +67,8 @@ export default function TreatmentsPage() {
         "Controlled trials show mixed results: Montoya et al. reported improvement in patients with high herpesvirus titers; others found minimal change. Still under investigation.",
       status: "Investigational",
       references: [
-        "https://pubmed.ncbi.nlm.nih.gov/24020588/", // Montoya 2013 – valganciclovir RCT in ME/CFS subset
-        "https://pubmed.ncbi.nlm.nih.gov/20074860/", // Kogelnik 2010 – Stanford antiviral cohort
+        "https://pubmed.ncbi.nlm.nih.gov/23959519/", // Montoya 2013 – valganciclovir RCT in ME/CFS subset
+        "https://onlinelibrary.wiley.com/doi/pdf/10.1002/jmv.23713", // Kogelnik 2010 – Stanford antiviral cohort
       ],
     },
     {
@@ -79,8 +79,8 @@ export default function TreatmentsPage() {
         "Multiple Phase III trials demonstrated modest improvement in exercise tolerance in subsets of ME/CFS patients. Approved for ME/CFS in Argentina; not approved in US/EU.",
       status: "Investigational",
       references: [
-        "https://pubmed.ncbi.nlm.nih.gov/22427991/", // Strayer 2012 – PLoS One trial
-        "https://pubmed.ncbi.nlm.nih.gov/29511709/", // Carter 2018 – review
+        "https://pubmed.ncbi.nlm.nih.gov/22431963/", // Strayer 2012 – PLoS One trial
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC7595369/", // Carter 2018 – review
       ],
     },
     {
@@ -91,8 +91,8 @@ export default function TreatmentsPage() {
         "Randomized trials and meta-analyses show mild improvements in fatigue and quality of life with low risk. Widely used as supportive therapy.",
       status: "Supportive / Over-the-counter",
       references: [
-        "https://pubmed.ncbi.nlm.nih.gov/25255384/", // Castro-Marrero 2015 – CoQ10 + NADH RCT in ME/CFS
-        "https://pubmed.ncbi.nlm.nih.gov/22466036/", // Booth & Myhill 2012 – mitochondrial dysfunction context
+        "https://pubmed.ncbi.nlm.nih.gov/25386668/", // Castro-Marrero 2015 – CoQ10 + NADH RCT in ME/CFS
+        "https://pubmed.ncbi.nlm.nih.gov/22837795/", // Booth & Myhill 2012 – mitochondrial dysfunction context
       ],
     },
 
