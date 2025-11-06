@@ -1,42 +1,19 @@
 "use client";
-
 import { useEffect, useState } from "react";
 
-interface Biomarker {
-  biomarker: string;
-  count: number;
-  mechanisms: string[];
-}
-
 export default function BiomarkersPage() {
-  const [data, setData] = useState<Biomarker[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState<any[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/biomarkers`)
-      .then((r) => r.json())
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/biomarkers/`)
       .then((res) => {
-        setData(res);
-        setLoading(false);
+        if (!res.ok) throw new Error("Failed to load biomarkers");
+        return res.json();
       })
-      .catch(() => setLoading(false));
+      .then(setData)
+      .catch((err) => setError(err.message));
   }, []);
-
-  if (loading) {
-    return (
-      <div className="mx-auto max-w-5xl px-6 py-8 text-sm text-slate-500">
-        Loading biomarkers…
-      </div>
-    );
-  }
-
-  if (!Array.isArray(data)) {
-    return (
-      <div className="mx-auto max-w-5xl px-6 py-8 text-sm text-red-500">
-        Error: Unexpected response format.
-      </div>
-    );
-  }
 
   return (
     <div className="mx-auto max-w-5xl px-6 py-8">
@@ -47,24 +24,27 @@ export default function BiomarkersPage() {
         manually curated research sources.
       </p>
 
+      {error && <p className="text-red-600">{error}</p>}
+      {data.length === 0 && !error && (
+        <p className="text-slate-500 italic">
+          Loading or no biomarkers found...
+        </p>
+      )}
+
       <div className="grid gap-4">
         {data.map((b) => (
           <div
             key={b.biomarker}
-            className="border border-slate-200 rounded-lg p-5 bg-white shadow-sm hover:shadow-md transition"
+            className="border border-slate-200 rounded-lg p-4 bg-white shadow-sm"
           >
-            <div className="flex items-center justify-between">
-              <h2 className="font-semibold text-lg text-slate-900">
-                {b.biomarker}
-              </h2>
-              <span className="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded">
-                {b.count} papers
-              </span>
-            </div>
-            <div className="mt-2 text-sm text-slate-700">
-              <span className="font-medium text-slate-600">Mechanisms:</span>{" "}
-              {b.mechanisms.join(", ")}
-            </div>
+            <h3 className="font-semibold text-slate-900">{b.biomarker}</h3>
+            <p className="text-sm text-slate-600 mt-1">
+              Reported in {b.count} studies
+            </p>
+            <p className="mt-2 text-sm text-slate-700">
+              Mechanisms:{" "}
+              <span className="italic">{b.mechanisms.join(", ")}</span>
+            </p>
           </div>
         ))}
       </div>
