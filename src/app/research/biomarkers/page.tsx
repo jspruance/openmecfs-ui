@@ -27,7 +27,7 @@ export default function BiomarkersPage() {
   useEffect(() => {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
-    // Fetch biomarkers list
+    // Fetch biomarker list
     fetch(`${apiUrl}/biomarkers/`)
       .then((res) => {
         if (!res.ok)
@@ -62,8 +62,7 @@ export default function BiomarkersPage() {
         </p>
 
         <div className="w-full h-[700px] overflow-hidden rounded-md">
-          {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
-          {/* @ts-expect-error react-force-graph types missing nodeAutoColorBy prop */}
+          {/* @ts-ignore react-force-graph missing nodeAutoColorBy prop */}
           <ForceGraph2D
             graphData={graph}
             nodeAutoColorBy="type"
