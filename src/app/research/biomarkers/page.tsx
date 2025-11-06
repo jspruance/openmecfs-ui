@@ -63,7 +63,7 @@ export default function BiomarkersPage() {
 
         <div className="w-full h-[700px] overflow-hidden rounded-md">
           <ForceGraph2D
-            graphData={graph as any} // suppress type noise safely
+            graphData={graph as any}
             nodeAutoColorBy="type"
             linkColor={() => "rgba(0,0,0,0.2)"}
             backgroundColor="#fafafa"
@@ -74,7 +74,11 @@ export default function BiomarkersPage() {
             width={
               typeof window !== "undefined" ? window.innerWidth * 0.85 : 900
             }
-            nodeCanvasObject={(node: any, ctx, globalScale) => {
+            nodeCanvasObject={(
+              node: any,
+              ctx: CanvasRenderingContext2D,
+              globalScale: number
+            ) => {
               const label = node.id;
               const fontSize = 14 / globalScale;
               ctx.font = `${fontSize}px Sans-Serif`;
