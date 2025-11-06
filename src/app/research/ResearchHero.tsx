@@ -1,6 +1,6 @@
 export default function ResearchHero() {
   return (
-    <header className="mb-4">
+    <header className="mb-5">
       <h1 className="text-2xl font-semibold text-gray-900">
         Open ME/CFS Research Lab
       </h1>
