@@ -5,7 +5,7 @@ import ResearchHero from "./ResearchHero";
 
 // Live tiles
 import LiveGraphCard from "@/components/cards/LiveGraphCard";
-import LatestInsightsCard from "@/components/cards/LatestInsightsCard";
+//import LatestInsightsCard from "@/components/cards/LatestInsightsCard";
 import BiomarkerRibbon from "@/components/cards/BiomarkerRibbon";
 
 export default function ResearchIndexPage() {
@@ -26,10 +26,10 @@ export default function ResearchIndexPage() {
             <LiveGraphCard />
           </div>
 
-          {/* Latest AI insights */}
+          {/* Latest AI insights 
           <div>
             <LatestInsightsCard />
-          </div>
+          </div>*/}
         </div>
 
         {/* Biomarker Activity Ribbon */}
