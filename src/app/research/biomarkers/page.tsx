@@ -24,10 +24,11 @@ export default function BiomarkersPage() {
   const [graph, setGraph] = useState<GraphData>({ nodes: [], links: [] });
   const [error, setError] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const fgRef = useRef<any>(null);
   const [width, setWidth] = useState(800);
 
+  // Responsive container width
   useEffect(() => {
-    // auto-resize graph to container
     const handleResize = () => {
       if (containerRef.current) {
         setWidth(containerRef.current.offsetWidth);
@@ -38,10 +39,10 @@ export default function BiomarkersPage() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  // Fetch data
   useEffect(() => {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
-    // Fetch biomarker list
     fetch(`${apiUrl}/biomarkers/`)
       .then((res) => {
         if (!res.ok)
@@ -51,7 +52,6 @@ export default function BiomarkersPage() {
       .then((json: Biomarker[]) => setData(json))
       .catch((err) => setError(err.message));
 
-    // Fetch biomarker–mechanism graph
     fetch(`${apiUrl}/biomarkers/graph`)
       .then((res) => {
         if (!res.ok)
@@ -62,9 +62,21 @@ export default function BiomarkersPage() {
       .catch((err) => console.error("Graph fetch error:", err));
   }, []);
 
+  // Zoom-to-fit after stabilization
+  useEffect(() => {
+    if (!fgRef.current || graph.nodes.length === 0) return;
+
+    // Give ForceGraph a moment to finish layout
+    const timer = setTimeout(() => {
+      fgRef.current.zoomToFit(800, 40); // (ms duration, padding in px)
+    }, 1200);
+
+    return () => clearTimeout(timer);
+  }, [graph]);
+
   return (
     <div className="mx-auto max-w-6xl px-6 py-2 overflow-hidden">
-      {/* ------------------- Page Header ------------------- */}
+      {/* ------------------- Header ------------------- */}
       <h1 className="text-2xl font-semibold mb-2">Biomarkers</h1>
       <p className="text-slate-600 mb-4 max-w-3xl leading-relaxed">
         Key biological markers reported in ME/CFS studies, grouped by underlying
@@ -72,7 +84,7 @@ export default function BiomarkersPage() {
         manually curated research sources.
       </p>
 
-      {/* ------------------- Graph Section ------------------- */}
+      {/* ------------------- Graph ------------------- */}
       <div className="border border-slate-200 rounded-lg shadow-sm bg-white p-5 mb-8 overflow-hidden">
         <h2 className="text-xl font-semibold mb-1">
           Biomarker–Mechanism Network
@@ -87,13 +99,14 @@ export default function BiomarkersPage() {
           className="w-full h-[600px] overflow-hidden rounded-md"
         >
           <ForceGraph2D
+            ref={fgRef}
             graphData={graph as any}
             nodeAutoColorBy="type"
             linkColor={() => "rgba(0,0,0,0.2)"}
             backgroundColor="#fafafa"
             width={width}
             nodeRelSize={9}
-            cooldownTicks={50}
+            cooldownTicks={60}
             d3VelocityDecay={0.25}
             d3AlphaDecay={0.04}
             nodeCanvasObject={(
@@ -114,18 +127,16 @@ export default function BiomarkersPage() {
             linkDirectionalParticles={2}
             linkDirectionalParticleSpeed={0.004}
             onEngineStop={() => {
-              // Slightly spread out layout
-              const scaleFactor = 1.4;
-              graph.nodes.forEach((n: any) => {
-                n.x *= scaleFactor;
-                n.y *= scaleFactor;
-              });
+              // Final zoom adjustment after layout settles
+              if (fgRef.current) {
+                fgRef.current.zoomToFit(600, 30);
+              }
             }}
           />
         </div>
       </div>
 
-      {/* ------------------- Biomarker Cards ------------------- */}
+      {/* ------------------- Cards ------------------- */}
       {error && <p className="text-red-600">{error}</p>}
       {data.length === 0 && !error && (
         <p className="text-slate-500 italic">
