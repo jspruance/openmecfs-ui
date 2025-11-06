@@ -1,9 +1,10 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
+
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 
-// Dynamically import the ForceGraph to avoid SSR issues
-const ForceGraph2D = dynamic(() => import("react-force-graph-2d"), {
+const ForceGraph2D: any = dynamic(() => import("react-force-graph-2d"), {
   ssr: false,
 });
 
@@ -14,8 +15,8 @@ interface Biomarker {
 }
 
 interface GraphData {
-  nodes: { id: string; type: string; val: number }[];
-  links: { source: string; target: string; type: string }[];
+  nodes: { id: string; type: string; val?: number }[];
+  links: { source: string; target: string }[];
 }
 
 export default function BiomarkersPage() {
@@ -26,7 +27,7 @@ export default function BiomarkersPage() {
   useEffect(() => {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
-    // Fetch biomarker list
+    // Fetch biomarkers list
     fetch(`${apiUrl}/biomarkers/`)
       .then((res) => {
         if (!res.ok)
@@ -36,11 +37,15 @@ export default function BiomarkersPage() {
       .then((json: Biomarker[]) => setData(json))
       .catch((err) => setError(err.message));
 
-    // Fetch graph data
+    // Fetch biomarker–mechanism graph
     fetch(`${apiUrl}/biomarkers/graph`)
-      .then((res) => res.json())
-      .then((json: GraphData) => setGraph(json))
-      .catch((err) => console.error("Failed to load biomarker graph:", err));
+      .then((res) => {
+        if (!res.ok)
+          throw new Error(`Failed to load biomarker graph (${res.status})`);
+        return res.json();
+      })
+      .then((json) => setGraph(json))
+      .catch((err) => console.error("Graph fetch error:", err));
   }, []);
 
   return (
@@ -59,8 +64,8 @@ export default function BiomarkersPage() {
         </p>
       )}
 
-      {/* List View */}
-      <div className="grid gap-4">
+      {/* ------------------- Biomarker Cards ------------------- */}
+      <div className="grid gap-4 mb-10">
         {data.map((b) => (
           <div
             key={b.biomarker}
@@ -78,8 +83,8 @@ export default function BiomarkersPage() {
         ))}
       </div>
 
-      {/* Interactive Graph */}
-      <div className="border rounded-lg shadow-sm bg-white p-4 mt-10">
+      {/* ------------------- Graph Section ------------------- */}
+      <div className="border border-slate-200 rounded-lg shadow-sm bg-white p-4">
         <h2 className="text-lg font-semibold mb-2">
           Biomarker–Mechanism Network
         </h2>
@@ -87,22 +92,24 @@ export default function BiomarkersPage() {
           Visualizing relationships between biomarkers and biological mechanisms
           reported in ME/CFS research.
         </p>
+
         <div className="w-full h-[600px]">
+          {/* @ts-expect-error - react-force-graph types missing nodeAutoColorBy prop */}
           <ForceGraph2D
             graphData={graph}
             nodeAutoColorBy="type"
             linkColor={() => "rgba(0,0,0,0.2)"}
             backgroundColor="#fafafa"
-            nodeCanvasObject={(node, ctx, globalScale) => {
+            nodeCanvasObject={(node: any, ctx, globalScale) => {
               const label = node.id;
               const fontSize = 12 / globalScale;
               ctx.font = `${fontSize}px Sans-Serif`;
-              ctx.fillStyle = node.type === "mechanism" ? "#2563eb" : "#16a34a";
+              ctx.fillStyle = node.type === "mechanism" ? "#2563eb" : "#16a34a"; // blue vs green
               ctx.beginPath();
-              ctx.arc(node.x!, node.y!, node.val || 3, 0, 2 * Math.PI, false);
+              ctx.arc(node.x ?? 0, node.y ?? 0, node.val ?? 3, 0, 2 * Math.PI);
               ctx.fill();
               ctx.fillStyle = "black";
-              ctx.fillText(label, node.x! + 8, node.y! + 3);
+              ctx.fillText(label, (node.x ?? 0) + 8, (node.y ?? 0) + 3);
             }}
             linkDirectionalParticles={2}
             linkDirectionalParticleSpeed={0.004}
