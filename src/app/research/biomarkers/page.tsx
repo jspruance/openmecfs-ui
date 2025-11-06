@@ -30,6 +30,14 @@ export default function BiomarkersPage() {
     );
   }
 
+  if (!Array.isArray(data)) {
+    return (
+      <div className="mx-auto max-w-5xl px-6 py-8 text-sm text-red-500">
+        Error: Unexpected response format.
+      </div>
+    );
+  }
+
   return (
     <div className="mx-auto max-w-5xl px-6 py-8">
       <h1 className="text-2xl font-semibold mb-4">Biomarkers</h1>
