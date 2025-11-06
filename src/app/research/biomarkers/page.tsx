@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 
 const ForceGraph2D: any = dynamic(() => import("react-force-graph-2d"), {
@@ -23,6 +23,20 @@ export default function BiomarkersPage() {
   const [data, setData] = useState<Biomarker[]>([]);
   const [graph, setGraph] = useState<GraphData>({ nodes: [], links: [] });
   const [error, setError] = useState<string | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [width, setWidth] = useState(800);
+
+  useEffect(() => {
+    // auto-resize graph to container
+    const handleResize = () => {
+      if (containerRef.current) {
+        setWidth(containerRef.current.offsetWidth);
+      }
+    };
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   useEffect(() => {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
@@ -48,9 +62,8 @@ export default function BiomarkersPage() {
       .catch((err) => console.error("Graph fetch error:", err));
   }, []);
 
-  // -------------------- JSX --------------------
   return (
-    <div className="mx-auto max-w-6xl px-6 py-0">
+    <div className="mx-auto max-w-6xl px-6 py-0 overflow-hidden">
       {/* ------------------- Biomarker Cards ------------------- */}
       <h1 className="text-2xl font-semibold mb-4">Biomarkers</h1>
       <p className="text-slate-600 mb-6 max-w-3xl">
@@ -58,7 +71,6 @@ export default function BiomarkersPage() {
         mechanisms. Data are aggregated automatically from AI evidence and
         manually curated research sources.
       </p>
-
       {/* ------------------- Graph Section ------------------- */}
       <div className="border border-slate-200 rounded-lg shadow-sm bg-white p-5 mb-10 overflow-hidden">
         <h2 className="text-xl font-semibold mb-2">
@@ -69,19 +81,20 @@ export default function BiomarkersPage() {
           reported in ME/CFS research.
         </p>
 
-        <div className="w-full h-[700px] overflow-hidden rounded-md">
+        <div
+          ref={containerRef}
+          className="w-full h-[650px] overflow-hidden rounded-md"
+        >
           <ForceGraph2D
             graphData={graph as any}
             nodeAutoColorBy="type"
             linkColor={() => "rgba(0,0,0,0.2)"}
             backgroundColor="#fafafa"
-            nodeRelSize={8}
-            cooldownTicks={60}
+            width={width}
+            nodeRelSize={9}
+            cooldownTicks={50}
             d3VelocityDecay={0.25}
-            d3AlphaDecay={0.03}
-            width={
-              typeof window !== "undefined" ? window.innerWidth * 0.85 : 900
-            }
+            d3AlphaDecay={0.04}
             nodeCanvasObject={(
               node: any,
               ctx: CanvasRenderingContext2D,
@@ -90,7 +103,7 @@ export default function BiomarkersPage() {
               const label = node.id;
               const fontSize = 14 / globalScale;
               ctx.font = `${fontSize}px Sans-Serif`;
-              ctx.fillStyle = node.type === "mechanism" ? "#2563eb" : "#16a34a"; // blue vs green
+              ctx.fillStyle = node.type === "mechanism" ? "#2563eb" : "#16a34a";
               ctx.beginPath();
               ctx.arc(node.x ?? 0, node.y ?? 0, node.val ?? 5, 0, 2 * Math.PI);
               ctx.fill();
@@ -99,6 +112,14 @@ export default function BiomarkersPage() {
             }}
             linkDirectionalParticles={2}
             linkDirectionalParticleSpeed={0.004}
+            onEngineStop={() => {
+              // Spread out layout slightly after settling
+              const scaleFactor = 1.4;
+              graph.nodes.forEach((n: any) => {
+                n.x *= scaleFactor;
+                n.y *= scaleFactor;
+              });
+            }}
           />
         </div>
       </div>
