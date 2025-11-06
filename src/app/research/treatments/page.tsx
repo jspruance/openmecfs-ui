@@ -105,8 +105,8 @@ export default function TreatmentsPage() {
       status: "Deprecated",
       deprecated: true,
       references: [
-        "https://pubmed.ncbi.nlm.nih.gov/30901423/", // Fluge 2019 – negative phase III
-        "https://pubmed.ncbi.nlm.nih.gov/22039471/", // Fluge 2011 – initial open-label
+        "https://meassociation.org.uk/2019/04/medscape-rituximab-fails-to-improve-symptoms-in-me-cfs-03-april-2019/", // Fluge 2019 – negative phase III
+        "https://clinicaltrials.gov/study/NCT02229942", // Fluge 2011 – initial open-label
       ],
     },
     {
@@ -117,7 +117,7 @@ export default function TreatmentsPage() {
       status: "Deprecated",
       deprecated: true,
       references: [
-        "https://pubmed.ncbi.nlm.nih.gov/29087232/", // Wilshire 2017 – PACE reanalysis
+        "https://pubmed.ncbi.nlm.nih.gov/29562932/", // Wilshire 2017 – PACE reanalysis
         "https://www.nice.org.uk/guidance/ng206", // NICE 2021 guideline
       ],
     },
