@@ -54,7 +54,7 @@ export default function LiveGraphCard() {
     links: [],
   });
   const [raw, setRaw] = useState<any>(null);
-  const [fullMode, setFullMode] = useState(false);
+  const [fullMode, setFullMode] = useState(true);
 
   // ------------------------------------------------------
   // 🧠 Fetch graph data once
@@ -269,7 +269,6 @@ export default function LiveGraphCard() {
           <input
             type="checkbox"
             checked={fullMode}
-            defaultChecked={true}
             onChange={(e) => setFullMode(e.target.checked)}
             className="accent-blue-500 w-4 h-4 cursor-pointer"
           />
