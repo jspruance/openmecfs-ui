@@ -22,11 +22,11 @@ interface Paper {
 }
 
 const topicMap: Record<string, string> = {
-  "Long COVID": "long covid",
-  Neurology: "neurology",
-  Immunology: "immunology",
   Diagnostics: "diagnos",
   Treatment: "treat",
+  Immunology: "immunology",
+  Neurology: "neurology",
+  "Long COVID": "long covid",
 };
 
 const LIMIT = 10;
@@ -104,9 +104,9 @@ function ResearchPapersPageContent() {
   useEffect(() => {
     if (!initialized) return;
     if (!hasMore) return;
-    
+
     let cancelled = false;
-    
+
     const doFetch = async () => {
       setLoading(true);
       try {
@@ -114,7 +114,7 @@ function ResearchPapersPageContent() {
         if (!res.ok) {
           throw new Error(`HTTP error! status: ${res.status}`);
         }
-        
+
         const json = await res.json();
         const batch = json.data || [];
         const more = json.has_more ?? batch.length === LIMIT;
@@ -126,8 +126,10 @@ function ResearchPapersPageContent() {
               return batch;
             }
             // Avoid duplicates by checking if papers already exist
-            const existingPmids = new Set(prev.map(p => String(p.pmid)));
-            const newPapers = batch.filter((p: Paper) => !existingPmids.has(String(p.pmid)));
+            const existingPmids = new Set(prev.map((p) => String(p.pmid)));
+            const newPapers = batch.filter(
+              (p: Paper) => !existingPmids.has(String(p.pmid))
+            );
             return [...prev, ...newPapers];
           });
           setHasMore(more);
@@ -143,9 +145,9 @@ function ResearchPapersPageContent() {
         }
       }
     };
-    
+
     doFetch();
-    
+
     return () => {
       cancelled = true;
     };
