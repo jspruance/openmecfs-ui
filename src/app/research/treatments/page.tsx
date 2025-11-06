@@ -20,8 +20,8 @@ export default function TreatmentsPage() {
         "A 2021 Stanford retrospective series (n=101) reported functional improvements in ~70% of ME/CFS patients at doses 0.25–2 mg/day, with fatigue and cognitive symptoms most responsive. Controlled trials are planned.",
       status: "Investigational / Off-label",
       references: [
-        "https://pubmed.ncbi.nlm.nih.gov/33640105/", // 2021 Stanford cohort in ME/CFS
-        "https://clinicaltrials.gov/study/NCT06043280", // Planned aripiprazole ME/CFS trial
+        "https://pubmed.ncbi.nlm.nih.gov/33536023/", // 2021 Stanford cohort in ME/CFS
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC7860172/", // Planned aripiprazole ME/CFS trial
       ],
     },
     {
@@ -33,7 +33,7 @@ export default function TreatmentsPage() {
       status: "Off-label",
       references: [
         "https://pubmed.ncbi.nlm.nih.gov/35526605/", // Systrom 2022 – Pyridostigmine improves exercise tolerance in ME/CFS
-        "https://pubmed.ncbi.nlm.nih.gov/33931211/", // Vernino 2021 – autonomic/POTS context
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC12441162/", // Pyridostigmine improves hand grip strength
       ],
     },
     {
