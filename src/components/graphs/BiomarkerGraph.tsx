@@ -39,7 +39,7 @@ export default function BiomarkerGraph() {
           nodeAutoColorBy="type"
           linkColor={() => "rgba(0,0,0,0.2)"}
           backgroundColor="#fafafa"
-          nodeCanvasObject={(node: any, ctx, globalScale) => {
+          nodeCanvasObject={(node: any, ctx: CanvasRenderingContext2D, globalScale: number) => {
             const label = node.id;
             const fontSize = 12 / globalScale;
             ctx.font = `${fontSize}px Sans-Serif`;
