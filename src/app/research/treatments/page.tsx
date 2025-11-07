@@ -127,7 +127,7 @@ export default function TreatmentsPage() {
   const deprecated = treatments.filter((t) => t.deprecated);
 
   return (
-    <div className="mx-auto max-w-5xl px-6 py-8">
+    <div className="mx-auto max-w-5xl px-6 py-0">
       <h1 className="text-2xl font-semibold mb-4">Treatments</h1>
       <p className="text-slate-600 mb-6 max-w-3xl">
         This section summarizes proposed and studied treatments for ME/CFS,
