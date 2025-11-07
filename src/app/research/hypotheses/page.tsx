@@ -54,9 +54,7 @@ export default function AIHypothesesPage() {
     return mechMatch && confMatch;
   });
 
-  // ----------------------------
   // 📄 Export CSV functionality
-  // ----------------------------
   const handleExportCSV = () => {
     if (filtered.length === 0) return;
 
@@ -88,9 +86,7 @@ export default function AIHypothesesPage() {
     window.URL.revokeObjectURL(url);
   };
 
-  // ----------------------------
-  // 🔗 Share functionality (stub)
-  // ----------------------------
+  // 🔗 Share link functionality
   const handleShare = () => {
     const shareUrl = window.location.href;
     navigator.clipboard.writeText(shareUrl);
@@ -100,12 +96,12 @@ export default function AIHypothesesPage() {
   return (
     <div className="max-w-5xl mx-auto px-6 py-10">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row items-center justify-between mb-10">
+      <div className="flex flex-col sm:flex-row items-center justify-between mb-8 mt-2">
         <div className="text-center sm:text-left">
-          <h1 className="text-4xl font-semibold text-gray-900 mb-2 tracking-tight">
+          <h1 className="text-4xl font-semibold text-gray-900 mb-1 tracking-tight">
             AI-Generated Hypotheses
           </h1>
-          <p className="text-gray-500 max-w-2xl text-sm sm:text-base">
+          <p className="text-gray-500 max-w-2xl text-sm sm:text-base leading-relaxed">
             Machine-generated causal links discovered from ME/CFS research data
             — synthesized by AI from biomarkers, mechanisms, and study evidence.
           </p>
@@ -115,13 +111,13 @@ export default function AIHypothesesPage() {
         <div className="flex gap-3 mt-4 sm:mt-0">
           <button
             onClick={handleExportCSV}
-            className="bg-blue-600 hover:bg-blue-700 text-white text-sm px-4 py-2 rounded-lg transition focus:ring-2 focus:ring-blue-300"
+            className="cursor-pointer bg-blue-600 hover:bg-blue-700 text-white text-sm px-4 py-2 rounded-lg transition focus:ring-2 focus:ring-blue-300"
           >
             Export CSV
           </button>
           <button
             onClick={handleShare}
-            className="border border-gray-300 hover:bg-gray-100 text-gray-700 text-sm px-4 py-2 rounded-lg transition"
+            className="cursor-pointer border border-gray-300 hover:bg-gray-100 text-gray-700 text-sm px-4 py-2 rounded-lg transition"
           >
             Share Link
           </button>
@@ -129,7 +125,7 @@ export default function AIHypothesesPage() {
       </div>
 
       {/* Filter Bar */}
-      <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-10 bg-gray-50 border border-gray-200 rounded-xl py-4 px-6 shadow-sm">
+      <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8 bg-gray-50 border border-gray-200 rounded-xl py-3 px-5 shadow-sm">
         <div className="flex items-center gap-2">
           <label className="text-sm font-medium text-gray-700">
             Mechanism:
@@ -137,7 +133,7 @@ export default function AIHypothesesPage() {
           <select
             value={filterMechanism}
             onChange={(e) => setFilterMechanism(e.target.value)}
-            className="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white hover:border-gray-400 focus:ring-2 focus:ring-blue-400 outline-none transition"
+            className="cursor-pointer border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white hover:border-gray-400 focus:ring-2 focus:ring-blue-400 outline-none transition"
           >
             <option value="">All Mechanisms</option>
             <option value="vascular">Vascular</option>
@@ -158,7 +154,7 @@ export default function AIHypothesesPage() {
             step={0.1}
             value={minConfidence}
             onChange={(e) => setMinConfidence(Number(e.target.value))}
-            className="w-40 accent-blue-500"
+            className="w-40 accent-blue-500 cursor-pointer"
           />
           <span className="text-sm text-gray-600">
             ≥ {(minConfidence * 100).toFixed(0)}%
@@ -201,7 +197,7 @@ export default function AIHypothesesPage() {
               {h.mechanisms?.map((m) => (
                 <span
                   key={m}
-                  className="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs"
+                  className="cursor-default px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs"
                 >
                   {m}
                 </span>
@@ -209,7 +205,7 @@ export default function AIHypothesesPage() {
               {h.biomarkers?.map((b) => (
                 <span
                   key={b}
-                  className="px-2 py-1 bg-purple-100 text-purple-700 rounded-full text-xs"
+                  className="cursor-default px-2 py-1 bg-purple-100 text-purple-700 rounded-full text-xs"
                 >
                   {b}
                 </span>
