@@ -54,17 +54,78 @@ export default function AIHypothesesPage() {
     return mechMatch && confMatch;
   });
 
+  // ----------------------------
+  // 📄 Export CSV functionality
+  // ----------------------------
+  const handleExportCSV = () => {
+    if (filtered.length === 0) return;
+
+    const headers = [
+      "Title",
+      "Summary",
+      "Confidence",
+      "Mechanisms",
+      "Biomarkers",
+      "Citations",
+    ];
+    const rows = filtered.map((h) => [
+      `"${h.title}"`,
+      `"${h.summary}"`,
+      h.confidence.toFixed(2),
+      `"${h.mechanisms?.join(", ")}"`,
+      `"${h.biomarkers?.join(", ")}"`,
+      `"${h.citations?.join(", ")}"`,
+    ]);
+
+    const csvContent =
+      headers.join(",") + "\n" + rows.map((r) => r.join(",")).join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "ai_hypotheses.csv";
+    a.click();
+    window.URL.revokeObjectURL(url);
+  };
+
+  // ----------------------------
+  // 🔗 Share functionality (stub)
+  // ----------------------------
+  const handleShare = () => {
+    const shareUrl = window.location.href;
+    navigator.clipboard.writeText(shareUrl);
+    alert("Link copied to clipboard!");
+  };
+
   return (
     <div className="max-w-5xl mx-auto px-6 py-10">
       {/* Header */}
-      <div className="flex flex-col items-center text-center mb-10">
-        <h1 className="text-4xl font-semibold text-gray-900 mb-2 tracking-tight">
-          AI-Generated Hypotheses
-        </h1>
-        <p className="text-gray-500 max-w-2xl text-sm sm:text-base">
-          Machine-generated causal links discovered from ME/CFS research data —
-          synthesized by AI from biomarkers, mechanisms, and study evidence.
-        </p>
+      <div className="flex flex-col sm:flex-row items-center justify-between mb-10">
+        <div className="text-center sm:text-left">
+          <h1 className="text-4xl font-semibold text-gray-900 mb-2 tracking-tight">
+            AI-Generated Hypotheses
+          </h1>
+          <p className="text-gray-500 max-w-2xl text-sm sm:text-base">
+            Machine-generated causal links discovered from ME/CFS research data
+            — synthesized by AI from biomarkers, mechanisms, and study evidence.
+          </p>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex gap-3 mt-4 sm:mt-0">
+          <button
+            onClick={handleExportCSV}
+            className="bg-blue-600 hover:bg-blue-700 text-white text-sm px-4 py-2 rounded-lg transition focus:ring-2 focus:ring-blue-300"
+          >
+            Export CSV
+          </button>
+          <button
+            onClick={handleShare}
+            className="border border-gray-300 hover:bg-gray-100 text-gray-700 text-sm px-4 py-2 rounded-lg transition"
+          >
+            Share Link
+          </button>
+        </div>
       </div>
 
       {/* Filter Bar */}
