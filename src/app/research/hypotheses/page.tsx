@@ -54,7 +54,7 @@ export default function AIHypothesesPage() {
     return mechMatch && confMatch;
   });
 
-  // 📄 Export CSV functionality
+  // 📄 Export CSV functionality with contextual filename
   const handleExportCSV = () => {
     if (filtered.length === 0) return;
 
@@ -79,9 +79,16 @@ export default function AIHypothesesPage() {
       headers.join(",") + "\n" + rows.map((r) => r.join(",")).join("\n");
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     const url = window.URL.createObjectURL(blob);
+
+    // Dynamic filename based on filters
+    const mechanismPart = filterMechanism ? `_${filterMechanism}` : "";
+    const confidencePart =
+      minConfidence > 0 ? `_${Math.round(minConfidence * 100)}plus` : "";
+    const filename = `ai_hypotheses${mechanismPart}${confidencePart}.csv`;
+
     const a = document.createElement("a");
     a.href = url;
-    a.download = "ai_hypotheses.csv";
+    a.download = filename;
     a.click();
     window.URL.revokeObjectURL(url);
   };
@@ -94,9 +101,9 @@ export default function AIHypothesesPage() {
   };
 
   return (
-    <div className="max-w-5xl mx-auto px-6 py-10">
+    <div className="max-w-5xl mx-auto px-6 pb-10 pt-0">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row items-center justify-between mb-8 mt-2">
+      <div className="flex flex-col sm:flex-row items-center justify-between mb-8 mt-0">
         <div className="text-center sm:text-left">
           <h1 className="text-4xl font-semibold text-gray-900 mb-1 tracking-tight">
             AI-Generated Hypotheses
