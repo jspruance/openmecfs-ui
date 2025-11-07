@@ -28,6 +28,7 @@ export default function AIHypothesesPage() {
         const res = await axios.get(
           `${process.env.NEXT_PUBLIC_API_URL}/ai/hypotheses`
         );
+        console.log("Fetched data:", res.data);
         setData(res.data);
       } catch (err: any) {
         setError(err.message);
