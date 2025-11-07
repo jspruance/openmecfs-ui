@@ -105,7 +105,7 @@ export default function AIHypothesesPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-center justify-between mb-8 mt-0">
         <div className="text-center sm:text-left">
-          <h1 className="text-4xl font-semibold text-gray-900 mb-1 tracking-tight">
+          <h1 className="text-3xl font-semibold text-gray-900 mb-1 tracking-tight">
             AI-Generated Hypotheses
           </h1>
           <p className="text-gray-500 max-w-2xl text-sm sm:text-base leading-relaxed">
