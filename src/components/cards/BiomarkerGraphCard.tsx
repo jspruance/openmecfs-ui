@@ -43,25 +43,21 @@ export default function BiomarkerGraphCard() {
       .catch((err) => setError(err.message));
   }, []);
 
-  // ✅ Smart zoom-to-fit AFTER layout + label-aware padding
+  // ✅ Controlled zoom with mild right padding and vertical centering
   useEffect(() => {
     if (!fgRef.current || graph.nodes.length === 0) return;
-
     const fg = fgRef.current;
 
-    const settleTimer = setTimeout(() => {
-      // Estimate padding based on longest label length
-      const maxLabelLength = Math.max(
-        ...graph.nodes.map((n) => n.id.length || 0),
-        10
-      );
-      const extraPadding = Math.min(120, maxLabelLength * 3); // 3px per character
+    const timer = setTimeout(() => {
+      // Fit tightly, but add a little room (right bias)
+      fg.zoomToFit(1000, 40);
 
-      // Final zoom-to-fit with extra padding
-      fg.zoomToFit(1000, 60 + extraPadding);
-    }, 1600);
+      // Subtle right bias translation (avoids cutoff without whitespace explosion)
+      const { x, y, k } = fg.zoom();
+      fg.zoom(k, x - 40, y); // shift 40px left visually
+    }, 1400);
 
-    return () => clearTimeout(settleTimer);
+    return () => clearTimeout(timer);
   }, [graph]);
 
   return (
@@ -111,9 +107,8 @@ export default function BiomarkerGraphCard() {
           linkDirectionalParticles={2}
           linkDirectionalParticleSpeed={0.004}
           onEngineStop={() => {
-            // minor re-fit after physics stop
             const fg = fgRef.current;
-            if (fg) fg.zoomToFit(800, 80);
+            if (fg) fg.zoomToFit(800, 50);
           }}
         />
       </div>
