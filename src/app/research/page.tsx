@@ -2,10 +2,8 @@
 
 import Link from "next/link";
 import ResearchHero from "./ResearchHero";
-
-// Live tiles
+import BiomarkerGraphCard from "@/components/cards/BiomarkerGraphCard"; // 👈 NEW
 import LiveGraphCard from "@/components/cards/LiveGraphCard";
-//import LatestInsightsCard from "@/components/cards/LatestInsightsCard";
 import BiomarkerRibbon from "@/components/cards/BiomarkerRibbon";
 
 export default function ResearchIndexPage() {
@@ -14,6 +12,11 @@ export default function ResearchIndexPage() {
       {/* Hero */}
       <ResearchHero />
 
+      {/* 🔬 Biomarker Graph at Top */}
+      <section className="max-w-6xl mx-auto px-6">
+        <BiomarkerGraphCard />
+      </section>
+
       {/* Live Data Section */}
       <section>
         <h2 className="text-lg font-semibold text-gray-800 mb-3">
@@ -21,24 +24,17 @@ export default function ResearchIndexPage() {
         </h2>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Global Graph */}
           <div className="lg:col-span-3">
             <LiveGraphCard />
           </div>
-
-          {/* Latest AI insights 
-          <div>
-            <LatestInsightsCard />
-          </div>*/}
         </div>
 
-        {/* Biomarker Activity Ribbon */}
         <div className="mt-6">
           <BiomarkerRibbon />
         </div>
       </section>
 
-      {/* Legacy cards moved below to support exploration */}
+      {/* Explorer Tools */}
       <section className="pt-6 border-t">
         <h2 className="text-lg font-semibold text-gray-800 mb-3">
           🧭 Explorer Tools
