@@ -43,26 +43,29 @@ export default function BiomarkerGraphCard() {
       .catch((err) => setError(err.message));
   }, []);
 
-  // ✅ Improved adaptive zoom and centering
+  // ✅ Smart zoom-to-fit AFTER layout stabilization
   useEffect(() => {
     if (!fgRef.current || graph.nodes.length === 0) return;
 
-    const timer = setTimeout(() => {
-      const fg = fgRef.current;
+    const fg = fgRef.current;
 
-      // Dynamically scale padding: larger graphs get slightly more room
-      const nodeCount = graph.nodes.length;
-      const padding = Math.min(60, Math.max(20, nodeCount / 3));
+    // wait until force layout completes
+    const settleTimer = setTimeout(() => {
+      // compute bounding box manually
+      const bounds = fg.getGraphBbox?.();
+      if (bounds) {
+        const { x, y, z } = bounds;
+      }
 
-      fg.zoomToFit(800, padding);
-
+      // final zoomToFit with moderate padding
+      fg.zoomToFit(1000, 40);
       const canvas = fg.canvas?.();
       if (canvas && containerRef.current) {
         canvas.style.height = `${containerRef.current.offsetHeight}px`;
       }
-    }, 1000);
+    }, 1600); // give the layout ~1.6s to fully stabilize
 
-    return () => clearTimeout(timer);
+    return () => clearTimeout(settleTimer);
   }, [graph]);
 
   return (
@@ -81,7 +84,7 @@ export default function BiomarkerGraphCard() {
 
       <div
         ref={containerRef}
-        className="w-full h-[460px] overflow-hidden rounded-md"
+        className="w-full h-[480px] overflow-hidden rounded-md"
       >
         <ForceGraph2D
           ref={fgRef}
@@ -112,8 +115,9 @@ export default function BiomarkerGraphCard() {
           linkDirectionalParticles={2}
           linkDirectionalParticleSpeed={0.004}
           onEngineStop={() => {
+            // final adjustment to center
             const fg = fgRef.current;
-            if (fg) fg.zoomToFit(600, 30); // fallback padding for small graphs
+            if (fg) fg.zoomToFit(800, 40);
           }}
         />
       </div>
