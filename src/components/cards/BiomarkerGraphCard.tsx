@@ -43,18 +43,20 @@ export default function BiomarkerGraphCard() {
       .catch((err) => setError(err.message));
   }, []);
 
-  // ✅ Controlled zoom with mild right padding and vertical centering
+  // ✅ Controlled zoom with mild right + bottom padding
   useEffect(() => {
     if (!fgRef.current || graph.nodes.length === 0) return;
     const fg = fgRef.current;
 
     const timer = setTimeout(() => {
-      // Fit tightly, but add a little room (right bias)
-      fg.zoomToFit(1000, 40);
+      // First fit normally
+      fg.zoomToFit(1000, 45);
 
-      // Subtle right bias translation (avoids cutoff without whitespace explosion)
-      const { x, y, k } = fg.zoom();
-      fg.zoom(k, x - 40, y); // shift 40px left visually
+      // Then apply a small offset upward & leftward to reveal bottom/right edges
+      const transform = fg.zoom();
+      const shiftX = -40; // left bias
+      const shiftY = 30; // up bias (frees bottom space)
+      fg.zoom(transform.k, transform.x + shiftX, transform.y + shiftY);
     }, 1400);
 
     return () => clearTimeout(timer);
@@ -108,7 +110,7 @@ export default function BiomarkerGraphCard() {
           linkDirectionalParticleSpeed={0.004}
           onEngineStop={() => {
             const fg = fgRef.current;
-            if (fg) fg.zoomToFit(800, 50);
+            if (fg) fg.zoomToFit(800, 45);
           }}
         />
       </div>
