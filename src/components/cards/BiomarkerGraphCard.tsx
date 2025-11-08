@@ -9,7 +9,7 @@ const ForceGraph2D: any = dynamic(() => import("react-force-graph-2d"), {
 });
 
 interface GraphData {
-  nodes: { id: string; type: string; val?: number; x?: number; y?: number }[];
+  nodes: { id: string; type: string; val?: number }[];
   links: { source: string; target: string }[];
 }
 
@@ -43,44 +43,26 @@ export default function BiomarkerGraphCard() {
       .catch((err) => setError(err.message));
   }, []);
 
-  // ✅ Adjusted bounding box before zoomToFit (prevents clipping)
+  // ✅ Auto-fit *after* layout stabilizes, with bottom padding
   useEffect(() => {
     if (!fgRef.current || graph.nodes.length === 0) return;
-
     const fg = fgRef.current;
 
-    const timer = setTimeout(() => {
-      // Compute bounding box manually
-      const xs = graph.nodes.map((n) => n.x ?? 0);
-      const ys = graph.nodes.map((n) => n.y ?? 0);
-      if (xs.length === 0 || ys.length === 0) return;
+    const onStop = () => {
+      // Standard zoom to fit
+      fg.zoomToFit(800, 50);
 
-      const minX = Math.min(...xs);
-      const maxX = Math.max(...xs);
-      const minY = Math.min(...ys);
-      const maxY = Math.max(...ys);
+      // Add slight upward shift for bottom labels
+      const { x, y, k } = fg.zoom();
+      fg.zoom(k, x, y + 40);
+    };
 
-      // Add asymmetric padding (more space on bottom and right)
-      const padX = (maxX - minX) * 0.05; // 5% horizontally
-      const padYTop = (maxY - minY) * 0.05; // small top
-      const padYBottom = (maxY - minY) * 0.25; // extra bottom padding
+    // Wait for ForceGraph layout engine to finish
+    fg.onEngineStop(onStop);
 
-      // Apply virtual bounding box
-      fg.zoomToFit(1000, 0, {
-        x: (minX + maxX) / 2,
-        y: (minY + maxY + padYBottom / 2 - padYTop / 2) / 2,
-        z: 1,
-      });
-
-      // force re-fit with padding values
-      fg.cameraPosition(
-        { x: (minX + maxX) / 2, y: (minY + maxY) / 2, z: 100 },
-        undefined,
-        1000
-      );
-    }, 1400);
-
-    return () => clearTimeout(timer);
+    return () => {
+      fg.offEngineStop(onStop);
+    };
   }, [graph]);
 
   return (
@@ -99,7 +81,7 @@ export default function BiomarkerGraphCard() {
 
       <div
         ref={containerRef}
-        className="w-full h-[480px] overflow-hidden rounded-md"
+        className="w-full h-[500px] overflow-hidden rounded-md"
       >
         <ForceGraph2D
           ref={fgRef}
