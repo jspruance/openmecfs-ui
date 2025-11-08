@@ -48,27 +48,12 @@ function AIHypothesesPageContent() {
     fetchData();
   }, []);
 
-  // ✅ Infinite scroll observer
-  useEffect(() => {
-    const node = sentinelRef.current;
-    if (!node || loading || loadingMore) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          loadMore();
-        }
-      },
-      { rootMargin: "400px 0px" }
-    );
-
-    observer.observe(node);
-    return () => observer.disconnect();
-  }, [visible, loading, loadingMore]);
-
+  // ✅ Load more (with guard)
   const loadMore = () => {
     if (loadingMore) return;
+    if (visible.length >= data.length) return; // ✅ stop if done
     setLoadingMore(true);
+
     setTimeout(() => {
       const nextPage = page + 1;
       const start = (nextPage - 1) * PAGE_SIZE;
@@ -79,6 +64,24 @@ function AIHypothesesPageContent() {
       setLoadingMore(false);
     }, 600);
   };
+
+  // ✅ Infinite scroll observer
+  useEffect(() => {
+    const node = sentinelRef.current;
+    if (!node || loading || loadingMore) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && visible.length < data.length) {
+          loadMore();
+        }
+      },
+      { rootMargin: "400px 0px" }
+    );
+
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [visible, loading, loadingMore, data.length]);
 
   const filtered = visible.filter((h) => {
     const mechMatch =
@@ -190,7 +193,8 @@ function AIHypothesesPageContent() {
               </span>
             </div>
 
-            <div className="flex flex-wrap gap-2 mb-2">
+            {/* Commented badges per request */}
+            {/* <div className="flex flex-wrap gap-2 mb-2">
               {h.mechanisms?.map((m) => (
                 <span
                   key={m}
@@ -207,7 +211,7 @@ function AIHypothesesPageContent() {
                   {b}
                 </span>
               ))}
-            </div>
+            </div> */}
 
             <div className="text-xs text-gray-500 mt-2">
               Cited in: {h.citations?.join(", ") || "—"}
@@ -233,6 +237,11 @@ function AIHypothesesPageContent() {
             Load more
           </button>
         )}
+
+        {visible.length >= data.length && (
+          <p className="text-gray-400 text-xs mt-2">All hypotheses loaded.</p>
+        )}
+
         <div ref={sentinelRef} className="h-1 w-full" />
       </div>
 
