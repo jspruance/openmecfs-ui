@@ -14,7 +14,7 @@ export default function ResearchIndexPage() {
 
       {/* Biomarker Graph Section */}
       <section className="w-full border-b border-transparent">
-        <div className="max-w-5xl mx-auto px-6">
+        <div className="max-w-5xl mx-auto px-0">
           <BiomarkerGraphCard />
         </div>
       </section>
