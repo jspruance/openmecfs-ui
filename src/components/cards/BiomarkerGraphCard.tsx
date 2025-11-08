@@ -20,7 +20,7 @@ export default function BiomarkerGraphCard() {
   const [width, setWidth] = useState(800);
   const [error, setError] = useState<string | null>(null);
 
-  // ✅ Responsive width
+  // Responsive width
   useEffect(() => {
     const handleResize = () => {
       if (containerRef.current) setWidth(containerRef.current.offsetWidth);
@@ -30,7 +30,7 @@ export default function BiomarkerGraphCard() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // ✅ Fetch biomarker graph data
+  // Fetch biomarker graph data
   useEffect(() => {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
     fetch(`${apiUrl}/biomarkers/graph`)
@@ -43,16 +43,21 @@ export default function BiomarkerGraphCard() {
       .catch((err) => setError(err.message));
   }, []);
 
-  // ✅ Improved zoom-to-fit (no extra bottom gap)
+  // ✅ Improved adaptive zoom and centering
   useEffect(() => {
     if (!fgRef.current || graph.nodes.length === 0) return;
 
     const timer = setTimeout(() => {
       const fg = fgRef.current;
-      fg.zoomToFit(800, 10); // tighter padding to prevent top shift
+
+      // Dynamically scale padding: larger graphs get slightly more room
+      const nodeCount = graph.nodes.length;
+      const padding = Math.min(60, Math.max(20, nodeCount / 3));
+
+      fg.zoomToFit(800, padding);
+
       const canvas = fg.canvas?.();
       if (canvas && containerRef.current) {
-        // match container height exactly
         canvas.style.height = `${containerRef.current.offsetHeight}px`;
       }
     }, 1000);
@@ -76,7 +81,7 @@ export default function BiomarkerGraphCard() {
 
       <div
         ref={containerRef}
-        className="w-full h-[440px] overflow-hidden rounded-md"
+        className="w-full h-[460px] overflow-hidden rounded-md"
       >
         <ForceGraph2D
           ref={fgRef}
@@ -108,7 +113,7 @@ export default function BiomarkerGraphCard() {
           linkDirectionalParticleSpeed={0.004}
           onEngineStop={() => {
             const fg = fgRef.current;
-            if (fg) fg.zoomToFit(600, 10); // consistent padding
+            if (fg) fg.zoomToFit(600, 30); // fallback padding for small graphs
           }}
         />
       </div>
