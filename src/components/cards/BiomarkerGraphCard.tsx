@@ -53,7 +53,7 @@ export default function BiomarkerGraphCard() {
   }, [graph]);
 
   return (
-    <div className="border border-slate-200 rounded-lg shadow-sm bg-white p-5 mb-8 overflow-hidden">
+    <div className="border border-slate-200 rounded-xl shadow-sm bg-white p-5 mt-4 mb-10 overflow-hidden">
       <h2 className="text-xl font-semibold mb-1">
         Biomarker–Mechanism Network
       </h2>
