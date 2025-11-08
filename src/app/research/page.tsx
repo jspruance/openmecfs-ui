@@ -12,9 +12,11 @@ export default function ResearchIndexPage() {
       {/* Hero */}
       <ResearchHero />
 
-      {/* 🔬 Biomarker Graph at Top */}
-      <section className="max-w-6xl mx-auto px-6">
-        <BiomarkerGraphCard />
+      {/* Biomarker Graph Section */}
+      <section className="w-full border-b border-transparent">
+        <div className="max-w-5xl mx-auto px-6">
+          <BiomarkerGraphCard />
+        </div>
       </section>
 
       {/* Live Data Section */}
