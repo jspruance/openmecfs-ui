@@ -43,27 +43,23 @@ export default function BiomarkerGraphCard() {
       .catch((err) => setError(err.message));
   }, []);
 
-  // ✅ Smart zoom-to-fit AFTER layout stabilization
+  // ✅ Smart zoom-to-fit AFTER layout + label-aware padding
   useEffect(() => {
     if (!fgRef.current || graph.nodes.length === 0) return;
 
     const fg = fgRef.current;
 
-    // wait until force layout completes
     const settleTimer = setTimeout(() => {
-      // compute bounding box manually
-      const bounds = fg.getGraphBbox?.();
-      if (bounds) {
-        const { x, y, z } = bounds;
-      }
+      // Estimate padding based on longest label length
+      const maxLabelLength = Math.max(
+        ...graph.nodes.map((n) => n.id.length || 0),
+        10
+      );
+      const extraPadding = Math.min(120, maxLabelLength * 3); // 3px per character
 
-      // final zoomToFit with moderate padding
-      fg.zoomToFit(1000, 40);
-      const canvas = fg.canvas?.();
-      if (canvas && containerRef.current) {
-        canvas.style.height = `${containerRef.current.offsetHeight}px`;
-      }
-    }, 1600); // give the layout ~1.6s to fully stabilize
+      // Final zoom-to-fit with extra padding
+      fg.zoomToFit(1000, 60 + extraPadding);
+    }, 1600);
 
     return () => clearTimeout(settleTimer);
   }, [graph]);
@@ -115,9 +111,9 @@ export default function BiomarkerGraphCard() {
           linkDirectionalParticles={2}
           linkDirectionalParticleSpeed={0.004}
           onEngineStop={() => {
-            // final adjustment to center
+            // minor re-fit after physics stop
             const fg = fgRef.current;
-            if (fg) fg.zoomToFit(800, 40);
+            if (fg) fg.zoomToFit(800, 80);
           }}
         />
       </div>
