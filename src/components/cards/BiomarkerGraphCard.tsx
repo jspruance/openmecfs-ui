@@ -9,7 +9,7 @@ const ForceGraph2D: any = dynamic(() => import("react-force-graph-2d"), {
 });
 
 interface GraphData {
-  nodes: { id: string; type: string; val?: number }[];
+  nodes: { id: string; type: string; val?: number; x?: number; y?: number }[];
   links: { source: string; target: string }[];
 }
 
@@ -43,20 +43,41 @@ export default function BiomarkerGraphCard() {
       .catch((err) => setError(err.message));
   }, []);
 
-  // ✅ Controlled zoom with mild right + bottom padding
+  // ✅ Adjusted bounding box before zoomToFit (prevents clipping)
   useEffect(() => {
     if (!fgRef.current || graph.nodes.length === 0) return;
+
     const fg = fgRef.current;
 
     const timer = setTimeout(() => {
-      // First fit normally
-      fg.zoomToFit(1000, 45);
+      // Compute bounding box manually
+      const xs = graph.nodes.map((n) => n.x ?? 0);
+      const ys = graph.nodes.map((n) => n.y ?? 0);
+      if (xs.length === 0 || ys.length === 0) return;
 
-      // Then apply a small offset upward & leftward to reveal bottom/right edges
-      const transform = fg.zoom();
-      const shiftX = -40; // left bias
-      const shiftY = 30; // up bias (frees bottom space)
-      fg.zoom(transform.k, transform.x + shiftX, transform.y + shiftY);
+      const minX = Math.min(...xs);
+      const maxX = Math.max(...xs);
+      const minY = Math.min(...ys);
+      const maxY = Math.max(...ys);
+
+      // Add asymmetric padding (more space on bottom and right)
+      const padX = (maxX - minX) * 0.05; // 5% horizontally
+      const padYTop = (maxY - minY) * 0.05; // small top
+      const padYBottom = (maxY - minY) * 0.25; // extra bottom padding
+
+      // Apply virtual bounding box
+      fg.zoomToFit(1000, 0, {
+        x: (minX + maxX) / 2,
+        y: (minY + maxY + padYBottom / 2 - padYTop / 2) / 2,
+        z: 1,
+      });
+
+      // force re-fit with padding values
+      fg.cameraPosition(
+        { x: (minX + maxX) / 2, y: (minY + maxY) / 2, z: 100 },
+        undefined,
+        1000
+      );
     }, 1400);
 
     return () => clearTimeout(timer);
@@ -108,10 +129,6 @@ export default function BiomarkerGraphCard() {
           }}
           linkDirectionalParticles={2}
           linkDirectionalParticleSpeed={0.004}
-          onEngineStop={() => {
-            const fg = fgRef.current;
-            if (fg) fg.zoomToFit(800, 45);
-          }}
         />
       </div>
     </div>
