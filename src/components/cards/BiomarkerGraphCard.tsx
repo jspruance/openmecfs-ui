@@ -9,7 +9,7 @@ const ForceGraph2D: any = dynamic(() => import("react-force-graph-2d"), {
 });
 
 interface GraphData {
-  nodes: { id: string; type: string; x?: number; y?: number; val?: number }[];
+  nodes: { id: string; type: string; val?: number }[];
   links: { source: string; target: string }[];
 }
 
@@ -43,39 +43,22 @@ export default function BiomarkerGraphCard() {
       .catch((err) => setError(err.message));
   }, []);
 
-  // ✅ Perform layout adjustments once nodes exist
-  useEffect(() => {
-    if (!fgRef.current || graph.nodes.length === 0) return;
-
+  // ✅ Expand vertically using camera transform (no physics distortion)
+  const handleEngineStop = () => {
     const fg = fgRef.current;
+    if (!fg) return;
 
-    // Wait for initial render
-    const timer = setTimeout(() => {
-      try {
-        const nodes = fg.graphData().nodes;
-        const avgY =
-          nodes.reduce((sum: number, n: any) => sum + (n.y || 0), 0) /
-          (nodes.length || 1);
+    fg.zoomToFit(800, 80);
 
-        // Slight vertical expansion
-        const stretch = 1.35;
-        nodes.forEach((n: any) => {
-          if (n.y !== undefined) n.y = avgY + (n.y - avgY) * stretch;
-        });
+    // Apply vertical expansion after zoom
+    const currentZoom = fg.zoom();
+    const { x, y } = fg.centerAt(); // current camera center
 
-        // Reheat and let it settle again
-        fg.d3AlphaTarget(0.3);
-        setTimeout(() => {
-          fg.d3AlphaTarget(0);
-          fg.zoomToFit(800, 120); // padding for top/bottom space
-        }, 500);
-      } catch (e) {
-        console.error("Error adjusting vertical layout:", e);
-      }
-    }, 1200);
-
-    return () => clearTimeout(timer);
-  }, [graph]);
+    // scale y-axis compression factor (smaller = more vertical space)
+    const yScale = 0.7; // try 0.6–0.8 for more or less stretch
+    fg.zoom(currentZoom / yScale, 800);
+    fg.centerAt(x, y / yScale, 800);
+  };
 
   return (
     <div className="border border-slate-200 rounded-xl shadow-sm bg-white p-5 mt-4 mb-10 overflow-hidden">
@@ -106,6 +89,7 @@ export default function BiomarkerGraphCard() {
           cooldownTicks={60}
           d3VelocityDecay={0.25}
           d3AlphaDecay={0.04}
+          onEngineStop={handleEngineStop}
           nodeCanvasObject={(
             node: any,
             ctx: CanvasRenderingContext2D,
