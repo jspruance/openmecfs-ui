@@ -9,7 +9,7 @@ const ForceGraph2D: any = dynamic(() => import("react-force-graph-2d"), {
 });
 
 interface GraphData {
-  nodes: { id: string; type: string; val?: number }[];
+  nodes: { id: string; type: string; x?: number; y?: number; val?: number }[];
   links: { source: string; target: string }[];
 }
 
@@ -43,14 +43,39 @@ export default function BiomarkerGraphCard() {
       .catch((err) => setError(err.message));
   }, []);
 
-  // Adjust final layout
-  const handleEngineStop = () => {
-    const fg = fgRef.current;
-    if (!fg) return;
+  // ✅ Perform layout adjustments once nodes exist
+  useEffect(() => {
+    if (!fgRef.current || graph.nodes.length === 0) return;
 
-    // Add generous margins when zooming to fit (top/bottom)
-    fg.zoomToFit(800, 100); // second arg = padding in px
-  };
+    const fg = fgRef.current;
+
+    // Wait for initial render
+    const timer = setTimeout(() => {
+      try {
+        const nodes = fg.graphData().nodes;
+        const avgY =
+          nodes.reduce((sum: number, n: any) => sum + (n.y || 0), 0) /
+          (nodes.length || 1);
+
+        // Slight vertical expansion
+        const stretch = 1.35;
+        nodes.forEach((n: any) => {
+          if (n.y !== undefined) n.y = avgY + (n.y - avgY) * stretch;
+        });
+
+        // Reheat and let it settle again
+        fg.d3AlphaTarget(0.3);
+        setTimeout(() => {
+          fg.d3AlphaTarget(0);
+          fg.zoomToFit(800, 120); // padding for top/bottom space
+        }, 500);
+      } catch (e) {
+        console.error("Error adjusting vertical layout:", e);
+      }
+    }, 1200);
+
+    return () => clearTimeout(timer);
+  }, [graph]);
 
   return (
     <div className="border border-slate-200 rounded-xl shadow-sm bg-white p-5 mt-4 mb-10 overflow-hidden">
@@ -68,7 +93,7 @@ export default function BiomarkerGraphCard() {
 
       <div
         ref={containerRef}
-        className="w-full h-[580px] overflow-hidden rounded-md" // slightly taller container
+        className="w-full h-[580px] overflow-hidden rounded-md"
       >
         <ForceGraph2D
           ref={fgRef}
@@ -81,7 +106,6 @@ export default function BiomarkerGraphCard() {
           cooldownTicks={60}
           d3VelocityDecay={0.25}
           d3AlphaDecay={0.04}
-          onEngineStop={handleEngineStop}
           nodeCanvasObject={(
             node: any,
             ctx: CanvasRenderingContext2D,
