@@ -9,7 +9,7 @@ const ForceGraph2D: any = dynamic(() => import("react-force-graph-2d"), {
 });
 
 interface GraphData {
-  nodes: { id: string; type: string; val?: number }[];
+  nodes: { id: string; type: string; x?: number; y?: number; val?: number }[];
   links: { source: string; target: string }[];
 }
 
@@ -43,14 +43,22 @@ export default function BiomarkerGraphCard() {
       .catch((err) => setError(err.message));
   }, []);
 
-  // ✅ Stable zoom after layout + slight vertical centering
+  // ✅ On layout complete, stretch vertically + zoom to fit
   const handleEngineStop = () => {
-    if (!fgRef.current) return;
     const fg = fgRef.current;
+    if (!fg) return;
+
+    // Apply vertical scaling (spread Y positions)
+    const stretchFactor = 1.3; // ⬆ increase for more separation (try 1.4–1.6 if needed)
+    graph.nodes.forEach((n) => {
+      if (n.y) n.y *= stretchFactor;
+    });
+    fg.refresh(); // re-render positions
+
     setTimeout(() => {
-      fg.zoomToFit(1000, 60); // smooth zoom
+      fg.zoomToFit(1000, 60);
       const { x, y, k } = fg.zoom();
-      fg.zoom(k, x, y + 15); // smaller upward shift = more centered
+      fg.zoom(k, x, y + 10); // mild upward balance
     }, 250);
   };
 
