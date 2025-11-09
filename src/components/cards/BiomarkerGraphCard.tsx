@@ -43,14 +43,14 @@ export default function BiomarkerGraphCard() {
       .catch((err) => setError(err.message));
   }, []);
 
-  // ✅ Stable zoom after layout + short delay
+  // ✅ Stable zoom after layout + slight vertical centering
   const handleEngineStop = () => {
     if (!fgRef.current) return;
     const fg = fgRef.current;
     setTimeout(() => {
-      fg.zoomToFit(1000, 60); // nice animation and padding
+      fg.zoomToFit(1000, 60); // smooth zoom
       const { x, y, k } = fg.zoom();
-      fg.zoom(k, x, y + 40); // shift upward slightly for bottom labels
+      fg.zoom(k, x, y + 15); // smaller upward shift = more centered
     }, 250);
   };
 
