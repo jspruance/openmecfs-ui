@@ -19,6 +19,7 @@ export default function BiomarkerGraphCard() {
   const fgRef = useRef<any>(null);
   const [width, setWidth] = useState(800);
   const [error, setError] = useState<string | null>(null);
+  const [engineStopped, setEngineStopped] = useState(false);
 
   // Responsive width
   useEffect(() => {
@@ -43,27 +44,14 @@ export default function BiomarkerGraphCard() {
       .catch((err) => setError(err.message));
   }, []);
 
-  // ✅ Auto-fit *after* layout stabilizes, with bottom padding
+  // ✅ Trigger zoom after ForceGraph signals layout stabilization
   useEffect(() => {
-    if (!fgRef.current || graph.nodes.length === 0) return;
+    if (!engineStopped || !fgRef.current) return;
     const fg = fgRef.current;
-
-    const onStop = () => {
-      // Standard zoom to fit
-      fg.zoomToFit(800, 50);
-
-      // Add slight upward shift for bottom labels
-      const { x, y, k } = fg.zoom();
-      fg.zoom(k, x, y + 40);
-    };
-
-    // Wait for ForceGraph layout engine to finish
-    fg.onEngineStop(onStop);
-
-    return () => {
-      fg.offEngineStop(onStop);
-    };
-  }, [graph]);
+    fg.zoomToFit(800, 50);
+    const { x, y, k } = fg.zoom();
+    fg.zoom(k, x, y + 40); // gentle upward shift for bottom labels
+  }, [engineStopped]);
 
   return (
     <div className="border border-slate-200 rounded-xl shadow-sm bg-white p-5 mt-4 mb-10 overflow-hidden">
@@ -94,6 +82,7 @@ export default function BiomarkerGraphCard() {
           cooldownTicks={60}
           d3VelocityDecay={0.25}
           d3AlphaDecay={0.04}
+          onEngineStop={() => setEngineStopped(true)} // ✅ proper event listener
           nodeCanvasObject={(
             node: any,
             ctx: CanvasRenderingContext2D,
