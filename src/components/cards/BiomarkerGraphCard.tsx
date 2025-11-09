@@ -96,7 +96,7 @@ export default function BiomarkerGraphCard() {
             globalScale: number
           ) => {
             const label = node.id;
-            const fontSize = 12 / globalScale;
+            const fontSize = 14 / globalScale;
             ctx.font = `${fontSize}px Sans-Serif`;
             ctx.fillStyle = node.type === "mechanism" ? "#2563eb" : "#16a34a";
             ctx.beginPath();
