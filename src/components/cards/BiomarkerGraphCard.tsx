@@ -55,7 +55,7 @@ export default function BiomarkerGraphCard() {
     const { x, y } = fg.centerAt(); // current camera center
 
     // scale y-axis compression factor (smaller = more vertical space)
-    const yScale = 0.3; // try 0.6–0.8 for more or less stretch
+    const yScale = 0.6; // try 0.6–0.8 for more or less stretch
     fg.zoom(currentZoom / yScale, 800);
     fg.centerAt(x, y / yScale, 800);
   };
