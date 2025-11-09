@@ -19,7 +19,7 @@ export default function BiomarkerGraphCard() {
   const fgRef = useRef<any>(null);
   const [width, setWidth] = useState(800);
   const [error, setError] = useState<string | null>(null);
-  const [zoomed, setZoomed] = useState(false);
+  const [hasAdjusted, setHasAdjusted] = useState(false);
 
   // Responsive width
   useEffect(() => {
@@ -44,26 +44,28 @@ export default function BiomarkerGraphCard() {
       .catch((err) => setError(err.message));
   }, []);
 
-  // ✅ Only adjust positions — never reassign graphData (avoids flicker)
+  // ✅ Vertically stretch *only after* layout stabilizes
   const handleEngineStop = () => {
     const fg = fgRef.current;
-    if (!fg || zoomed) return;
+    if (!fg || hasAdjusted) return;
 
-    // Stretch vertically without resetting data
-    const stretchFactor = 1.35;
-    fg.graphData().nodes.forEach((n: any) => {
-      if (n.y) n.y *= stretchFactor;
-    });
+    try {
+      setHasAdjusted(true);
+      const nodes = fg._simulation?.nodes?.() || graph.nodes;
+      const stretchFactor = 1.35;
 
-    fg.d3ReheatSimulation(); // tell D3 to respect new coordinates
-    setZoomed(true);
+      // Mutate node Y positions safely
+      nodes.forEach((n: any) => {
+        if (n.y) n.y *= stretchFactor;
+      });
 
-    // Then zoom and center
-    setTimeout(() => {
-      fg.zoomToFit(1000, 60);
-      const { x, y, k } = fg.zoom();
-      fg.zoom(k, x, y + 10);
-    }, 250);
+      fg._simulation.alpha(0.3).restart(); // briefly reheat layout
+      setTimeout(() => {
+        fg.zoomToFit(1000, 60);
+      }, 500);
+    } catch (e) {
+      console.error("Graph adjustment failed:", e);
+    }
   };
 
   return (
