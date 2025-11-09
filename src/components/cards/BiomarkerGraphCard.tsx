@@ -19,6 +19,7 @@ export default function BiomarkerGraphCard() {
   const fgRef = useRef<any>(null);
   const [width, setWidth] = useState(800);
   const [error, setError] = useState<string | null>(null);
+  const [hasStretched, setHasStretched] = useState(false);
 
   // Responsive width
   useEffect(() => {
@@ -43,22 +44,28 @@ export default function BiomarkerGraphCard() {
       .catch((err) => setError(err.message));
   }, []);
 
-  // ✅ On layout complete, stretch vertically + zoom to fit
+  // ✅ On layout complete: clone + stretch + stable zoom
   const handleEngineStop = () => {
     const fg = fgRef.current;
-    if (!fg) return;
+    if (!fg || hasStretched) return; // run once
 
-    // Apply vertical scaling (spread Y positions)
-    const stretchFactor = 1.3; // ⬆ increase for more separation (try 1.4–1.6 if needed)
-    graph.nodes.forEach((n) => {
-      if (n.y) n.y *= stretchFactor;
-    });
-    fg.refresh(); // re-render positions
+    setHasStretched(true);
+    const stretchFactor = 1.35;
 
+    // clone nodes safely so React doesn’t re-render with empty data
+    const newNodes = graph.nodes.map((n) => ({
+      ...n,
+      y: n.y ? n.y * stretchFactor : n.y,
+    }));
+
+    // apply directly to ForceGraph internal data (no React reset)
+    fg.graphData({ ...graph, nodes: newNodes });
+
+    // after slight delay, fit and center
     setTimeout(() => {
       fg.zoomToFit(1000, 60);
       const { x, y, k } = fg.zoom();
-      fg.zoom(k, x, y + 10); // mild upward balance
+      fg.zoom(k, x, y + 10);
     }, 250);
   };
 
