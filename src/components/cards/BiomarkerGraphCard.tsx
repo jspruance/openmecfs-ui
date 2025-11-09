@@ -19,7 +19,7 @@ export default function BiomarkerGraphCard() {
   const fgRef = useRef<any>(null);
   const [width, setWidth] = useState(800);
   const [error, setError] = useState<string | null>(null);
-  const [hasStretched, setHasStretched] = useState(false);
+  const [zoomed, setZoomed] = useState(false);
 
   // Responsive width
   useEffect(() => {
@@ -44,24 +44,21 @@ export default function BiomarkerGraphCard() {
       .catch((err) => setError(err.message));
   }, []);
 
-  // ✅ On layout complete: clone + stretch + stable zoom
+  // ✅ Only adjust positions — never reassign graphData (avoids flicker)
   const handleEngineStop = () => {
     const fg = fgRef.current;
-    if (!fg || hasStretched) return; // run once
+    if (!fg || zoomed) return;
 
-    setHasStretched(true);
+    // Stretch vertically without resetting data
     const stretchFactor = 1.35;
+    fg.graphData().nodes.forEach((n: any) => {
+      if (n.y) n.y *= stretchFactor;
+    });
 
-    // clone nodes safely so React doesn’t re-render with empty data
-    const newNodes = graph.nodes.map((n) => ({
-      ...n,
-      y: n.y ? n.y * stretchFactor : n.y,
-    }));
+    fg.d3ReheatSimulation(); // tell D3 to respect new coordinates
+    setZoomed(true);
 
-    // apply directly to ForceGraph internal data (no React reset)
-    fg.graphData({ ...graph, nodes: newNodes });
-
-    // after slight delay, fit and center
+    // Then zoom and center
     setTimeout(() => {
       fg.zoomToFit(1000, 60);
       const { x, y, k } = fg.zoom();
