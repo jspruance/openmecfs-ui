@@ -9,7 +9,7 @@ const ForceGraph2D: any = dynamic(() => import("react-force-graph-2d"), {
 });
 
 interface GraphData {
-  nodes: { id: string; type: string; x?: number; y?: number; val?: number }[];
+  nodes: { id: string; type: string; val?: number }[];
   links: { source: string; target: string }[];
 }
 
@@ -19,7 +19,6 @@ export default function BiomarkerGraphCard() {
   const fgRef = useRef<any>(null);
   const [width, setWidth] = useState(800);
   const [error, setError] = useState<string | null>(null);
-  const [hasAdjusted, setHasAdjusted] = useState(false);
 
   // Responsive width
   useEffect(() => {
@@ -31,7 +30,7 @@ export default function BiomarkerGraphCard() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Fetch biomarker graph data
+  // Fetch data
   useEffect(() => {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
     fetch(`${apiUrl}/biomarkers/graph`)
@@ -44,28 +43,13 @@ export default function BiomarkerGraphCard() {
       .catch((err) => setError(err.message));
   }, []);
 
-  // ✅ Vertically stretch *only after* layout stabilizes
+  // Adjust final layout
   const handleEngineStop = () => {
     const fg = fgRef.current;
-    if (!fg || hasAdjusted) return;
+    if (!fg) return;
 
-    try {
-      setHasAdjusted(true);
-      const nodes = fg._simulation?.nodes?.() || graph.nodes;
-      const stretchFactor = 1.35;
-
-      // Mutate node Y positions safely
-      nodes.forEach((n: any) => {
-        if (n.y) n.y *= stretchFactor;
-      });
-
-      fg._simulation.alpha(0.3).restart(); // briefly reheat layout
-      setTimeout(() => {
-        fg.zoomToFit(1000, 60);
-      }, 500);
-    } catch (e) {
-      console.error("Graph adjustment failed:", e);
-    }
+    // Add generous margins when zooming to fit (top/bottom)
+    fg.zoomToFit(800, 100); // second arg = padding in px
   };
 
   return (
@@ -84,7 +68,7 @@ export default function BiomarkerGraphCard() {
 
       <div
         ref={containerRef}
-        className="w-full h-[500px] overflow-hidden rounded-md"
+        className="w-full h-[580px] overflow-hidden rounded-md" // slightly taller container
       >
         <ForceGraph2D
           ref={fgRef}
