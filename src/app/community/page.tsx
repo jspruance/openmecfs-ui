@@ -54,7 +54,7 @@ export default function CommunityPage() {
           </div>
 
           {/* CTA Button */}
-          <div className="mt-8">
+          <div className="mt-8 text-center">
             <a
               href="https://www.mellowmatch.app"
               target="_blank"
@@ -67,7 +67,7 @@ export default function CommunityPage() {
 
           <div className="prose prose-lg max-w-none text-gray-700 leading-relaxed space-y-4">
             <p>
-              MellowMatch is an early-stage, completely free connection space
+              <strong>MellowMatch</strong> is an early-stage, completely free connection space
               created by someone living with ME/CFS. It is intentionally designed
               to be slow, calm, and respectful of fluctuating energy levels.
             </p>
