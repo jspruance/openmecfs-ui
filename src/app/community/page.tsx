@@ -9,7 +9,7 @@ export const metadata = {
 export default function CommunityPage() {
   return (
     <main className="min-h-screen bg-white text-gray-800">
-      <div className="max-w-4xl mx-auto px-6 py-16">
+      <div className="max-w-4xl mx-auto px-6 pt-8 pb-16">
         <h1 className="text-4xl font-bold text-gray-900 mb-8">
           Community & Connection
         </h1>
