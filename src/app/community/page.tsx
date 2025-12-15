@@ -14,23 +14,26 @@ export default function CommunityPage() {
           Community & Connection
         </h1>
 
+        <div className="prose prose-lg max-w-none text-gray-700 leading-relaxed space-y-6">
+          <p>
+            Living with ME/CFS and related chronic illnesses can be deeply
+            isolating, even when you are informed and supported medically.
+          </p>
+
+          <p>
+            Some people are looking for quiet, low-pressure ways to connect with
+            others who understand their experience — whether for conversation,
+            friendship, companionship, or dating — at a pace that respects
+            limited energy and bad days.
+          </p>
+
+        </div>
+
 
         {/* MellowMatch Section */}
         <div className="mt-12 space-y-6">
          
-          <div className="prose prose-lg max-w-none text-gray-700 leading-relaxed space-y-4">
-            <p>
-              MellowMatch is an early-stage, completely free connection space
-              created by someone living with ME/CFS. It is intentionally designed
-              to be slow, calm, and respectful of fluctuating energy levels.
-            </p>
-
-            <p>
-              Some people use it to find understanding friends, some for
-              companionship, and some for dating. Participation is always
-              optional, and there is no pressure to engage.
-            </p>
-          </div>
+          
 
           {/* MellowMatch Image */}
           <div className="my-6">
@@ -62,20 +65,21 @@ export default function CommunityPage() {
             </a>
           </div>
 
-          <div className="prose prose-lg max-w-none text-gray-700 leading-relaxed space-y-6">
-          <p>
-            Living with ME/CFS and related chronic illnesses can be deeply
-            isolating, even when you are informed and supported medically.
-          </p>
+          <div className="prose prose-lg max-w-none text-gray-700 leading-relaxed space-y-4">
+            <p>
+              MellowMatch is an early-stage, completely free connection space
+              created by someone living with ME/CFS. It is intentionally designed
+              to be slow, calm, and respectful of fluctuating energy levels.
+            </p>
 
-          <p>
-            Some people are looking for quiet, low-pressure ways to connect with
-            others who understand their experience — whether for conversation,
-            friendship, companionship, or dating — at a pace that respects
-            limited energy and bad days.
-          </p>
+            <p>
+              Some people use it to find understanding friends, some for
+              companionship, and some for dating. Participation is always
+              optional, and there is no pressure to engage.
+            </p>
+          </div>
 
-        </div>
+          
 
          
         </div>
