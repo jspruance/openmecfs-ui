@@ -64,18 +64,24 @@ function Bullets({ items }: { items: string[] }) {
 /* --------------------------- PDF Components --------------------------- */
 
 function QuickStartPDF() {
-  const q: QuickStart = provider?.quickStart ?? {
-    title: "ME/CFS Quick-Start for Clinicians",
-    intro: "",
-    principles: [],
-    whatNotToDo: [],
-    visitFlow: [],
-    oiSteps: [],
-    baselineWorkup: [],
-    initialManagement: [],
-    followUp: [],
-    redFlags: [],
-    documentation: { assessment: "", plan: "", accommodations: "" },
+  const qs = provider?.quickStart;
+  const q: QuickStart = {
+    title: qs?.title ?? "ME/CFS Quick-Start for Clinicians",
+    intro: qs?.intro ?? "",
+    principles: qs?.principles ?? [],
+    whatNotToDo: qs?.whatNotToDo ?? [],
+    visitFlow: qs?.visitFlow ?? [],
+    pemExplainer: qs?.pemExplainer,
+    oiSteps: qs?.oiSteps ?? [],
+    baselineWorkup: qs?.baselineWorkup ?? [],
+    initialManagement: qs?.initialManagement ?? [],
+    followUp: qs?.followUp ?? [],
+    redFlags: qs?.redFlags ?? [],
+    documentation: {
+      assessment: qs?.documentation?.assessment ?? "",
+      plan: qs?.documentation?.plan ?? "",
+      accommodations: qs?.documentation?.accommodations ?? "",
+    },
   };
 
   return (
