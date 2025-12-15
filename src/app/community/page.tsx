@@ -34,13 +34,20 @@ export default function CommunityPage() {
 
           {/* MellowMatch Image */}
           <div className="my-6">
-            <Image
-              src="/mellowmatch.png"
-              alt="MellowMatch"
-              width={800}
-              height={400}
-              className="w-full max-w-2xl mx-auto rounded-lg shadow-sm"
-            />
+            <a
+              href="https://www.mellowmatch.app"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block cursor-pointer hover:opacity-90 transition-opacity"
+            >
+              <Image
+                src="/mellowmatch.png"
+                alt="MellowMatch"
+                width={800}
+                height={400}
+                className="w-full max-w-2xl mx-auto rounded-lg shadow-sm"
+              />
+            </a>
           </div>
 
           {/* CTA Button */}
