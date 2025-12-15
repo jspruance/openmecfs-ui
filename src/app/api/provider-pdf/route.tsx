@@ -216,15 +216,13 @@ function DiagnosisPDF() {
 }
 
 function DifferentialPDF() {
-  const fallbackDifferential: Differential = {
-    title: "Differential & Workup",
-    intro: "",
-    tests: [],
-    mimics: [],
+  const diffData = provider?.differential;
+  const diff: Differential = {
+    title: diffData?.title ?? "Differential & Workup (Rule-Outs + Baseline)",
+    intro: diffData?.intro ?? "",
+    tests: diffData?.tests ?? [],
+    mimics: diffData?.mimics ?? [],
   };
-
-  const diff: Differential =
-    (provider?.differential as Differential) ?? fallbackDifferential;
 
   return (
     <Document>
@@ -254,15 +252,14 @@ function DifferentialPDF() {
 }
 
 function OrthostaticPDF() {
-  const fallbackOrthostatic: Orthostatic = {
-    title: "Orthostatic Intolerance",
-    intro: "",
-    screen: [],
-    therapy: [],
+  const orthoData = provider?.orthostatic;
+  const o: Orthostatic = {
+    title: orthoData?.title ?? "Orthostatic Intolerance",
+    intro: orthoData?.intro ?? "",
+    screen: orthoData?.screen ?? [],
+    tenMinuteStand: orthoData?.tenMinuteStand,
+    therapy: orthoData?.therapy ?? [],
   };
-
-  const o: Orthostatic =
-    (provider?.orthostatic as Orthostatic) ?? fallbackOrthostatic;
 
   return (
     <Document>
