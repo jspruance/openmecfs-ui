@@ -1,5 +1,4 @@
 // src/app/providers/downloads/page.tsx
-import Link from "next/link";
 
 export const metadata = {
   title: "Downloads — Open ME/CFS",
@@ -88,12 +87,12 @@ export default function DownloadsPage() {
               <p className="mt-1 text-slate-600 text-sm">{it.desc}</p>
             </div>
             <div className="mt-4">
-              <Link
+              <a
                 href={it.href}
                 className="inline-flex items-center rounded-md bg-blue-600 text-white px-3 py-1.5 text-sm hover:bg-blue-700 transition"
               >
                 Download PDF
-              </Link>
+              </a>
             </div>
           </article>
         ))}

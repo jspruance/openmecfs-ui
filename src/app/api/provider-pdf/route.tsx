@@ -360,10 +360,10 @@ function ManagementPDF() {
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const doc = searchParams.get("doc") || "diagnosis";
+  const doc = searchParams.get("doc");
 
   // Normalize doc parameter (handle both quickStart and quick-start)
-  const normalizedDoc = doc === "quick-start" ? "quickStart" : doc;
+  const normalizedDoc = doc === "quick-start" ? "quickStart" : doc || "diagnosis";
 
   let pdfComponent;
   let filename;
