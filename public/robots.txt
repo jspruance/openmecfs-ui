@@ -1,0 +1,9 @@
+# *
+User-agent: *
+Allow: /
+
+# Host
+Host: https://openmecfs.org
+
+# Sitemaps
+Sitemap: https://openmecfs.org/sitemap.xml

@@ -359,37 +359,49 @@ function ManagementPDF() {
 /* -------------------------------- Handler -------------------------------- */
 
 export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const doc = searchParams.get("doc");
+  const url = new URL(request.url);
+  const doc = url.searchParams.get("doc");
+
+  // Debug logging
+  console.log("[provider-pdf] Request URL:", request.url);
+  console.log("[provider-pdf] Doc parameter:", doc);
 
   // Normalize doc parameter (handle both quickStart and quick-start)
-  const normalizedDoc = doc === "quick-start" ? "quickStart" : doc || "diagnosis";
+  const normalizedDoc = doc === "quick-start" ? "quickStart" : (doc || "diagnosis");
+  
+  console.log("[provider-pdf] Normalized doc:", normalizedDoc);
 
   let pdfComponent;
   let filename;
 
   switch (normalizedDoc) {
     case "quickStart":
+      console.log("[provider-pdf] Generating QuickStart PDF");
       pdfComponent = <QuickStartPDF />;
       filename = "OpenMECFS-QuickStart.pdf";
       break;
     case "diagnosis":
+      console.log("[provider-pdf] Generating Diagnosis PDF");
       pdfComponent = <DiagnosisPDF />;
       filename = "OpenMECFS-Diagnosis.pdf";
       break;
     case "differential":
+      console.log("[provider-pdf] Generating Differential PDF");
       pdfComponent = <DifferentialPDF />;
       filename = "OpenMECFS-Differential.pdf";
       break;
     case "orthostatic":
+      console.log("[provider-pdf] Generating Orthostatic PDF");
       pdfComponent = <OrthostaticPDF />;
       filename = "OpenMECFS-Orthostatic.pdf";
       break;
     case "management":
+      console.log("[provider-pdf] Generating Management PDF");
       pdfComponent = <ManagementPDF />;
       filename = "OpenMECFS-Management.pdf";
       break;
     default:
+      console.log("[provider-pdf] Unknown doc type, defaulting to Diagnosis PDF");
       // Default to diagnosis if unknown doc type
       pdfComponent = <DiagnosisPDF />;
       filename = "OpenMECFS-Diagnosis.pdf";
@@ -398,11 +410,15 @@ export async function GET(request: Request) {
 
   const blob = await pdf(pdfComponent).toBlob();
 
+  console.log("[provider-pdf] Returning PDF with filename:", filename);
+
   return new Response(blob, {
     headers: {
       "Content-Type": "application/pdf",
       "Content-Disposition": `attachment; filename="${filename}"`,
-      "Cache-Control": "public, max-age=3600, immutable",
+      "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
+      "Pragma": "no-cache",
+      "Expires": "0",
     },
   });
 }
