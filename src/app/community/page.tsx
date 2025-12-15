@@ -61,13 +61,13 @@ export default function CommunityPage() {
               rel="noopener noreferrer"
               className="inline-block bg-[#007BFF] text-white px-6 py-3 rounded-md font-medium hover:bg-[#0D47A1] transition-colors"
             >
-              Learn more about MellowMatch
+              Explore MellowMatch
             </a>
           </div>
 
           <div className="prose prose-lg max-w-none text-gray-700 leading-relaxed space-y-4">
             <p>
-              <strong>MellowMatch</strong> is an early-stage, completely free connection space
+              <strong>MellowMatch</strong> is an early-stage, <strong>completely free</strong> connection space
               created by someone living with ME/CFS. It is intentionally designed
               to be slow, calm, and respectful of fluctuating energy levels.
             </p>
